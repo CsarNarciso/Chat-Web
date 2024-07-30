@@ -4,9 +4,10 @@ I'm working in a real time messaging application developed with Spring Boot, Web
 
 Application features.
 -
+-  
 
 How it was built?
--
+- 
 
 Complete technology stack.
 -
