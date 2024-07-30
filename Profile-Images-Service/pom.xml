@@ -11,7 +11,7 @@
 	<groupId>com.cesar</groupId>
 	<artifactId>Profile-Images-Service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>ProfileImageAPI</name>
+	<name>Profile-Images-Service</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
 	<licenses>

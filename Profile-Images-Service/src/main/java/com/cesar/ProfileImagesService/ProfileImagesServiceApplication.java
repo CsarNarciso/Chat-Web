@@ -1,13 +1,13 @@
-package com.cesar.ProfileImageAPI;
+package com.cesar.ProfileImagesService;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ProfileImageApiApplication {
+public class ProfileImagesServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ProfileImageApiApplication.class, args);
+		SpringApplication.run(ProfileImagesServiceApplication.class, args);
 	}
 
 }
