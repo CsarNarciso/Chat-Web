@@ -1,12 +1,33 @@
-Real time messaging application developed in Spring Framework by WebSockets and SockJS.
+Project description.
+-
+I'm working in a real time messaging application developed with Spring Boot, WebSockets and SockJS.
 
+Application features.
+-
 
-Complete technology stack
+How it was built?
+-
+
+Complete technology stack.
 -
 - Spring Boot.
-- MySQL.
 - Spring Security.
+- Java 22.
+- Spring WebSockets.
+- SockJs.
+- Hibernate validation.
 - Js.
+- Html.
+- Css.
+- Bootstrap.
+- REST.
+- JPA.
+- MySQL database.
+- H2 database.
+- ModelMapper.
+- Maven.
+- Git.
+- Postman client.
 
 Why I migrate the project?
 -
