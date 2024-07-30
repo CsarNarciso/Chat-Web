@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+    <title>Main chat page</title>
+    
+    <style>
+    	
+    	.errorFormat {
+			color: red;
+			font-size: 12px;
+			line-height: 24px;
+		}
+    	
+    	
+    	#usersList {
+    		max-height: 200px;
+    		overflow: auto;
+    	}
+    	
+    	#sendMenu {
+    		display:none;
+    	}
+    	
+    	#conversationName {
+    		display:none;
+    	}
+    	
+    	#profileOptionMenu {
+    		display:none;
+    	}
+    	
+    	#updatePofileMenu {
+    		display:none;
+    	}
+    	
+    	
+    	
+    	
+    </style>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+	<script src="/js/websocketsFunctionality.js"></script>
+	<script src="/js/imageValidation.js"></script>
+     
+</head>
+
+
+
+
+
+<body>
+	<div id="userData" 
+		th:data-Id="${Id}" 
+		th:data-Name="${Name}" 
+		th:data-ImageName="${ImageName}" 
+		th:data-Update="${Update}"
+	></div>
+	
+	
+    <img id="userImage" src="" height="250px" width="250px"> 
+    <h1 id="userName"></h1> 
+    
+    
+    <br><br>
+    
+    
+    
+    
+    <strong>Online users</strong> <br>
+    <ul id="usersList"></ul> <br>
+    
+    <strong>Conversations</strong> <br>
+    <ul id="conversationsList"></ul>
+    
+	    <br>    
+
+
+
+
+	
+    <div id="sendMenu" data-SendingAction="">
+    
+    	<div id="conversationName"></div> <br>
+    	<ul id="messagesTray"></ul> <br>
+    
+    	<input type="text" id="messageField"> <br>
+    	<button id="sendMessageBtn">Send</button>
+    	
+    </div>
+
+
+
+
+    <div id="profileOptionsMenu">
+    	<button id="updateProfileBtn">Update profile</button>
+    	<a href="/logout">Log out</a>
+    </div>
+
+
+
+    <div id="updateProfileMenu">
+    
+    	<div> <strong>Update profile</strong> </div> <br>
+ 
+    	<form id="updateNameForm" action="/updateUserData">
+    		Username: <input id="newNameField" type="text" name="newName"> <br>
+    		
+    		<div id="errorMessage_UpdateName" class="errorFormat" 
+    			th:data-ValidationResult="${ValidationResult_UpdateName}"
+    			th:data-NameNotAvailable="${NameNotAvailable}"
+    		></div> <br>
+    		
+    		<input id="UpdateNameBtn" type="submit" value="Update">
+    	</form>
+    	
+    	<br>
+    	
+    	<form id="updateImageForm" enctype="multipart/form-data" action="/updateUserData" method="post">
+    		Upload new pofile image: <input id="newImageField" type="file" accept="image/jpeg, image/png" name="newImage"> <br>
+    		
+    		<div id="messageError_UpdateImage" class="errorFormat"></div> <br>
+    		
+    		<input id="updateImageBtn" type="submit" value="Update">
+    	</form>
+    	
+    	<br><br>
+    	
+    	<button id="closeUpdateProfileMenuBtn">Close</button>
+    	
+    </div>
+    
+   
+    
+    
+</body>
+
+
+
+
+</html>

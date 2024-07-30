@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Register</title>
+
+<link
+	href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+	rel="stylesheet" id="bootstrap-css">
+	
+<link rel="stylesheet"
+	href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
+
+<style>
+.divider-text {
+	position: relative;
+	text-align: center;
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
+
+.divider-text span {
+	padding: 7px;
+	font-size: 12px;
+	position: relative;
+	z-index: 2;
+}
+
+.divider-text:after {
+	content: "";
+	position: absolute;
+	width: 100%;
+	border-bottom: 1px solid #ddd;
+	top: 55%;
+	left: 0;
+	z-index: 1;
+}
+
+.btn-facebook {
+	background-color: #405D9D;
+	color: #fff;
+}
+
+.btn-twitter {
+	background-color: #42AEEC;
+	color: #fff;
+}
+
+.errorFormat {
+	color: red;
+	font-size: 12px;
+	line-height: 24px;
+}
+
+#errorMessage_ImageMetadata {
+	display:none;
+}
+
+</style>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+
+<script src="/js/imageValidation.js"></script>
+
+
+</head>
+
+
+
+<body>
+
+
+
+	<div class="container">
+
+
+		<div class="card bg-light">
+			<article class="card-body mx-auto" style="max-width: 400px;">
+				<h4 class="card-title mt-3 text-center">Sign up</h4>
+				<p class="text-center">Sign up with...</p>
+				<p>
+					<a href="" class="btn btn-block btn-twitter"> <i
+						class="fab fa-twitter"></i>   Twitter
+					</a> <a href="" class="btn btn-block btn-facebook"> <i
+						class="fab fa-facebook-f"></i>  Facebook
+					</a>
+				</p>
+				<p class="divider-text">
+					<span class="bg-light">Or</span>
+				</p>
+				<form action="/register/validate" method="post" enctype="multipart/form-data" th:object="${user}">
+					
+					<div class="errorFormat" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+					<div class="form-group input-group">
+						<div class="input-group-prepend">
+							<span class="input-group-text"> <i class="fa fa-user"></i>
+							</span>
+						</div>
+						<input class="form-control" placeholder="Username"
+							type="text" th:field="*{name}">
+					</div>
+		
+					<!-- form-group// -->
+					<div class="errorFormat" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+					<div class="form-group input-group">
+						<div class="input-group-prepend">
+							<span class="input-group-text"> <i class="fa fa-envelope"></i>
+							</span>
+						</div>
+						<input class="form-control" placeholder="Email"
+							type="text" th:field="*{email}">
+					</div>
+					<!-- form-group end.// -->
+					<!-- form-group// -->
+					<div class="errorFormat" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+					<div class="form-group input-group">
+						<div class="input-group-prepend">
+							<span class="input-group-text"> <i class="fa fa-lock"></i>
+							</span>
+						</div>
+						<input class="form-control" placeholder="Password"
+							type="password" th:field="*{password}">
+					</div>
+					<!-- form-group end.// -->
+						<!-- form-group// -->
+					<div id="messageError_ImageMetadata" class="errorFormat"></div>	
+					<div class="form-group input-group">
+						<div class="input-group-prepend">
+							<span class="input-group-text"> <i class="fa fa-lock"></i>
+							</span>
+						</div>
+						<input id="imageMetadataField" class="form-control" accept="image/jpeg, image/png"
+							type="file" name="imageMetadata">
+					</div>
+		
+					<div class="form-group">
+						<button id="registerBtn" type="submit" class="btn btn-primary btn-block">
+							Sign up</button>
+					</div>
+					<!-- form-group// -->
+					<p class="text-center">
+						I have already an account! <a href="/login">Sign in</a>
+					</p>
+					
+					<br><br><br><br>
+					<br><br>
+				</form>
+			</article>
+		</div>
+		<!-- card.// -->
+
+	</div>
+	<!--container end.//-->
+
+
+
+
+</body>
+</html>
