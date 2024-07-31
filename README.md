@@ -1,6 +1,6 @@
 Project description.
 -
-I'm working in a real time messaging application developed with Spring Boot, WebSockets and SockJS.
+I'm working in a real time messaging application developed with Spring Boot, WebSockets and SockJS. The main point of this learning journey is to always priorize project scalability, performance, and security practices. 
 
 Application features.
 -
