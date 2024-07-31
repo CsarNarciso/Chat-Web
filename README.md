@@ -47,6 +47,6 @@ Complete technology stack.
 - Maven.
 - Git.
 
-Why I migrate the project?
+Why I migrated the project?
 -
   I found the main structure in trouble due to lack of scalability for microservices architecture.
