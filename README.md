@@ -49,4 +49,4 @@ Complete technology stack.
 
 Why I migrated the project?
 -
-  I found the main structure in trouble due to lack of scalability for microservices architecture.
+I found that the main framework had major problems due to lack of scalability (based on microservices architecture).
