@@ -1,1 +1,7 @@
-/.metadata/
+#Eclipse IDE ejecution/environment files
+.metadata/
+.classpath
+.project
+
+#Java Build time files
+**/target/
