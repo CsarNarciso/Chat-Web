@@ -3,4 +3,3 @@ services:
       build: csarnar/chat-web
       ports:
          - "8006:8006"
-      
