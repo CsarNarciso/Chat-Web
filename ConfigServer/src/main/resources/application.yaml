@@ -1,0 +1,20 @@
+server:
+  port: 8888
+spring:
+  application:
+    name: ConfigServer
+  cloud:
+    config:
+      server:
+        prefix: /config
+        git:
+          uri: https://github.com/CsarNarciso/Chat-Web
+          defaultLabel: main
+          search-paths:
+            - Configurations
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka
