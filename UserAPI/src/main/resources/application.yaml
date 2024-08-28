@@ -1,11 +1,17 @@
-server:
-  port: 8001
+#Application
 spring:
   application:
     name: user-api
+  #Config client
   cloud:
     config:
+      discovery:
+        enabled: true
+        serviceId: config-server
       uri: config-server
+  config:
+    import: optional:configserver:lb://config-server
+#Eureka client
 eureka:
   client:
     registerWithEureka: true
