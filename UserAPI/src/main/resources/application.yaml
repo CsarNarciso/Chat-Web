@@ -1,0 +1,14 @@
+server:
+  port: 8001
+spring:
+  application:
+    name: user-api
+  cloud:
+    config:
+      uri: config-server
+eureka:
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://eureka-server:8761/eureka
