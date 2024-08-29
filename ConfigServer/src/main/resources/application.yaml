@@ -2,7 +2,7 @@ server:
   port: 8888
 spring:
   application:
-    name: ConfigServer
+    name: config-server
   cloud:
     config:
       server:
@@ -14,7 +14,7 @@ spring:
             - Configurations
 eureka:
   client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
       defaultZone: http://eureka-server:8761/eureka
