@@ -5,14 +5,15 @@ import com.cesar.UserAPI.entity.User;
 import com.cesar.UserAPI.repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
+@Service
 public class UserService {
 
-    private List<UserDTO> getAll(){
+    public List<UserDTO> getAll(){
 
         List<User> users = repo.findAll();
 
@@ -29,14 +30,13 @@ public class UserService {
         return null;
     }
 
-    private UserDTO getById(Long id){
+    public UserDTO getById(Long id){
 
         Optional<User> user = repo.findById(id);
 
         if (user.isPresent()) {
 
             UserDTO userDTO = mapper.map(user.get(), UserDTO.class);
-
             return userDTO;
         }
 
