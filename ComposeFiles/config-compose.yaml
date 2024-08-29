@@ -1,6 +1,6 @@
 services:
   config:
-    build: ConfigServer/.
+    image: csarnar/chat-web-config
     ports:
       - "8888:8888"
     networks:

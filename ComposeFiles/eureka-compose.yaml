@@ -1,6 +1,6 @@
 services:
   eureka:
-    build: EurekaServer/.
+    image: csarnar/chat-web-eureka
     ports:
       - "8761:8761"
     networks:

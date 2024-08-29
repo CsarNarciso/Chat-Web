@@ -1,6 +1,6 @@
 services:
   user:
-    build: UserAPI/.
+    image: csarnar/chat-web-user
     ports:
       - "8001:8001"
     environment:
