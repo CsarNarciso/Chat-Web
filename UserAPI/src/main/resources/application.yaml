@@ -2,6 +2,20 @@
 spring:
   application:
     name: user-api
+  #Postgres datasource
+  datasource:
+    url: jdbc:postgresql://chat-web-postgres-server:5432/db
+    username: root
+    password: letmein
+  #Hibernate JPA
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQL94Dialect
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
   #Config client
   cloud:
     config:
