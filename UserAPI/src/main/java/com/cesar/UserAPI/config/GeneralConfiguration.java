@@ -1,4 +1,4 @@
-package com.cesar.UserAPI.configuration;
+package com.cesar.UserAPI.config;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
