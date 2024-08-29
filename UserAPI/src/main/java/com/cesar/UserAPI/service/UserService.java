@@ -13,12 +13,18 @@ import java.util.Optional;
 @Service
 public class UserService {
 
+    public UserDTO create(User user) {
+
+        user = repo.save(user);
+        UserDTO userDTO = mapper.map(user, UserDTO.class);
+        return userDTO;
+    }
+
     public List<UserDTO> getAll(){
 
         List<User> users = repo.findAll();
 
-        if(!users.isEmpty()){
-
+        if(!users.isEmpty()) {
             List<UserDTO> usersDTO = users
                     .stream()
                     .map( u -> mapper.map(u, UserDTO.class) )
@@ -26,7 +32,6 @@ public class UserService {
 
             return usersDTO;
         }
-
         return null;
     }
 
@@ -35,11 +40,9 @@ public class UserService {
         Optional<User> user = repo.findById(id);
 
         if (user.isPresent()) {
-
             UserDTO userDTO = mapper.map(user.get(), UserDTO.class);
             return userDTO;
         }
-
         return null;
     }
 
