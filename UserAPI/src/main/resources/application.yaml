@@ -4,15 +4,11 @@ spring:
     name: user-api
   #Postgres datasource
   datasource:
-    url: jdbc:postgresql://chat-web-postgres-server:5432/db
-    username: root
-    password: letmein
+    driverClassName: org.postgresql.Driver
   #Hibernate JPA
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQL94Dialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
-    hibernate:
-      ddl-auto: create-drop
     properties:
       hibernate:
         format_sql: true

@@ -1,1 +1,5 @@
-  
+networks:
+  eureka-net:
+  postgres-net:
+volumes:
+  postgres-vol:

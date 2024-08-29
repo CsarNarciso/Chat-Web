@@ -1,5 +1,0 @@
-services:
-   chat-web:
-      build: csarnar/chat-web
-      ports:
-         - "8006:8006"
