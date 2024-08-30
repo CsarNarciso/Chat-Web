@@ -1,0 +1,19 @@
+services:
+  mysql:
+    image: mysql
+    ports:
+      - ""
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    networks:
+      - mysql-net
+    volumes:
+      - mysql-vol:/data
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      start_period: 20s
+      interval: 10s
+      timeout: 5s
+      retries: 5

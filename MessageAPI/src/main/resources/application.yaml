@@ -4,7 +4,7 @@ spring:
     name: MessageAPI
   #MySQL datasource
   datasource:
-    driverClassName: org.mysql.Driver
+    driverClassName: com.mysql.jdbc.Driver
   #Hibernate JPA
   jpa:
     database-platform: org.hibernate.dialect.MySQLDialect
