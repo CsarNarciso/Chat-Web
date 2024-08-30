@@ -16,7 +16,7 @@ I'm working in this chat project where the main point is to always prioritize pr
 ## Technologies
 1. Java 22
 2. Docker Compose
-3. H2 Database
+3. PostgreSQL, MySQL
 4. Spring Boot:
    + WebSockets
    + JPA
@@ -30,7 +30,7 @@ I'm working in this chat project where the main point is to always prioritize pr
 ### Prerequisites
 To use this project, you must have the following installed:
 1. Git
-2. Docker Compose 
+2. Docker Compose
 
 ### Running the Application
 Follow these steps to set up the project locally:
@@ -82,7 +82,7 @@ or
 http://localhost:8006/login
 ```
 
-This because if you are not registered, the application will automatically redirect you to login page.
+This because if you are not authenticated, the application will automatically redirect you to login page.
 
 2. Finally, to stop and remove from your system all the docker components created by the project, use:
  ```bash
@@ -102,13 +102,13 @@ Application features.
 - Text messages sending functionality.
 - Delete or see actual conversations data (as how many messages without read user has).
 
-
-Why I migrated the project?
--
-I found that the main framework had major problems due to lack of scalability (based on microservices architecture).
 ## How to Build this Project
 
 ## Tests
+
+## Why I migrated the project?
+I found that the whole system had major problems due to lack of scalability, also, code was not easy to read/maintain following this way because I plan to add more features later.
+Now you can see this application repository [here](https://github.com/CsarNarciso/Chat-Web)
 
 ## Contact Me
 * [LinkedIn](https://www.linkedin.com/in/cesar-pozol-narciso-b48727180/)
