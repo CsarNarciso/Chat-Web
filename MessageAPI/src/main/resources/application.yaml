@@ -1,7 +1,7 @@
 #Application
 spring:
   application:
-    name: MessageAPI
+    name: message-api
   #MySQL datasource
   datasource:
     driverClassName: com.mysql.jdbc.Driver

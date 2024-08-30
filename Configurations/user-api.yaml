@@ -1,2 +1,5 @@
+spring:
+  application:
+    name: user-api
 server:
   port 8001
