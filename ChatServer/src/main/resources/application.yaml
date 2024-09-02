@@ -1,0 +1,20 @@
+#Application
+spring:
+  application:
+    name: chat-service
+  #Config client
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        serviceId: config-server
+      uri: config-server
+  config:
+    import: optional:configserver:lb://config-server
+#Eureka client
+eureka:
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://eureka-server:8761/eureka
