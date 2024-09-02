@@ -2,7 +2,7 @@ server:
   port: 8000
 spring:
   application:
-    name: api-gateway
+    name: gateway
   cloud:
     gateway:
       discovery:

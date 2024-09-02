@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.cesar</groupId>
-	<artifactId>APIGateway</artifactId>
+	<artifactId>Gateway</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>APIGateway</name>
-	<description>Demo project for Spring Boot</description>
+	<name>Gateway</name>
+	<description>Routing for http and tcp/websockets endpoints by verifying identity (valid authentication).</description>
 	<url/>
 	<licenses>
 		<license/>

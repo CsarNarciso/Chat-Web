@@ -1,7 +1,7 @@
 #Application
 spring:
   application:
-    name: api-gateway
+    name: gateway
   #Config client
   cloud:
     config:
