@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: profile-image-service
+server:
+  port: 8006
