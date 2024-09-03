@@ -1,5 +1,8 @@
 # Microservices Based Real Time Messaging Application using Spring Boot WebSockets and SockJS.
 
+![Architecture Diagram](https://github.com/CsarNarciso/Assets/blob/main/Chat%20Web%20Architecture%20Diagram.png)
+
+
 ## Application features.
 
 - Docker compose for microservices deployment managment.
