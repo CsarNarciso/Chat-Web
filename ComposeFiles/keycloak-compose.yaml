@@ -1,0 +1,15 @@
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    ports:
+      - "8443:8443"
+      - "9000:9000"
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    healthcheck:
+      test: ["CMD", "curl", "--head", "-fsS", "http://localhost:9000/health/ready"]
+      start_period: 20s
+      interval: 10s
+      timeout: 5s
+      retries: 5
