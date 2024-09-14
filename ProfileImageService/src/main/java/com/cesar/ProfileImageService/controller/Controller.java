@@ -12,20 +12,20 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/profileImages.api")
 public class Controller {
 
-    @PostMapping("/{userId}/v1")
+    @PostMapping(value="/v1/{userId}", produces=MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<?> getByUserId(@PathVariable Long userId, @RequestParam MultipartFile imageMetadata){
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .contentType(MediaType.TEXT_PLAIN)
+                .contentType(MediaType.IMAGE_JPEG)
                 .body(service.upload(userId, imageMetadata));
     }
 
-    @GetMapping("/{userId}/v1")
+    @GetMapping(value="/v1/{userId}", produces=MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<?> getByUserId(@PathVariable Long userId){
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .contentType(MediaType.TEXT_PLAIN)
-                .body(service.getPathByUserId(userId));
+                .contentType(MediaType.IMAGE_JPEG)
+                .body(service.getByUserId(userId));
     }
 
     @Autowired

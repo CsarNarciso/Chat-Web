@@ -3,7 +3,7 @@ server:
 project:
   path: ${user.dir}/Chat-Web/ProfileImageService
 profileImages:
-  path: src/main/resources/static/profileImages
+  path: src/main/resources/profileImages
   absolutePath: ${project.path}/${profileImages.path}
   url: ${server.url}/${profileImages.path}
 #Application

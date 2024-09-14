@@ -9,12 +9,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class ProfileImageService {
-    public String upload(Long userId, MultipartFile imageMetadata) {
+    public byte[] upload(Long userId, MultipartFile imageMetadata) {
 
         String extensionType = imageMetadata.getContentType();
         String extension=null;
@@ -58,14 +60,22 @@ public class ProfileImageService {
                     .build();
             repo.save(entity);
 
-            return entity.getPath();
+            byte[] imageBytes;
+            try {
+                return imageBytes = Files.readAllBytes(file.toPath());
+            } catch (IOException e) {throw new RuntimeException(e);}
         }
         return null;
     }
 
-    public String getPathByUserId(Long id){
+    public byte[] getByUserId(Long id){
         Optional<ProfileImage> image = repo.findByUserId(id);
-        return image.map(ProfileImage::getPath).orElse(null);
+        String path = image.map(ProfileImage::getPath).orElse(null);
+        try {
+            return Files.readAllBytes(Path.of(path));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

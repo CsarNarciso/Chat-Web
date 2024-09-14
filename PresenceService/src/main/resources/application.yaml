@@ -4,9 +4,16 @@ spring:
     name: presence-service
   #PostgreSQL datasource
   datasource:
+#    url: jdbc:h2:mem:mydb
+#    username: sa
+#    password: password
+#    driverClassName: org.h2.Driver
     driverClassName: org.postgresql.Driver
   #Hibernate JPA
   jpa:
+    hibernate:
+#      ddl-auto: create-drop
+#    database-platform: org.hibernate.dialect.H2Dialect
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
     properties:
