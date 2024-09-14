@@ -1,30 +1,49 @@
+server:
+  url: http://localhost:${server.port}
+project:
+  path: ${user.dir}/Chat-Web/ProfileImageService
+profileImages:
+  path: src/main/resources/static/profileImages
+  absolutePath: ${project.path}/${profileImages.path}
+  url: ${server.url}/${profileImages.path}
 #Application
 spring:
   application:
     name: profile-image-service
   #PostgreSQL datasource
   datasource:
-    driverClassName: org.postgresql.Driver
+    url: jdbc:h2:mem:mydb
+    username: sa
+    password: password
+    driverClassName: org.h2.Driver
+#  datasource:
+#    url: jdbc:postgresql://postgres/db
+#    username: postgres
+#    password: letmein
+#    driverClassName: org.postgresql.Driver
   #Hibernate JPA
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: create-drop
+      database-platform: org.hibernate.dialect.H2Dialect
+    #    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-  #Config client
-  cloud:
-    config:
-      discovery:
-        enabled: true
-        serviceId: config-server
-      uri: config-server
-  config:
-    import: optional:configserver:lb://config-server
-#Eureka client
-eureka:
-  client:
-    registerWithEureka: true
-    fetchRegistry: true
-    serviceUrl:
-      defaultZone: http://eureka-server:8761/eureka
+#  #Config client
+#  cloud:
+#    config:
+#      discovery:
+#        enabled: true
+#        serviceId: config-server
+#      uri: config-server
+#  config:
+#    import: optional:configserver:lb://config-server
+##Eureka client
+#eureka:
+#  client:
+#    registerWithEureka: true
+#    fetchRegistry: true
+#    serviceUrl:
+#      defaultZone: http://eureka-server:8761/eureka
