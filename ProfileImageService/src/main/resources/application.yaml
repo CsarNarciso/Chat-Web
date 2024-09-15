@@ -1,3 +1,4 @@
+#Images resources paths
 server:
   url: http://localhost:${server.port}
 project:
@@ -12,38 +13,32 @@ spring:
     name: profile-image-service
   #PostgreSQL datasource
   datasource:
-    url: jdbc:h2:mem:mydb
-    username: sa
-    password: password
-    driverClassName: org.h2.Driver
-#  datasource:
-#    url: jdbc:postgresql://postgres/db
-#    username: postgres
-#    password: letmein
-#    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://postgres/db
+    username: postgres
+    password: letmein
+    driverClassName: org.postgresql.Driver
   #Hibernate JPA
   jpa:
     hibernate:
       ddl-auto: create-drop
-      database-platform: org.hibernate.dialect.H2Dialect
-    #    database-platform: org.hibernate.dialect.PostgreSQLDialect
+      database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-#  #Config client
-#  cloud:
-#    config:
-#      discovery:
-#        enabled: true
-#        serviceId: config-server
-#      uri: config-server
-#  config:
-#    import: optional:configserver:lb://config-server
-##Eureka client
-#eureka:
-#  client:
-#    registerWithEureka: true
-#    fetchRegistry: true
-#    serviceUrl:
-#      defaultZone: http://eureka-server:8761/eureka
+  #Config client
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        serviceId: config-server
+      uri: config-server
+  config:
+    import: optional:configserver:lb://config-server
+#Eureka client
+eureka:
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://eureka-server:8761/eureka
