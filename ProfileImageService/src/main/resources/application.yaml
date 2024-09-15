@@ -11,21 +11,6 @@ profileImages:
 spring:
   application:
     name: profile-image-service
-  #PostgreSQL datasource
-  datasource:
-    url: jdbc:postgresql://postgres/db
-    username: postgres
-    password: letmein
-    driverClassName: org.postgresql.Driver
-  #Hibernate JPA
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-      database-platform: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
   #Config client
   cloud:
     config:

@@ -1,7 +1,8 @@
 package com.cesar.ProfileImageService.service;
 
-import com.cesar.ProfileImageService.entity.ProfileImage;
-import com.cesar.ProfileImageService.repository.ProfileImageRepository;
+import com.cesar.ProfileImageService.dto.UploadImageDTO;
+import com.cesar.ProfileImageService.dto.UserDTO;
+import com.cesar.ProfileImageService.feign.FeignUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -11,37 +12,28 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class ProfileImageService {
-    public byte[] upload(Long userId, MultipartFile imageMetadata) {
+    public UploadImageDTO upload(Long userId, MultipartFile imageMetadata) {
 
+        UserDTO user = feignUser.getById(userId);
         String extensionType = imageMetadata.getContentType();
-        String extension=null;
+        String extension =
+                extensionType.equals("image/jpeg") ? ".jpg" :
+                extensionType.equals("image/png") ? ".png" : null;
 
-        if(extensionType.equals("image/jpeg")) {
-            extension=".jpg";
-        }
-        else if (extensionType.equals("image/png")){
-            extension=".png";
-        }
-
+        //Verify action to perform
         if(extension!=null){
-            String name;
+            //If already has image...
+            String actionPerformed = user.isHasImage() ?
+                    "Replace" :
+                    "Create";
 
-            //Verify action to perform in image inside server
-
-            if(repo.findByUserId(userId).isPresent()){
-                //replace with same name
-                name = repo.findByUserId(userId).get().getName();
-            }
-            //If not,
-            else{
-                //upload new image
-                name = UUID.randomUUID().toString();
-            }
+            String name = actionPerformed.equals("Replace") ?
+                    user.getImageName() : //replace it with same name
+                    UUID.randomUUID().toString(); //if not, upload new image with random name
 
             //Perform action in server
             String finalName = name + extension;
@@ -50,27 +42,33 @@ public class ProfileImageService {
                 imageMetadata.transferTo(file);
             } catch (IOException e) {throw new RuntimeException(e);}
 
-            //Save entity reference in DB
-            ProfileImage entity = ProfileImage
+            //Upload changes in user API
+            user = UserDTO
                     .builder()
-                    .userId(userId)
-                    .name(name)
-                    .extension(extension)
-                    .path(file.getPath())
+                    .hasImage(true)
+                    .imageName(name)
+                    .imageExtension(extension)
+                    .imagePath(finalName)
                     .build();
-            repo.save(entity);
+            feignUser.update(userId, user);
 
             byte[] imageBytes;
             try {
-                return imageBytes = Files.readAllBytes(file.toPath());
+                imageBytes = Files.readAllBytes(file.toPath());
             } catch (IOException e) {throw new RuntimeException(e);}
+
+            return UploadImageDTO
+                    .builder()
+                    .imageBytes(imageBytes)
+                    .actionPerformed(actionPerformed)
+                    .build();
         }
         return null;
     }
 
     public byte[] getByUserId(Long id){
-        Optional<ProfileImage> image = repo.findByUserId(id);
-        String path = image.map(ProfileImage::getPath).orElse(null);
+        UserDTO user = feignUser.getById(id);
+        String path = profileImagesPath + user.getImagePath();
         try {
             return Files.readAllBytes(Path.of(path));
         } catch (IOException e) {
@@ -78,9 +76,8 @@ public class ProfileImageService {
         }
     }
 
-
     @Autowired
-    private ProfileImageRepository repo;
+    private FeignUser feignUser;
     @Value("${profileImages.absolutePath}")
     private String profileImagesPath;
 }

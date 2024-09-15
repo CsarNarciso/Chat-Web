@@ -13,10 +13,10 @@ import org.springframework.web.multipart.MultipartFile;
 public class Controller {
 
     @PostMapping(value="/v1/{userId}", produces=MediaType.IMAGE_JPEG_VALUE)
-    public ResponseEntity<?> getByUserId(@PathVariable Long userId, @RequestParam MultipartFile imageMetadata){
+    public ResponseEntity<?> upload(@PathVariable Long userId, @RequestParam MultipartFile imageMetadata){
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .contentType(MediaType.IMAGE_JPEG)
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(service.upload(userId, imageMetadata));
     }
 
