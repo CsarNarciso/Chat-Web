@@ -8,9 +8,12 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @RestController
-@RequestMapping("/onlineUsers.api")
+@RequestMapping("/usersPresence")
 public class Controller {
 
     @MessageMapping("/connect")
@@ -30,10 +33,21 @@ public class Controller {
         OnlineUser user = service.disconnect(userId);
         //Send update (recent disconnected user) to all users.
         simp.convertAndSend("/topic/updateOnlineUsers", user);
+
+        //but wait for reconnection...,
+        scheduler.schedule(() -> {
+
+            //and if user remains disconnected...
+            if (service.removeOffline(userId)) {
+                //Send update alert to all users.
+                simp.convertAndSend("/topic/updateOnlineUsers", userId);
+            }
+        }, 5, TimeUnit.SECONDS);
     }
 
     @Autowired
     private PresenceService service;
     @Autowired
     private SimpMessagingTemplate simp;
+    ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 }
