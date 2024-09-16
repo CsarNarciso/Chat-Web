@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class PresenceService {
@@ -14,17 +15,17 @@ public class PresenceService {
     public List<OnlineUser> connect(UserDTO user) {
         OnlineUser onlineUser = mapper.map(user, OnlineUser.class);
         onlineUser.setStatus("Online");
-        onlineUsers.put(user.getId(), onlineUser);
-        return onlineUsers.values().stream().toList();
+        users.put(user.getId(), onlineUser);
+        return users.values().stream().toList();
     }
 
     public OnlineUser disconnect(Long userId) {
 
         //Mark as offline,
-        OnlineUser user = onlineUsers.get(userId);
+        OnlineUser user = users.get(userId);
         user.setStatus("Offline");
         user.setDisconnectionHour(System.currentTimeMillis());
-        onlineUsers.replace(userId, user);
+        users.replace(userId, user);
 
         //but wait for reconnection...,
         new Timer().schedule(new TimerTask() {
@@ -36,7 +37,7 @@ public class PresenceService {
                 if ( user.getStatus().equals("Offline") ) {
 
                     //Remove it.
-                    onlineUsers.remove(userId);
+                    users.remove(userId);
                     //Send update alert to all users.
                     simp.convertAndSend("/topic/updateOnlineUsers", userId);
                 }
@@ -51,5 +52,5 @@ public class PresenceService {
     private ModelMapper mapper;
     @Autowired
     private SimpMessagingTemplate simp;
-    private final Map<Long, OnlineUser> onlineUsers = new HashMap<>();
+    private final Map<Long, OnlineUser> users = new ConcurrentHashMap<>();
 }
