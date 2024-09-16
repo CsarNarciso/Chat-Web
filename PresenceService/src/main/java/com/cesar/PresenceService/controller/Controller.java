@@ -19,27 +19,28 @@ public class Controller {
     @MessageMapping("/connect")
     public void connect(UserDTO user) {
 
-        List<OnlineUser> onlineUsers = service.connect(user);
-        //sent new online user to all users
-        simp.convertAndSend("/user/" + user.getId() + "/queue/getOnlineUsers", onlineUsers);
-        simp.convertAndSend("/topic/updateOnlineUsers", user);
-        //Send actual online users list to recent connected user.
-        simp.convertAndSend("/user/" + user.getId() + "/queue/getOnlineUsers", onlineUsers);
+        //Send connected/reconnected user to all users
+        OnlineUser onlineUser = service.connect(user);
+        simp.convertAndSend("/topic/updateOnlineUsers", onlineUser);
+
+        //Send actual users list to recent connected user.
+        List<OnlineUser> users = service.getUsers();
+        simp.convertAndSend("/user/" + user.getId() + "/queue/getOnlineUsers", users);
     }
 
     @MessageMapping("/disconnect")
     public void disconnect(Long userId) {
 
-        OnlineUser user = service.disconnect(userId);
-        //Send update (recent disconnected user) to all users.
-        simp.convertAndSend("/topic/updateOnlineUsers", user);
+        //Send disconnected user to all users.
+        OnlineUser offlineUser = service.disconnect(userId);
+        simp.convertAndSend("/topic/updateOnlineUsers", offlineUser);
 
-        //but wait for reconnection...,
+        //and wait for reconnection...,
         scheduler.schedule(() -> {
 
-            //and if user remains disconnected...
+            //if user remains disconnected...
             if (service.removeOffline(userId)) {
-                //Send update alert to all users.
+                //remove it, send update alert to all users.
                 simp.convertAndSend("/topic/updateOnlineUsers", userId);
             }
         }, 5, TimeUnit.SECONDS);

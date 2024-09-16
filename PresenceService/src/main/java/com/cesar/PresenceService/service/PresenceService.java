@@ -11,11 +11,23 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class PresenceService {
 
-    public List<OnlineUser> connect(UserDTO user) {
+    public OnlineUser connect(UserDTO user) {
         OnlineUser onlineUser = mapper.map(user, OnlineUser.class);
         onlineUser.setStatus("Online");
-        users.put(user.getId(), onlineUser);
-        return users.values().stream().toList();
+        //If user already exists...
+        return users.containsKey(user.getId()) ?
+                users.replace(user.getId(), onlineUser) : //, reconnect
+                users.put(user.getId(), onlineUser); //connect
+    }
+
+    public OnlineUser reconnect(UserDTO user) {
+        if(users.containsKey(userId)){
+            OnlineUser onlineUser = users.get(userId);
+            onlineUser.setStatus("Online");
+            users.replace(user.getId(), onlineUser);
+            return onlineUser;
+        }
+        return null;
     }
 
     public OnlineUser disconnect(Long userId) {
@@ -34,6 +46,10 @@ public class PresenceService {
             return true;
         }
         return false;
+    }
+
+    public List<OnlineUser> getUsers(){
+        return users.values().stream().toList();
     }
 
     @Autowired
