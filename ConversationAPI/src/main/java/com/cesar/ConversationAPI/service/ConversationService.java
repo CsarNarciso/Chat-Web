@@ -13,9 +13,8 @@ import java.util.Optional;
 @Service
 public class ConversationService {
 
-    public ConversationDTO create(Conversation conversation) {
+    public ConversationDTO create(Long senderId, Long recipientId) {
 
-        conversation = repo.save(conversation);
         return mapper.map(conversation, ConversationDTO.class);
     }
 
