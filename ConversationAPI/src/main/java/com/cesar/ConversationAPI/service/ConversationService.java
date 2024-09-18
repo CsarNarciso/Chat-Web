@@ -1,49 +1,68 @@
 package com.cesar.ConversationAPI.service;
 
-import com.cesar.ConversationAPI.dto.ConversationDTO;
-import com.cesar.ConversationAPI.entity.Conversation;
+import com.cesar.ConversationAPI.dto.*;
+import com.cesar.ConversationAPI.feign.PresenceFeign;
+import com.cesar.ConversationAPI.feign.ProfileImageFeign;
+import com.cesar.ConversationAPI.feign.UserFeign;
 import com.cesar.ConversationAPI.repository.ConversationRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
+
 
 @Service
 public class ConversationService {
 
-    public ConversationDTO create(Long senderId, Long recipientId) {
+    public ConversationDTO createConversation(CreationRequestDTO creationRequest) {
 
-        return mapper.map(conversation, ConversationDTO.class);
+        //Participants data
+        List<ParticipantDTO> participants = new ArrayList<>();
+
+        creationRequest.getParticipantsIds().stream().forEach(participantId -> {
+            UserDTO user = userFeign.getById(participantId);
+            String name = user.getName();
+            byte[] profileImage = profileImageFeign.getByPath(user.getProfileImagePath());
+            String presenceStatus = presenceFeign.getUserStatus(participantId);
+
+            ParticipantDTO participant = ParticipantDTO
+                        .builder()
+                        .name(name)
+                        .profileImage(profileImage)
+                        .presenceStatus(presenceStatus)
+                        .build();
+
+            participants.add(participant);
+        });
+
+        //Conversation data
+
+        //If it's not One To One...
+        String conversationName = creationRequest.isGroup()
+                ? creationRequest.getName()
+                : participants.stream().filter(p -> p.isSender()).collect(Collectors.toList()).getFirst().getName();
+
+        ConversationDTO conversationData = ConversationDTO
+                .builder()
+                .name(conversationName)
+                .newMessagesAmount(1)
+                .participants(participants)
+                .build();
+
+        return conversationData;
     }
 
-    public ConversationDTO getById(Long id) {
-
-        Optional<Conversation> conversation = repo.findById(id);
-        return conversation.map(value -> mapper.map(value, ConversationDTO.class)).orElse(null);
-    }
-
-    public List<ConversationDTO> getBySenderId(Long senderId) {
-
-        List<Conversation> conversations = repo.findBySenderId(senderId);
-        return conversations
-                .stream()
-                .map(c -> mapper.map(c, ConversationDTO.class))
-                .toList();
-    }
-
-    public List<ConversationDTO> getByRecipientId(Long recipientId) {
-
-        List<Conversation> conversations = repo.findBySenderId(recipientId);
-        return conversations
-                .stream()
-                .map(c -> mapper.map(c, ConversationDTO.class))
-                .toList();
-    }
-
-    @Autowired
-    private ModelMapper mapper;
     @Autowired
     private ConversationRepository repo;
+    @Autowired
+    private UserFeign userFeign;
+    @Autowired
+    private ProfileImageFeign profileImageFeign;
+    @Autowired
+    private PresenceFeign presenceFeign;
+    @Autowired
+    private ModelMapper mapper;
 }

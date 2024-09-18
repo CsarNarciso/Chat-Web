@@ -1,60 +1,47 @@
 package com.cesar.ConversationAPI.controller;
 
 import com.cesar.ConversationAPI.dto.ConversationDTO;
-import com.cesar.ConversationAPI.entity.Conversation;
+import com.cesar.ConversationAPI.dto.CreationRequestDTO;
 import com.cesar.ConversationAPI.service.ConversationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/conversations.api")
 public class Controller {
 
     @PostMapping("/v1")
-    public ResponseEntity<?> create(@RequestBody Conversation conversation) {
+    public ResponseEntity<?> start(@RequestBody CreationRequestDTO creationRequest) {
 
-        ConversationDTO savedConversation = service.create(conversation);
+        ConversationDTO conversationData = service.createConversation(creationRequest);
+        ConversationDTO senderConversationData = conversationData;
+
+        //Provide conversation data for each participant
+        conversationData.getParticipants().stream()
+            .forEach(participant -> {
+
+                conversationData.getParticipants().stream().filter(participantWhoReceives -> participantWhoReceives.equals(participant));
+
+                if(participant.isSender()){
+                    //Retrieve for sender
+                    senderConversationData.setParticipants(conversationData.getParticipants());
+                } else{
+                    //Send for each recipient
+                    simp.convertAndSendToUser(participant.getId().toString(), "/createConversation", conversationData);
+                }
+            });
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(savedConversation);
-    }
-
-    @GetMapping("/{id}/v1")
-    public ResponseEntity<?> getById(@PathVariable Long id) {
-
-        ConversationDTO conversation = service.getById(id);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(conversation);
-    }
-
-    @GetMapping("/{senderId}/v1")
-    public ResponseEntity<?> getBySenderId(@PathVariable Long senderId) {
-
-        List<ConversationDTO> conversations = service.getBySenderId(senderId);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(conversations);
-    }
-
-    @GetMapping("/{recipientId}/v1")
-    public ResponseEntity<?> getByRecipientId(@PathVariable Long recipientId) {
-
-        List<ConversationDTO> conversations = service.getBySenderId(recipientId);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(conversations);
+                .body(senderConversationData);
     }
 
     @Autowired
     private ConversationService service;
+    @Autowired
+    private SimpMessagingTemplate simp;
 }

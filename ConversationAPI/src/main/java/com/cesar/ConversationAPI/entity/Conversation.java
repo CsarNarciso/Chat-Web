@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 @Entity
 @Table(name="conversations")
 @Data
@@ -12,7 +14,6 @@ public class Conversation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long[] participants;
-    private String name;
+    private List<Long> participants;
     private int newMessagesAmount;
 }
