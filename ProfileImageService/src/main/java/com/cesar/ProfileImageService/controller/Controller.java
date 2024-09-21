@@ -9,23 +9,15 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/profileImages.api")
+@RequestMapping("/api/profileImages")
 public class Controller {
 
-    @PostMapping(value="/v1/{userId}", produces=MediaType.IMAGE_JPEG_VALUE)
+    @PostMapping("/v1/{userId}")
     public ResponseEntity<?> upload(@PathVariable Long userId, @RequestParam MultipartFile imageMetadata){
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(service.upload(userId, imageMetadata));
-    }
-
-    @GetMapping(value="/v1/{userId}", produces=MediaType.IMAGE_JPEG_VALUE)
-    public ResponseEntity<?> getByUserId(@PathVariable Long userId){
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .contentType(MediaType.IMAGE_JPEG)
-                .body(service.getByUserId(userId));
     }
 
     @Autowired

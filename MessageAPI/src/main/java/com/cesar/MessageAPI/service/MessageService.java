@@ -7,17 +7,13 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 public class MessageService {
-
-    public MessageDTO create(Message message){
-
-        message = repo.save(message);
-        return mapper.map(message, MessageDTO.class);
-    }
 
     public MessageDTO getById(Long id) {
 
@@ -56,6 +52,11 @@ public class MessageService {
                     .toList();
         }
         return null;
+    }
+
+    public MessageDTO sendMessage(Message message) {
+        //Save in DB
+		return mapper.map(repo.save(message), MessageDTO.class);
     }
 
     @Autowired

@@ -7,40 +7,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/messages.api.v1")
 public class Controller {
 
     @MessageMapping("/sendMessage")
-    public void sendMessage(StompHeaderAccessor headers, SendMessageDTO message) {
-
-        //Assign headers.
-
-        Map<String, Object> nativeHeaders = new HashMap<>();
-
-        nativeHeaders.put("name", headers.toNativeHeaderMap().get("name").get(0));
-        nativeHeaders.put("imageName", headers.toNativeHeaderMap().get("imageName").get(0));
-
-        //Destination.
-        String sendingDestination= "/user/" + message.getRecipientId() + "/queue/getMessage";
-
-        //Save message in DB [[[[[[ Pending code ]]]]]]]]
-//		mensajeRepo.save(message);
-
+    public void sendMessage() {
         //Send.
-        simp.convertAndSend(sendingDestination, message, nativeHeaders);
+        //Destination.
+        //String sendingDestination= "/user/" + message.getRecipientId() + "/queue/getMessage";
+        //simp.convertAndSend(sendingDestination, message, nativeHeaders);
     }
-
-
-    @Autowired
-    private SimpMessagingTemplate simp;
 
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Message message){
@@ -87,4 +69,6 @@ public class Controller {
 
     @Autowired
     private MessageService service;
+    @Autowired
+    private SimpMessagingTemplate simp;
 }
