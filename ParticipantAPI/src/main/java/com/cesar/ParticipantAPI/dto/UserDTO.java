@@ -1,4 +1,4 @@
-package com.cesar.ConversationAPI.dto;
+package com.cesar.ParticipantAPI.dto;
 
 import lombok.Builder;
 import lombok.Data;
@@ -7,5 +7,4 @@ import lombok.Data;
 @Builder
 public class UserDTO {
     private String name;
-    private String profileImagePath;
 }

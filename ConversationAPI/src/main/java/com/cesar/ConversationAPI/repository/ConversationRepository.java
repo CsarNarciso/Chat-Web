@@ -7,6 +7,5 @@ import java.util.List;
 
 public interface ConversationRepository extends JpaRepository<Conversation, Long> {
 
-    List<Conversation> findBySenderId(Long senderId);
-    List<Conversation> findByRecipientId(Long recipientId);
+    List<Conversation> findByParticipantId(Long participantId);
 }

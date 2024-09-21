@@ -1,12 +1,14 @@
-package com.cesar.ConversationAPI.feign;
+package com.cesar.ParticipantAPI.feign;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+
+import java.util.List;
+import java.util.Map;
 
 @FeignClient(url="${services.profileImage.name}" , path="${services.profileImage.path}")
 public interface ProfileImageFeign {
 
-    @GetMapping("/{path}")
-    byte[] getByPath(@PathVariable String path);
+    @GetMapping
+    Map<Long, byte[]> getByUsersIds(List<Long> usersIds);
 }

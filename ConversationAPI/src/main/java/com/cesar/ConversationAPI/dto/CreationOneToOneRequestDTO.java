@@ -5,8 +5,6 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class CreationRequestDTO {
-    private Long senderId;
+public class CreationOneToOneRequestDTO {
     private List<Long> participantsIds;
-    private String name;
 }
