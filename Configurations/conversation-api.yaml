@@ -1,5 +1,0 @@
-spring:
-  application:
-    name: conversation-api
-server:
-  port: 8003
