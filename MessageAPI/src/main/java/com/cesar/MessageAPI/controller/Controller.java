@@ -1,6 +1,5 @@
 package com.cesar.MessageAPI.controller;
 
-import com.cesar.MessageAPI.dto.MessageDTO;
 import com.cesar.MessageAPI.entity.Message;
 import com.cesar.MessageAPI.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,61 +9,26 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
-@RequestMapping("/messages.api.v1")
+@RequestMapping("/api/messages")
 public class Controller {
 
     @MessageMapping("/sendMessage")
-    public void sendMessage() {
-        //Send.
-        //Destination.
-        //String sendingDestination= "/user/" + message.getRecipientId() + "/queue/getMessage";
-        //simp.convertAndSend(sendingDestination, message, nativeHeaders);
+    public void sendMessage(Message message) {
+        //Save in DB
+        service.create(message);
+        //Send
+        String sendingDestination= "/user/" + message.getRecipientId() + "/queue/getMessage";
+        simp.convertAndSend(sendingDestination, message);
     }
 
-    @PostMapping
-    public ResponseEntity<?> create(@RequestBody Message message){
-
-        MessageDTO savedMessage = service.create(message);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(savedMessage);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getById(@PathVariable Long id) {
-
-        MessageDTO message = service.getById(id);
-
+    @GetMapping("/{conversationId}")
+    public ResponseEntity<?> getConversationMessages(@PathVariable Long conversationId){
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(message);
-    }
-
-    @GetMapping("/{senderId}")
-    public ResponseEntity<?> getBySenderId(@PathVariable Long senderId) {
-
-        List<MessageDTO> messages = service.getBySenderId(senderId);
-
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(messages);
-    }
-
-    @GetMapping("/{recipientId}")
-    public ResponseEntity<?> getByRecipientId(@PathVariable Long recipientId) {
-
-        List<MessageDTO> messages = service.getByRecipientId(recipientId);
-
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(messages);
+                .body(service.getConversationMessages(conversationId));
     }
 
     @Autowired
