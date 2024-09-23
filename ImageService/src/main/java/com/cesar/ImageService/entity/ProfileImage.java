@@ -1,15 +1,15 @@
-package com.cesar.ProfileImageService.entity;
+package com.cesar.ImageService.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import lombok.Builder;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name="profileImages")
+@Table(name= "profiles")
 @Data
-@Builder
 public class ProfileImage {
+    @Id
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    private Long id;
     private Long userId;
     private boolean defaultImage;
     private String name;

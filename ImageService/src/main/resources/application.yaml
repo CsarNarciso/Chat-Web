@@ -3,14 +3,22 @@ server:
   url: http://localhost:${server.port}
 project:
   path: ${user.dir}/Chat-Web/ProfileImageService
-profileImages:
-  path: src/main/resources/profileImages
-  absolutePath: ${project.path}/${profileImages.path}
-  url: ${server.url}/${profileImages.path}
+images:
+  mainPath: src/main/resources/images
+  #For Profiles
+  profile:
+    path: ${images.mainPath}/profile
+    absolutePath: ${project.path}/${images.profile.path}
+    url: ${server.url}/${images.profile.path}
+  #For Groups
+  group:
+    path: ${images.mainPath}/group
+    absolutePath: ${project.path}/${images.group.path}
+    url: ${server.url}/${images.group.path}
 #Application
 spring:
   application:
-    name: profile-image-service
+    name: image-service
   #Postgres datasource
   datasource:
     driverClassName: org.postgresql.Driver

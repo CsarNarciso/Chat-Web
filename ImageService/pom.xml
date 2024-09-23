@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.cesar</groupId>
-	<artifactId>ProfileImageService</artifactId>
+	<artifactId>ImageService</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>ProfileImageService</name>
-	<description>Profile images upload and retrieve for users. </description>
+	<name>ImageService</name>
+	<description>Profile users and Groups images upload and retrieve</description>
 	<url/>
 	<licenses>
 		<license/>

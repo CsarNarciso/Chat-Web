@@ -1,7 +1,7 @@
-package com.cesar.ProfileImageService.service;
+package com.cesar.ImageService.service;
 
-import com.cesar.ProfileImageService.entity.ProfileImage;
-import com.cesar.ProfileImageService.repository.ProfileImageRepository;
+import com.cesar.ImageService.entity.ProfileImage;
+import com.cesar.ImageService.repository.ProfileImageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -13,9 +13,9 @@ import java.util.UUID;
 @Service
 public class ProfileImageService {
 
-    public String upload(Long userId, MultipartFile imageMetadata) {
+    public String uploadProfileImage(Long userId, MultipartFile imageMetadata) {
 
-        ProfileImage userImageReference = repo.findById(userId).orElse(null);
+        ProfileImage userImageReference = repo.findByUserId(userId);
         //Default image values
         String name = "DefaultProfileImage";
         String extension = ".png";
@@ -58,10 +58,14 @@ public class ProfileImageService {
         return profileImagesUrl + "/" + finalName;
     }
 
+    public String getProfileImageUrl(Long userId){
+        return profileImagesUrl + repo.findByUserId(userId).getFinalName();
+    }
+
     @Autowired
     private ProfileImageRepository repo;
-    @Value("${profileImages.absolutePath}")
+    @Value("${images.profile.absolutePath}")
     private String profileImagesPath;
-    @Value("${profileImages.url}")
+    @Value("${images.profile.url}")
     private String profileImagesUrl;
 }
