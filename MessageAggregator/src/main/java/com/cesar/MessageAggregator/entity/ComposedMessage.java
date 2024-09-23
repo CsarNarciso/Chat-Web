@@ -21,5 +21,5 @@ public class ComposedMessage {
     private String recipientProfileImageUrl;
     private String content;
     @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime date;
+    private LocalDateTime sentAt;
 }

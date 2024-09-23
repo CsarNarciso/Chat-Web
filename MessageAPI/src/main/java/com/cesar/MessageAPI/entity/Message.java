@@ -17,5 +17,5 @@ public class Message {
     private Long recipientId;
     private String content;
     @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime date;
+    private LocalDateTime sentAt;
 }

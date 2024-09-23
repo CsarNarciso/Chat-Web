@@ -15,5 +15,5 @@ public class ComposedMessageDTO {
     private String recipientName;
     private String recipientProfileImageUrl;
     private String content;
-    private LocalDateTime date;
+    private LocalDateTime sentAt;
 }
