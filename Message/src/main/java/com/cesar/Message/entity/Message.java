@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name="composedMessages")
+@Table(name="messages")
 @Data
 public class Message {
     @Id
@@ -14,11 +14,6 @@ public class Message {
     private Long id;
     private Long conversationId;
     private Long senderId;
-    private String senderName;
-    private String senderProfileImageUrl;
-    private Long recipientId;
-    private String recipientName;
-    private String recipientProfileImageUrl;
     private String content;
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime sentAt;

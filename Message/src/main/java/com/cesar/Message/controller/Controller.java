@@ -1,6 +1,7 @@
 package com.cesar.Message.controller;
 
-import com.cesar.Message.entity.Message;
+import com.cesar.Message.dto.MessageDTO;
+import com.cesar.Message.dto.NewConversationFirstMessageDTO;
 import com.cesar.Message.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,15 +15,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/composedMessages")
+@RequestMapping("/messages")
 public class Controller {
 
-    @MessageMapping("/sendMessage")
-    public void sendMessage(Message message) {
-        //Save in DB
-        service.create(message);
-        //Send
-        String sendingDestination= "/user/" + message.getRecipientId() + "/queue/getMessage";
+    @MessageMapping("/sendFirst")
+    public void sendNewConversationFirstMessage(NewConversationFirstMessageDTO message) {
+        Long newConversationId = service.storeNewConversationFirstMessage(message);
+        String sendingDestination =
+                "/topic/" + newConversationId + "/queue/conversation";
+        simp.convertAndSend(sendingDestination, message);
+    }
+
+    @MessageMapping("/send")
+    public void send(MessageDTO message) {
+        Long conversationId = service.store(message);
+        String sendingDestination =
+                "/topic/" + conversationId + "/queue/conversation";
         simp.convertAndSend(sendingDestination, message);
     }
 
