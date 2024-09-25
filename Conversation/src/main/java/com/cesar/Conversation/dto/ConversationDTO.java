@@ -8,5 +8,5 @@ import java.util.List;
 public class ConversationDTO {
     private Long id;
     private LocalDateTime createdAt;
-    private List<ParticipantDTO> participantsDetails;
+    private List<ParticipantDTO> participants;
 }

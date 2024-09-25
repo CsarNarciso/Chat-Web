@@ -3,6 +3,7 @@ package com.cesar.Conversation.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name="conversations")
@@ -12,6 +13,10 @@ public class Conversation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name="created_at")
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime createdAt;
+
+    @OneToMany(targetEntity = Participant.class, fetch = FetchType.EAGER)
+    private List<Participant> participants;
 }
