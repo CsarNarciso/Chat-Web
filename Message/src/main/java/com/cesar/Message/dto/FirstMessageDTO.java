@@ -1,11 +1,10 @@
 package com.cesar.Message.dto;
 
 import lombok.Data;
-
 import java.time.LocalDateTime;
 
 @Data
-public class NewConversationFirstMessageDTO {
+public class FirstMessageDTO {
     private Long senderId;
     private Long recipientId;
     private String content;
