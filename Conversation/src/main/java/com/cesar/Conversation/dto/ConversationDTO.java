@@ -8,5 +8,7 @@ import java.util.List;
 public class ConversationDTO {
     private Long id;
     private LocalDateTime createdAt;
+    private String lastMessageContent;
+    private LocalDateTime lastMessageSentAt;
     private List<ParticipantDTO> participants;
 }

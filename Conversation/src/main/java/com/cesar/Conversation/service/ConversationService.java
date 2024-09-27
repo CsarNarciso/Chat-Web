@@ -1,12 +1,13 @@
 package com.cesar.Conversation.service;
 
 import com.cesar.Conversation.dto.ConversationDTO;
+import com.cesar.Conversation.dto.FirstMessageDTO;
+import com.cesar.Conversation.dto.MessageDTO;
 import com.cesar.Conversation.entity.Conversation;
 import com.cesar.Conversation.entity.Participant;
 import com.cesar.Conversation.repository.ConversationRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,47 +16,45 @@ import java.util.stream.Stream;
 @Service
 public class ConversationService {
 
-    //Event Consumer - Create new OneOnOne conversation
-    //when new conversation first message is sent
-    //Event data: senderId, recipientId
-    public void newConversationEvent(){
+    public void create(FirstMessageDTO firstMessage){
 
-        //Get event data
-        Long senderId = 1L;//event.get("senderId");
-        List<Long> participantsIds = Stream.of(senderId, 2L).toList(); //event.get("recipientId"));
+        Long senderId = firstMessage.getSenderId();
+        Long recipientId = firstMessage.getRecipientId();
+        List<Long> participantsIds = Stream.of(senderId, recipientId).toList();
 
         //Fetch participants details
         List<Participant> participants = userService.getParticipantsDetails(participantsIds);
 
         //Set initial participants unread messages
-        participantService.incrementNewUnreadMessage(senderId, participants);
+        participantService.setInitialConversationUnreadMessages(senderId, participants);
 
         //Store conversation in DB
-        ConversationDTO conversationDTO = mapper.map(
-                conversationRepo.save(
+        ConversationDTO conversation = mapper.map(
+                repo.save(
                     Conversation
-                        .builder()
-                        .createdAt(LocalDateTime.now())
-                        .participants(participants)
-                        .build()),
+                            .builder()
+                            .createdAt(LocalDateTime.now())
+                            .participants(participants)
+                            //Set conversation last message data
+                            .lastMessageContent(firstMessage.getContent())
+                            .lastMessageSentAt(firstMessage.getSentAt())
+                            .build()),
                 ConversationDTO.class);
 
         //Set participants presence statuses
         presenceService.injectConversationsParticipantsStatuses(
-                Stream.of(conversationDTO).toList());
+                Stream.of(conversation).toList());
 
-        //Event Publisher - Save conversation reference in User
+        //Event Publisher - New conversation created
         //when new conversation and its participants are created
-        //Event data: conversationId for user conversationsIds attribute
-
-        //Send new Conversation data
-        simp.convertAndSend("newConversationDestination", conversationDTO);
+        //Data for: conversationId for user conversationsIds attribute
+        //Data for: FirstMessageDTO with conversationId for message service
+        //Data for: ConversationDTO for WS server
     }
 
     public List<ConversationDTO> loadConversations(List<Long> conversationsId){
-
         List<ConversationDTO> conversations =
-                conversationRepo.findAllById(conversationsId)
+                repo.findAllById(conversationsId)
                         .stream()
                         .map(c -> mapper.map(c, ConversationDTO.class))
                         .toList();
@@ -63,29 +62,43 @@ public class ConversationService {
         return conversations;
     }
 
-    //Event Consumer - Update unread messages
-    //When message is sent/read
-    //Update quantity in Cache
+    //Event Consumer - User data/profile update
+    //When user updates its data/profile
+    //Update conversation participants data. Update it in Cache and directly in DB
 
-    //Event Consumer - Remove conversations in Cache
-    //When offline event is published
-    //Remove from cache
+    //Event Consumer - New message
+    //When existent conversation message is sent
+    //Task: Update unread messages (increase) and last message. Update it in Cache,
+    // after certain amount, update directly in DB
+    //Data: MessageDTO{conversationId, content, sentAt}
+    public void updateByNewMessage(MessageDTO message){
+        //Update in CACHE, update in DB after user offline event
+        //For the moment, update directly in DB
+        //Update last message data
+        repo.save(Conversation
+                .builder()
+                .id(message.getConversationId())
+                .lastMessageContent(message.getContent())
+                .lastMessageSentAt(message.getSentAt())
+                .build());
+        //Increase unread messages for recipient
+        participantService.increaseUnreadMessages(message.getRecipientId());
+    }
 
-    //Event Consumer - Store unread messages
-    //When offline event is published
-    //Store/Update directly in DB
-    //Remove from Cache
+    public void cleanUnreadMessages(Long userId){
+        //Update in DB
+        participantService.cleanUnreadMessages(userId);
+        //Update in CACHE
+    }
 
     @Autowired
-    private ConversationRepository conversationRepo;
+    private ConversationRepository repo;
     @Autowired
     private UserService userService;
     @Autowired
     private ParticipantService participantService;
     @Autowired
     private PresenceService presenceService;
-    @Autowired
-    private SimpMessagingTemplate simp;
     @Autowired
     private ModelMapper mapper;
 }

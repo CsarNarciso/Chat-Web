@@ -16,6 +16,11 @@ public class Conversation {
     @Column(name="created_at")
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime createdAt;
+    @Column(name="last_message_content")
+    private String lastMessageContent;
+    @Column(name="last_message_sent_at")
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime lastMessageSentAt;
 
     @OneToMany(targetEntity = Participant.class, fetch = FetchType.EAGER)
     private List<Participant> participants;

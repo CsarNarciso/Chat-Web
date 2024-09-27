@@ -21,7 +21,7 @@ public class Participant {
     @ManyToOne(targetEntity = Conversation.class, fetch = FetchType.EAGER)
     private Conversation conversation;
 
-    public void incrementUnreadMessage(){
-        unreadMessages ++;
+    public void increaseUnreadMessage(){
+        this.unreadMessages ++;
     }
 }
