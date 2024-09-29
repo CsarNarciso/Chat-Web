@@ -61,16 +61,6 @@ public class MessageService {
                 .toList();
     }
 
-    //Event Consumer - Conversation created
-    //when Conversation Services creates new conversation
-    //Task: add this conversations id in CACHE existentConversationsIds
-    //Data: conversationIds
-
-    //Event Consumer - Conversation deleted
-    //when Conversation Services deletes a conversation
-    //Task: remove this conversations id in CACHE existentConversationsIds
-    //Data: conversationIds
-
     @Autowired
     private MessageRepository repo;
     @Autowired
