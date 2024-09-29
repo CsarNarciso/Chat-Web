@@ -21,6 +21,8 @@ public class Conversation {
     @Column(name="last_message_sent_at")
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime lastMessageSentAt;
+    @Column(name="recreate_for")
+    private List<Long> recreateFor;
 
     @OneToMany(targetEntity = Participant.class, fetch = FetchType.EAGER)
     private List<Participant> participants;

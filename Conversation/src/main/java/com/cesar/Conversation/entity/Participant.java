@@ -1,11 +1,13 @@
 package com.cesar.Conversation.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 
 @Entity
 @Table(name="participants")
 @Data
+@Builder
 public class Participant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,8 +22,4 @@ public class Participant {
 
     @ManyToOne(targetEntity = Conversation.class, fetch = FetchType.EAGER)
     private Conversation conversation;
-
-    public void increaseUnreadMessage(){
-        this.unreadMessages ++;
-    }
 }

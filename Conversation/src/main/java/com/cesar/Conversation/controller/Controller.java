@@ -1,6 +1,5 @@
 package com.cesar.Conversation.controller;
 
-import com.cesar.Conversation.dto.FirstMessageDTO;
 import com.cesar.Conversation.service.ConversationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,8 +13,18 @@ import java.util.List;
 public class Controller {
 
     @PostMapping
-    public void onFirstInteraction(@RequestBody FirstMessageDTO firstMessage){
-        service.create(firstMessage);
+    public ResponseEntity<?> onCreate(@RequestBody List<Long> participantsIds){
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(service.create(participantsIds));
+    }
+    @PutMapping("/recreate/{conversationId}")
+    public ResponseEntity<?> onRecreate(@PathVariable Long conversationId){
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(service.recreate(conversationId));
     }
     @GetMapping
     public ResponseEntity<?> onLoadConversations(@RequestBody List<Long> conversationsIds){
@@ -24,9 +33,9 @@ public class Controller {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(service.loadConversations(conversationsIds));
     }
-    @PostMapping("/cleanUnreadMessages/{userId}")
-    public void onCleanUnreadMessages(Long userId){
-        service.cleanUnreadMessages(userId);
+    @PostMapping("/closeConversation/{participantId}")
+    public void onCloseConversation(Long participantId){
+        service.closeConversation(participantId);
     }
     @Autowired
     private ConversationService service;

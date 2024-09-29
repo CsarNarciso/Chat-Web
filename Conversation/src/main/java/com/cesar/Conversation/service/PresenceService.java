@@ -18,14 +18,14 @@ public class PresenceService {
     public void injectConversationsParticipantsStatuses(List<ConversationDTO> conversations){
 
         //Get participants Ids
-        List<Long> participantsIds = conversations
+        List<Long> participantsUsersIds = conversations
                 .stream()
                 .flatMap(c -> c.getParticipants().stream())
                 .map(ParticipantDTO::getUserId).collect(Collectors.toList());
 
         //Fetch presence statuses
         Map<Long, PresenceStatusDTO> statuses =
-                presenceFeign.getStatuses(participantsIds)
+                presenceFeign.getStatuses(participantsUsersIds)
                         .stream()
                         .collect(Collectors.toMap(PresenceStatusDTO::getUserId, Function.identity()));
 

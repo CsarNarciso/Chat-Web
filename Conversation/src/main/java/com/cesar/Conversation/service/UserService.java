@@ -5,7 +5,6 @@ import com.cesar.Conversation.feign.UserFeign;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
@@ -17,7 +16,6 @@ public class UserService {
                 .map(user -> mapper.map(user, Participant.class))
                 .toList();
     }
-
     @Autowired
     private UserFeign userFeign;
     @Autowired
