@@ -4,7 +4,9 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class FirstMessageDTO {
+public class CreationRequestDTO {
+    private Long id;
+    private Long conversationId;
     private Long senderId;
     private Long recipientId;
     private String content;

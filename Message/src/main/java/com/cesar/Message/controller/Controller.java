@@ -1,6 +1,6 @@
 package com.cesar.Message.controller;
 
-import com.cesar.Message.dto.MessageDTO;
+import com.cesar.Message.dto.CreationRequestDTO;
 import com.cesar.Message.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 public class Controller {
 
     @PostMapping
-    public void onSend(MessageDTO message) {
+    public void onSend(CreationRequestDTO message) {
         service.send(message);
     }
     @GetMapping("/{conversationId}")

@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.cesar</groupId>
-	<artifactId>UserAPI</artifactId>
+	<artifactId>User</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>UserAPI</name>
 	<description>Demo project for Spring Boot</description>
