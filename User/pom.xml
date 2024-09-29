@@ -11,8 +11,8 @@
 	<groupId>com.cesar</groupId>
 	<artifactId>User</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>UserAPI</name>
-	<description>Demo project for Spring Boot</description>
+	<name>User</name>
+	<description>Manage User related data</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -74,6 +74,10 @@
 		<dependency>
 			<groupId>jakarta.persistence</groupId>
 			<artifactId>jakarta.persistence-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-openfeign</artifactId>
 		</dependency>
 	</dependencies>
 	<dependencyManagement>

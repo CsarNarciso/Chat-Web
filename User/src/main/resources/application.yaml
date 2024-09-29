@@ -1,7 +1,7 @@
 #Application
 spring:
   application:
-    name: user-api
+    name: user-service
   #Postgres datasource
   datasource:
     driverClassName: org.postgresql.Driver

@@ -1,51 +1,47 @@
-package com.cesar.UserAPI.controller;
+package com.cesar.User.controller;
 
-import com.cesar.UserAPI.dto.UserDTO;
-import com.cesar.UserAPI.entity.User;
-import com.cesar.UserAPI.service.UserService;
+import com.cesar.User.dto.CreateRequestDTO;
+import com.cesar.User.dto.UpdateDetailsDTO;
+import com.cesar.User.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
-@RequestMapping("/users.api.v1")
+@RestController
+@RequestMapping("/users")
 public class Controller {
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody User user){
-
-        UserDTO userDTO = service.create(user);
+    public ResponseEntity<?> create(@RequestBody CreateRequestDTO createRequest){
         return ResponseEntity
-                .status(HttpStatus.OK)
+                .status(HttpStatus.CREATED)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(userDTO);
+                .body(service.create(createRequest));
     }
-
-    @GetMapping
-    public ResponseEntity<?> getAllUsers(){
-
-        List<UserDTO> users = service.getAll();
-
+    @PutMapping
+    public ResponseEntity<?> updateDetails(@RequestBody UpdateDetailsDTO updatedDetails){
         return ResponseEntity
-                .status(HttpStatus.OK)
+                .status(HttpStatus.CREATED)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(users);
+                .body(service.updateDetails(updatedDetails));
     }
-
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable Long id){
-
-        UserDTO user = service.getById(id);
-
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(user);
+                .body(service.getById(id));
     }
-
+    @GetMapping
+    public ResponseEntity<?> getByIds(@RequestBody List<Long> ids){
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(service.getByIds(ids));
+    }
     @Autowired
     private UserService service;
 }
