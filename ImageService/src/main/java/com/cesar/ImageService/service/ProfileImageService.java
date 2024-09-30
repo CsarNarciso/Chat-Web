@@ -1,5 +1,6 @@
 package com.cesar.ImageService.service;
 
+import com.cesar.ImageService.UpdateResponseDTO;
 import com.cesar.ImageService.entity.ProfileImage;
 import com.cesar.ImageService.repository.ProfileImageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,10 +14,9 @@ import java.util.UUID;
 @Service
 public class ProfileImageService {
 
-    public String uploadProfileImage(Long userId, MultipartFile imageMetadata) {
+    public String upload(Long userId, MultipartFile imageMetadata) {
 
-        ProfileImage userImageReference = repo.findByUserId(userId);
-        //Default image values
+        //Default image values (in case custom image is not provided)
         String name = "DefaultProfileImage";
         String extension = ".png";
         String finalName = name + extension;
@@ -29,37 +29,81 @@ public class ProfileImageService {
             extension = extensionType.equals("image/jpeg") ? ".jpg" :
                     extensionType.equals("image/png") ? ".png" : null;
 
+            //Upload new image with random name
+            name = UUID.randomUUID().toString();
+
+            //Perform action in server
+            finalName = name + extension;
+            File file = new File(profileImagesPath + "\\" + finalName);
+            try {
+                imageMetadata.transferTo(file);
+            } catch (IOException e) {throw new RuntimeException(e);}
+
+            defaultImage=false;
+        }
+        //Save user image reference in DB
+        repo.save(
+                ProfileImage
+                        .builder()
+                        .userId(userId)
+                        .extension(extension)
+                        .name(name)
+                        .finalName(finalName)
+                        .defaultImage(defaultImage)
+                        .build()
+        );
+        return profileImagesUrl + "/" + finalName;
+    }
+
+    public void update(Long userId, MultipartFile imageMetadata) {
+
+        ProfileImage userImageReference = repo.findByUserId(userId);
+
+        if(!imageMetadata.isEmpty()){
+
+            //Get extension
+            String extensionType = imageMetadata.getContentType();
+            String extension = extensionType.equals("image/jpeg") ? ".jpg" :
+                    extensionType.equals("image/png") ? ".png" : null;
+
             //Verify action to perform
             if(extension!=null){
 
-                //If user already has not custom image...
-                name = userImageReference.isDefaultImage() ?
+                //If user already still has custom image...
+                String name = userImageReference.isDefaultImage() ?
                         UUID.randomUUID().toString() : //upload new image with random name
-                        userImageReference.getName(); //or replace it with same name
+                        userImageReference.getName(); //replace it with same name
 
                 //Perform action in server
-                finalName = name + extension;
+                String finalName = name + extension;
                 File file = new File(profileImagesPath + "\\" + finalName);
                 try {
                     imageMetadata.transferTo(file);
                 } catch (IOException e) {throw new RuntimeException(e);}
 
-                defaultImage=false;
+                boolean defaultImage=false;
+
+                //Update user image reference in DB
+                repo.save(
+                        ProfileImage
+                                .builder()
+                                .id(userImageReference.getId())
+                                .name(name)
+                                .extension(extension)
+                                .finalName(finalName)
+                                .defaultImage(false)
+                                .build()
+                );
+                //Event Publisher - Profile Image updated
+                //when user updates its profile image
+                //Data for: userId, new image url for User and Conversation Service
+                UpdateResponseDTO
+                        .builder()
+                        .userId(userId)
+                        .imageUrl(profileImagesUrl + "/" + finalName)
+                        .build();
             }
         }
-        //Save user image reference in DB
-        userImageReference.setUserId(userId);
-        userImageReference.setName(name);
-        userImageReference.setExtension(extension);
-        userImageReference.setFinalName(finalName);
-        userImageReference.setDefaultImage(defaultImage);
-        repo.save(userImageReference);
-
-        return profileImagesUrl + "/" + finalName;
-    }
-
-    public String getProfileImageUrl(Long userId){
-        return profileImagesUrl + repo.findByUserId(userId).getFinalName();
     }
 
     @Autowired

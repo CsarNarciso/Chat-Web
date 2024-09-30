@@ -10,25 +10,20 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/images")
+@RequestMapping("/images")
 public class Controller {
 
-    @PostMapping("/v1/{userId}")
+    @PostMapping("/{userId}")
     public ResponseEntity<?> uploadProfileImage(@PathVariable Long userId, @RequestParam MultipartFile imageMetadata){
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(profileService.uploadProfileImage(userId, imageMetadata));
+                .body(profileService.upload(userId, imageMetadata));
     }
-
-    @GetMapping("/v1/{userId}")
-    public ResponseEntity<?> getProfileImageUrl(@PathVariable Long userId){
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(profileService.getProfileImageUrl(userId));
+    @PostMapping("/{userId}")
+    public void updateProfileImage(@PathVariable Long userId, @RequestParam MultipartFile imageMetadata){
+        profileService.update(userId, imageMetadata);
     }
-
     @PostMapping("/v1/{groupId}")
     public ResponseEntity<?> uploadGroupImage(@PathVariable Long groupId, @RequestParam MultipartFile imageMetadata){
         return ResponseEntity
@@ -36,7 +31,6 @@ public class Controller {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(groupService.uploadGroupImage(groupId, imageMetadata));
     }
-
     @GetMapping("/v1/{groupId}")
     public ResponseEntity<?> getGroupImageUrl(@PathVariable Long groupId){
         return ResponseEntity
@@ -44,7 +38,6 @@ public class Controller {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(groupService.getGroupImageUrl(groupId));
     }
-
     @Autowired
     private ProfileImageService profileService;
     @Autowired
