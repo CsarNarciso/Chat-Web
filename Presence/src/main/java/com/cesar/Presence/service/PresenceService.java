@@ -1,60 +1,69 @@
 package com.cesar.Presence.service;
 
-import com.cesar.Presence.dto.UserDTO;
 import com.cesar.Presence.model.OnlineUser;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class PresenceService {
 
-    public OnlineUser connect(Long userId) {
-        UserDTO user = feignUser.getById(userId);
-        OnlineUser onlineUser = mapper.map(user, OnlineUser.class);
-        onlineUser.setStatus("Online");
-        onlineUser.setDisconnectionHour(null);
-        //If user already exists...
-        return users.containsKey(user.getId()) ?
-                users.replace(user.getId(), onlineUser) : //, reconnect
-                users.put(user.getId(), onlineUser); //connect
-    }
-
-    public OnlineUser reconnect(Long userId) {
-        if(users.containsKey(userId)){
-            OnlineUser onlineUser = users.get(userId);
-            onlineUser.setStatus("Online");
-            users.replace(user.getId(), onlineUser);
-            return onlineUser;
+    public void connect(Long userId) {
+        OnlineUser onlineUser = OnlineUser
+                .builder()
+                .userId(userId)
+                .status("ONLINE")
+                .build();
+        //If user already exists in list (either online or not)...
+        if(statuses.containsKey(userId)){
+            //Reconnect
+            statuses.replace(userId, onlineUser);
         }
-        return null;
-    }
-
-    public OnlineUser disconnect(Long userId) {
-        //Mark as offline,
-        OnlineUser user = users.get(userId);
-        user.setStatus("Offline");
-        user.setDisconnectionHour(System.currentTimeMillis());
-        users.replace(userId, user);
-        return user;
-    }
-
-    public boolean removeOffline(Long userId){
-        OnlineUser user = users.get(userId);
-        if (user.getStatus().equals("Offline")) {
-            users.remove(userId);
-            return true;
+        else {
+            //Connect
+            statuses.put(userId, onlineUser);
         }
-        return false;
+        //Event Publisher - User Online
+        //when user connects
+        //Data for: userId, status data for WS server
+    }
+    public void disconnect(Long userId) {
+        //Mark as Offline,
+        OnlineUser offlineUser = OnlineUser
+                .builder()
+                .userId(userId)
+                .status("OFFLINE")
+                .lastSeen(LocalDateTime.now())
+                .build();
+        statuses.replace(userId, offlineUser);
+
+        //Event Publisher - User Offline
+        //when user starts disconnection (is registered as offline)
+        //Data for: userId, status data for WS server
+    }
+    public void removeOffline(Long userId){
+        if (statuses.get(userId).getStatus().equals("OFFLINE")) {
+            statuses.remove(userId);
+            //Event Publisher - User disconnected
+            //when user pass certain time offline
+            //Data for: userId, status data for WS server
+            OnlineUser disconnectedUser = OnlineUser
+                    .builder()
+                    .userId(userId)
+                    .build();
+        }
+    }
+    public List<OnlineUser> getStatuses(List<Long> usersIds){
+        List<OnlineUser> statuses = new ArrayList<>();
+        usersIds
+                .forEach(userId -> {
+                    statuses.add(statuses.get(userId.intValue()));
+                });
+        return statuses;
     }
 
-    public List<OnlineUser> getUsers(){
-        return users.values().stream().toList();
-    }
-
-    @Autowired
-    private ModelMapper mapper;
-    private final Map<Long, OnlineUser> users = new ConcurrentHashMap<>();
+    //Presence statuses need to be stored in CACHE,
+    //for the moment, store locally
+    private final Map<Long, OnlineUser> statuses = new ConcurrentHashMap<>();
 }

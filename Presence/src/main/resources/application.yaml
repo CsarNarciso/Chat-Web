@@ -8,7 +8,7 @@ spring:
       discovery:
         enabled: true
         serviceId: config-server
-    uri: config-server
+      uri: config-server
   config:
     import: optional:configserver:lb://config-server
 #Eureka client
