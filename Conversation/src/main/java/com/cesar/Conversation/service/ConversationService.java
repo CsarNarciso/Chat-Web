@@ -1,6 +1,7 @@
 package com.cesar.Conversation.service;
 
 import com.cesar.Conversation.dto.ConversationDTO;
+import com.cesar.Conversation.dto.CreationRequestDTO;
 import com.cesar.Conversation.dto.CreationResponseDTO;
 import com.cesar.Conversation.dto.MessageDTO;
 import com.cesar.Conversation.entity.Conversation;
@@ -17,10 +18,12 @@ import java.util.stream.Stream;
 @Service
 public class ConversationService {
 
-    public CreationResponseDTO create(List<Long> usersIds){
+    public CreationResponseDTO create(CreationRequestDTO creationRequest){
+
+        List<Long> participantsIds = creationRequest.getParticipantsIds();
 
         //Fetch participants details
-        List<Participant> participants = userService.getParticipantsDetails(usersIds);
+        List<Participant> participants = userService.getParticipantsDetails(participantsIds);
 
         //Store conversation in DB
         ConversationDTO conversation = mapper.map(
@@ -36,6 +39,9 @@ public class ConversationService {
         presenceService.injectConversationsParticipantsStatuses(
                 Stream.of(conversation).toList());
 
+        //Set new unread message for each participant (less for sender)
+        participantService.increaseUnreadMessages(creationRequest.getSenderId(), conversation.getId());
+
         //Event Publisher - New conversation created
         //when new conversation and its participants are created
         //Data for: conversationId for user conversationsIds attribute
@@ -44,7 +50,7 @@ public class ConversationService {
         return CreationResponseDTO
                 .builder()
                 .id(conversation.getId())
-                .participantsUsersIds(usersIds)
+                .participantsUsersIds(participantsIds)
                 .recreateForSomeone(false)
                 .build();
     }
@@ -56,10 +62,9 @@ public class ConversationService {
         Conversation entity = repo.getReferenceById(conversationId);
 
         //Get participants/user ids from conversation recreateFor user ids
-        List<Long> participantsIds = participantService.getIdsByUserIds(entity.getRecreateFor());
-        List<Long> participantsUsersIds = entity.getParticipants()
+        List<Long> participantsIds = entity.getParticipants()
                 .stream()
-                .map((Participant::getUserId))
+                .map((Participant::getId))
                 .toList();
         //Update (empty) recreateFor list attribute in CACHE and DB
         entity = repo.save(
@@ -70,7 +75,7 @@ public class ConversationService {
                         .build()
         );
         //Update unread messages to 1 for each participant in recreateFor list
-        participantService.updateUnreadMessages(participantsIds);
+        participantService.setUnreadMessagesInOne(participantsIds);
 
         //Compose Conversation Data
         ConversationDTO conversation = mapper.map(entity, ConversationDTO.class);
@@ -85,7 +90,7 @@ public class ConversationService {
         return CreationResponseDTO
                 .builder()
                 .id(conversationId)
-                .participantsUsersIds(participantsUsersIds)
+                .participantsUsersIds(participantsIds)
                 .recreateForSomeone(false)
                 .build();
     }
@@ -124,12 +129,13 @@ public class ConversationService {
         //Update in CACHE, after certain time, update in DB
         //For the moment, update directly in DB
         //Update last message data
-        repo.save(Conversation
-                .builder()
-                .id(message.getConversationId())
-                .lastMessageContent(message.getContent())
-                .lastMessageSentAt(message.getSentAt())
-                .build());
+        repo.save(
+                Conversation
+                        .builder()
+                        .id(message.getConversationId())
+                        .lastMessageContent(message.getContent())
+                        .lastMessageSentAt(message.getSentAt())
+                        .build());
         //Increase unread messages for recipient
         participantService.increaseUnreadMessages(message.getSenderId(), message.getConversationId());
     }

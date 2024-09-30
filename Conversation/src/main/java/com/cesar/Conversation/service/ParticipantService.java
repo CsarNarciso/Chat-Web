@@ -10,10 +10,7 @@ import java.util.List;
 @Service
 public class ParticipantService {
 
-    public List<Long> getIdsByUserIds(List<Long> usersIds){
-        return repo.findIdByUserId(usersIds);
-    }
-    public void updateUnreadMessages(List<Long> participantsIds){
+    public void setUnreadMessagesInOne(List<Long> participantsIds){
         List<Participant> participants = new ArrayList<>();
         participantsIds
                 .forEach(participantId -> {
@@ -29,9 +26,14 @@ public class ParticipantService {
         repo.increaseUnreadMessages(senderId, conversationId);
     }
     public void cleanUnreadMessages(Long participantId){
-        repo.cleanUnreadMessages(participantId);
+        repo.save(
+                Participant
+                        .builder()
+                        .id(participantId)
+                        .unreadMessages(0)
+                        .build()
+        );
     }
-
     @Autowired
     private ParticipantRepository repo;
 }

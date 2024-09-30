@@ -1,5 +1,6 @@
 package com.cesar.Conversation.controller;
 
+import com.cesar.Conversation.dto.CreationRequestDTO;
 import com.cesar.Conversation.service.ConversationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,11 +14,11 @@ import java.util.List;
 public class Controller {
 
     @PostMapping
-    public ResponseEntity<?> onCreate(@RequestBody List<Long> participantsIds){
+    public ResponseEntity<?> onCreate(@RequestBody CreationRequestDTO creationRequest){
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(service.create(participantsIds));
+                .body(service.create(creationRequest));
     }
     @PutMapping("/recreate/{conversationId}")
     public ResponseEntity<?> onRecreate(@PathVariable Long conversationId){
