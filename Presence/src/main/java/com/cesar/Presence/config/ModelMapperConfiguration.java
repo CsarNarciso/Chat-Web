@@ -1,4 +1,4 @@
-package com.cesar.PresenceService.config;
+package com.cesar.Presence.config;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;

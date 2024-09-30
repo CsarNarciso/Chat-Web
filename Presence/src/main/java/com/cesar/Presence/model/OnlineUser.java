@@ -1,4 +1,4 @@
-package com.cesar.PresenceService.model;
+package com.cesar.Presence.model;
 
 import lombok.Data;
 

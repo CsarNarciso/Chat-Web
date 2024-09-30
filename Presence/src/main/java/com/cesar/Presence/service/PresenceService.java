@@ -1,8 +1,7 @@
-package com.cesar.PresenceService.service;
+package com.cesar.Presence.service;
 
-import com.cesar.PresenceService.dto.UserDTO;
-import com.cesar.PresenceService.feign.FeignUser;
-import com.cesar.PresenceService.model.OnlineUser;
+import com.cesar.Presence.dto.UserDTO;
+import com.cesar.Presence.model.OnlineUser;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,8 +54,6 @@ public class PresenceService {
         return users.values().stream().toList();
     }
 
-    @Autowired
-    private FeignUser feignUser;
     @Autowired
     private ModelMapper mapper;
     private final Map<Long, OnlineUser> users = new ConcurrentHashMap<>();

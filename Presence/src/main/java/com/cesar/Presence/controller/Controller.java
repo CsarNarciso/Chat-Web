@@ -1,8 +1,8 @@
-package com.cesar.PresenceService.controller;
+package com.cesar.Presence.controller;
 
-import com.cesar.PresenceService.dto.UserDTO;
-import com.cesar.PresenceService.model.OnlineUser;
-import com.cesar.PresenceService.service.PresenceService;
+import com.cesar.Presence.dto.UserDTO;
+import com.cesar.Presence.model.OnlineUser;
+import com.cesar.Presence.service.PresenceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
