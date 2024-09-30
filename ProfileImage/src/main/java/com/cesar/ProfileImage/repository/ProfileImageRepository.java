@@ -1,6 +1,6 @@
-package com.cesar.ImageService.repository;
+package com.cesar.ProfileImage.repository;
 
-import com.cesar.ImageService.entity.ProfileImage;
+import com.cesar.ProfileImage.entity.ProfileImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ProfileImageRepository extends JpaRepository<ProfileImage, Long> {

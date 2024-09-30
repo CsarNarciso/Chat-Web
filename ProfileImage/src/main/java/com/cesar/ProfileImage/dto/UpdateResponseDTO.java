@@ -1,4 +1,4 @@
-package com.cesar.ImageService;
+package com.cesar.ProfileImage.dto;
 
 import lombok.Builder;
 import lombok.Data;

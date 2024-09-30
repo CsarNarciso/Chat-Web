@@ -1,8 +1,8 @@
-package com.cesar.ImageService.service;
+package com.cesar.ProfileImage.service;
 
-import com.cesar.ImageService.UpdateResponseDTO;
-import com.cesar.ImageService.entity.ProfileImage;
-import com.cesar.ImageService.repository.ProfileImageRepository;
+import com.cesar.ProfileImage.dto.UpdateResponseDTO;
+import com.cesar.ProfileImage.entity.ProfileImage;
+import com.cesar.ProfileImage.repository.ProfileImageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

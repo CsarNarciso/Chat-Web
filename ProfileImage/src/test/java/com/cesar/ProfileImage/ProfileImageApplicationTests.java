@@ -1,10 +1,10 @@
-package com.cesar.ImageService;
+package com.cesar.ProfileImage;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ProfileImageServiceApplicationTests {
+class ProfileImageApplicationTests {
 
 	@Test
 	void contextLoads() {
