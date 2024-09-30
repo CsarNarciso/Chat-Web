@@ -104,15 +104,47 @@ public class ConversationService {
         return conversations;
     }
 
-    public void deleteConversation(Long userId, Long conversationId){
-        //Verify if deletion is permanently or just by a participant:
-        //this by adding userId to conversation recreateFor list, if after that
-        //recreateFor list matches conversation participants ids, deletion is permanently
-        //Update in DB and CACHE with TTL
+    public void deleteConversation(Long participantId, Long conversationId){
+
+        Conversation conversation = repo.getReferenceById(conversationId);
+        boolean permanently;
+        //Get conversation participants Ids
+        List<Long> participantsIds = conversation.getParticipants()
+                .stream()
+                .map(Participant::getId)
+                .toList();
+        //Add userId to conversation recreateFor list
+        List<Long> recreateFor = conversation.getRecreateFor();
+        recreateFor.add(participantId);
+        //If recreateFor Ids matches participants Ids...
+        if(participantsIds.equals(recreateFor)){
+            //Deletion is permanently
+            permanently = true;
+            repo.delete(conversation);
+        }
+        //If not,
+        else{
+            //Update in DB and CACHE with TTL
+            permanently = false;
+            repo.save(
+                    Conversation
+                            .builder()
+                            .id(conversationId)
+                            .recreateFor(recreateFor)
+                            .build()
+            );
+        }
         //Event Publisher - Conversation Deleted
         //when conversation is deleted by user or permanently
-        //Data for: userId, conversationId for User, Message and WS service
-
+        //Data for: userId, conversationId for User, and WS service
+        //Data for: conversationId, recreateFor, isPermanently for Message
+        DeletionResponseDTO
+                .builder()
+                .conversationId(conversationId)
+                .participantId(participantId)
+                .recreateFor(recreateFor)
+                .permanently(permanently)
+                .build();
     }
 
     //Event Consumer - User data/profile updated
