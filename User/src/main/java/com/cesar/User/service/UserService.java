@@ -42,16 +42,50 @@ public class UserService {
     public void updateProfileImageUrl(Long id, String newUrl){
         //Update user in CACHE if it exists there
         //Update in DB
-        repo.updateProfileImageUrl(id, newUrl);
+        repo.save(
+                User
+                        .builder()
+                        .id(id)
+                        .profileImageUrl(newUrl)
+                        .build()
+        );
     }
-    //Event Consumer - Conversation created/deleted
-    //when user creates or deletes a conversation in Conversation Service
+    //Event Consumer - Conversation deleted
+    //when user deletes a conversation in Conversation Service
     //Data: userId, conversationId
     //Task: Update conversations ids list in user entity
-    public void updateConversationsIds(Long id, List<Long> conversationsIds){
-        //Update user in CACHE if it exists there
+    public void addConversationId(Long id, Long conversationId){
+        //Update user in CACHE
         //Update in DB
-        repo.updateConversationsIds(id, conversationsIds);
+        User user = repo.getReferenceById(id);
+        List<Long> conversationsIds = user.getConversationsIds();
+        conversationsIds.add(conversationId);
+        repo.save(
+                User
+                        .builder()
+                        .id(user.getId())
+                        .conversationsIds(conversationsIds)
+                        .build()
+        );
+    }
+    //Event Consumer - Conversation deleted
+    //when user deletes a conversation in Conversation Service
+    //Data: userId, conversationId
+    //Task: Update conversations ids list in user entity
+    public void removeConversationId(Long id, Long conversationId){
+        //Update user in CACHE
+        //Update in DB
+        User user = repo.getReferenceById(id);
+        repo.save(
+                User
+                        .builder()
+                        .id(user.getId())
+                        .conversationsIds(user.getConversationsIds()
+                                .stream()
+                                .filter(c -> c.equals(conversationId))
+                                .toList())
+                        .build()
+        );
     }
     public List<UserDTO> getByIds(List<Long> ids){
         //Store users data references in CACHE with TTL
