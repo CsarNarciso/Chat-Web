@@ -1,9 +1,6 @@
 package com.cesar.Conversation.service;
 
-import com.cesar.Conversation.dto.ConversationDTO;
-import com.cesar.Conversation.dto.CreationRequestDTO;
-import com.cesar.Conversation.dto.CreationResponseDTO;
-import com.cesar.Conversation.dto.MessageDTO;
+import com.cesar.Conversation.dto.*;
 import com.cesar.Conversation.entity.Conversation;
 import com.cesar.Conversation.entity.Participant;
 import com.cesar.Conversation.repository.ConversationRepository;
@@ -23,7 +20,7 @@ public class ConversationService {
         List<Long> participantsIds = creationRequest.getParticipantsIds();
 
         //Fetch participants details
-        List<Participant> participants = userService.getParticipantsDetails(participantsIds);
+        List<Participant> participants = participantService.getParticipantsDetails(participantsIds);
 
         //Store conversation in DB
         ConversationDTO conversation = mapper.map(
@@ -118,9 +115,13 @@ public class ConversationService {
 
     }
 
-    //Event Consumer - User data/profile update
+    //Event Consumer - User data/profile updated
     //When user updates its data/profile
-    //Update conversation participants data. Update it in Cache and directly in DB (because it's not common this happens)
+    //Data: userDTO
+    //Task: Update conversation participants data. Update it in Cache and DB
+    public void updateParticipantUserDetails(UpdateParticipantDTO participant){
+        participantService.updateUserDetails(participant);
+    }
 
     //Event Consumer - New message
     //When existent conversation message is sent
@@ -142,15 +143,12 @@ public class ConversationService {
 
     public void closeConversation(Long participantId){
         //Clean Unread Messages
-        //In CACHE first, after certain time, in DB
-        //For the moment in DB
+        //In CACHE and DB
         participantService.cleanUnreadMessages(participantId);
     }
 
     @Autowired
     private ConversationRepository repo;
-    @Autowired
-    private UserService userService;
     @Autowired
     private ParticipantService participantService;
     @Autowired

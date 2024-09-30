@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 public class ParticipantDTO {
     private Long id;
     private String name;
-    private String imageUrl;
+    private String profileImageUrl;
     private Integer unreadMessages;
     private String presenceStatus;
     private LocalDateTime lastSeen;

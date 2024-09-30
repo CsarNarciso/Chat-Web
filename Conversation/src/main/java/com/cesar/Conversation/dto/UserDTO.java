@@ -1,7 +1,10 @@
 package com.cesar.Conversation.dto;
 
+import lombok.Data;
+
+@Data
 public class UserDTO {
-    private Long userId;
+    private Long id;
     private String name;
-    private String imageUrl;
+    private String profileImageUrl;
 }
