@@ -142,7 +142,7 @@ public class ConversationService {
                 .builder()
                 .conversationId(conversationId)
                 .participantId(participantId)
-                .recreateFor(recreateFor)
+                .recreateForSomeone(true)
                 .permanently(permanently)
                 .build();
     }
