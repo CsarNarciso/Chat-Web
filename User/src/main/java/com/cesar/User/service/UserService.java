@@ -1,8 +1,6 @@
 package com.cesar.User.service;
 
-import com.cesar.User.dto.CreateRequestDTO;
-import com.cesar.User.dto.UpdateDetailsDTO;
-import com.cesar.User.dto.UserDTO;
+import com.cesar.User.dto.*;
 import com.cesar.User.entity.User;
 import com.cesar.User.repository.UserRepository;
 import org.modelmapper.ModelMapper;
@@ -25,11 +23,11 @@ public class UserService {
         repo.save(user);
         return mapper.map(user, UserDTO.class);
     }
-    public UserDTO updateDetails(UpdateDetailsDTO updatedUser){
+    public UpdateResponseDTO updateDetails(UpdateRequestDTO updatedUser){
         //Update user in CACHE if it exists there
         //Update in DB
         return mapper.map(repo.save(
-                mapper.map(updatedUser, User.class)), UserDTO.class);
+                mapper.map(updatedUser, User.class)), UpdateResponseDTO.class);
         //Event Publisher - User updated
         //when user details (name, email) is updated
         //Data for: name for conversation service
@@ -39,19 +37,19 @@ public class UserService {
     //when user changes its profile image in Image Service
     //Data: userId, newImageUrl
     //Task: update url reference in user entity
-    public void updateProfileImageUrl(Long id, String newUrl){
+    public void updateProfileImageUrl(ProfileImageUpdatedDTO image){
         //Update user in CACHE if it exists there
         //Update in DB
         repo.save(
                 User
                         .builder()
-                        .id(id)
-                        .profileImageUrl(newUrl)
+                        .id(image.getUserId())
+                        .profileImageUrl(image.getImageUrl())
                         .build()
         );
     }
-    //Event Consumer - Conversation deleted
-    //when user deletes a conversation in Conversation Service
+    //Event Consumer - Conversation created
+    //when user created a conversation in Conversation Service
     //Data: userId, conversationId
     //Task: Update conversations ids list in user entity
     public void addConversationId(Long id, Long conversationId){

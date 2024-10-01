@@ -1,7 +1,7 @@
 package com.cesar.User.controller;
 
 import com.cesar.User.dto.CreateRequestDTO;
-import com.cesar.User.dto.UpdateDetailsDTO;
+import com.cesar.User.dto.UpdateRequestDTO;
 import com.cesar.User.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,7 +22,7 @@ public class Controller {
                 .body(service.create(createRequest));
     }
     @PutMapping
-    public ResponseEntity<?> updateDetails(@RequestBody UpdateDetailsDTO updatedDetails){
+    public ResponseEntity<?> updateDetails(@RequestBody UpdateRequestDTO updatedDetails){
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .contentType(MediaType.APPLICATION_JSON)
