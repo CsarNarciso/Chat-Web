@@ -1,0 +1,15 @@
+services:
+  conversation:
+    image: csarnar/chat-web-conversation
+    ports:
+      - "8003:8003"
+    environment:
+      - SPRING_DATASOURCE_URL:${SPRING_}
+    networks:
+      - eureka-net
+      - mysql-net
+    depends_on:
+      eureka:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
