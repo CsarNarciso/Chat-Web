@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.cesar</groupId>
-	<artifactId>ConfigServer</artifactId>
+	<artifactId>Config</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>ConfigServer</name>
-	<description>Demo project for Spring Boot</description>
+	<name>Config</name>
+	<description>Store and deliver services configurations</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -43,7 +43,6 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
