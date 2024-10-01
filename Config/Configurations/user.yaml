@@ -1,5 +1,5 @@
 spring:
   application:
-    name: user-api
+    name: user-service
 server:
   port 8001

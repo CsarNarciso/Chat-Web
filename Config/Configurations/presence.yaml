@@ -2,4 +2,4 @@ spring:
   application:
     name: presence-service
 server:
-  port: 8005
+  port: 8004

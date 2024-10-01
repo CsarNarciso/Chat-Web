@@ -1,0 +1,5 @@
+service:
+  application:
+    name: conversation-service
+server:
+  port: 8003

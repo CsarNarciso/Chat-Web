@@ -1,5 +1,5 @@
 spring:
   application:
-    name: message-api
+    name: message-service
 server:
   port: 8002

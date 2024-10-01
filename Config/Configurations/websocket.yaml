@@ -1,5 +1,5 @@
 spring:
   application:
-    name: profile-image-service
+    name: websocket-service
 server:
   port: 8006

@@ -1,5 +1,0 @@
-spring:
-  application:
-    name: chat-service
-server:
-  port: 8004
