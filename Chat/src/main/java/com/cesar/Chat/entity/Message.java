@@ -1,4 +1,4 @@
-package com.cesar.Message.entity;
+package com.cesar.Chat.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;

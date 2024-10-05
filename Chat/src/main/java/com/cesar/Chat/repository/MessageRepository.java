@@ -1,6 +1,6 @@
-package com.cesar.Message.repository;
+package com.cesar.Chat.repository;
 
-import com.cesar.Message.entity.Message;
+import com.cesar.Chat.entity.Message;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 

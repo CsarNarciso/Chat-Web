@@ -1,12 +1,9 @@
-package com.cesar.Message.service;
+package com.cesar.Chat.service;
 
-import com.cesar.Message.dto.MessageDTO;
-import com.cesar.Message.dto.CreationRequestDTO;
-import com.cesar.Message.entity.Message;
-import com.cesar.Message.repository.MessageRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.stream.Stream;
 

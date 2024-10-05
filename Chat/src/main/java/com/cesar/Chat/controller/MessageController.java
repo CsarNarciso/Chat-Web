@@ -1,7 +1,5 @@
-package com.cesar.Message.controller;
+package com.cesar.Chat.controller;
 
-import com.cesar.Message.dto.CreationRequestDTO;
-import com.cesar.Message.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -10,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/messages")
-public class Controller {
+public class MessageController {
 
     @PostMapping
     public void onSend(CreationRequestDTO message) {
