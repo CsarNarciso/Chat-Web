@@ -9,19 +9,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/profileImages")
+@RequestMapping("/media")
 public class Controller {
-
-    @PostMapping("/{userId}")
-    public ResponseEntity<?> uploadProfileImage(@PathVariable Long userId, @RequestParam MultipartFile imageMetadata){
+    @PostMapping
+    public ResponseEntity<?> uploadProfileImage(@RequestParam MultipartFile imageMetadata, @RequestParam String oldPath){
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(profileService.upload(userId, imageMetadata));
-    }
-    @PostMapping("/{userId}")
-    public void updateProfileImage(@PathVariable Long userId, @RequestParam MultipartFile imageMetadata){
-        profileService.update(userId, imageMetadata);
+                .body(profileService.upload(imageMetadata, oldPath));
     }
     @Autowired
     private ProfileImageService profileService;
