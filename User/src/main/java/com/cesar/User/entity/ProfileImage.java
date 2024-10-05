@@ -1,4 +1,4 @@
-package com.cesar.ProfileImage.entity;
+package com.cesar.User.entity;
 
 import jakarta.persistence.*;
 import lombok.Builder;

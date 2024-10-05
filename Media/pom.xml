@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.cesar</groupId>
-	<artifactId>ProfileImage</artifactId>
+	<artifactId>Media</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>ProfileImage</name>
 	<description>Store profile images</description>
