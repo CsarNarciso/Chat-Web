@@ -1,6 +1,6 @@
-package com.cesar.ProfileImage.controller;
+package com.cesar.Media.controller;
 
-import com.cesar.ProfileImage.service.ProfileImageService;
+import com.cesar.Media.service.ProfileImageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

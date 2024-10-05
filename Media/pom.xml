@@ -11,8 +11,8 @@
 	<groupId>com.cesar</groupId>
 	<artifactId>Media</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>ProfileImage</name>
-	<description>Store profile images</description>
+	<name>Media</name>
+	<description>Store media resources for profile and group conversations images</description>
 	<url/>
 	<licenses>
 		<license/>

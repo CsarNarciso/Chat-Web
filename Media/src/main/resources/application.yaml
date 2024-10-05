@@ -2,9 +2,9 @@
 server:
   url: http://localhost:${server.port}
 project:
-  path: ${user.dir}/Chat-Web/ProfileImage
+  path: ${user.dir}/Chat-Web/Media
 images:
-  mainPath: src/main/resources/images
+  mainPath: src/main/resources
   #For Profiles
   profile:
     path: ${images.mainPath}/profile
@@ -13,17 +13,7 @@ images:
 #Application
 spring:
   application:
-    name: profileImage-service
-  #Postgres datasource
-  datasource:
-    driverClassName: org.postgresql.Driver
-  #Hibernate JPA
-  jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
+    name: media-service
   #Config client
   cloud:
     config:
