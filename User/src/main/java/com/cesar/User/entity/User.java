@@ -3,7 +3,6 @@ package com.cesar.User.entity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
-import java.util.List;
 
 @Entity
 @Table(name="users")
@@ -18,6 +17,4 @@ public class User {
     private String password;
     @Column(name="profile_image_url")
     private String profileImageUrl;
-    @Column(name="conversations_ids")
-    private List<Long> conversationsIds;
 }
