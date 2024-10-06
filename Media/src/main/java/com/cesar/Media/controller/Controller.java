@@ -1,6 +1,6 @@
 package com.cesar.Media.controller;
 
-import com.cesar.Media.service.ProfileImageService;
+import com.cesar.Media.service.MediaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,5 +19,5 @@ public class Controller {
                 .body(profileService.upload(imageMetadata, oldPath));
     }
     @Autowired
-    private ProfileImageService profileService;
+    private MediaService profileService;
 }

@@ -1,15 +1,15 @@
-#Images resources paths
+#Server
 server:
   url: http://localhost:${server.port}
 project:
   path: ${user.dir}/Chat-Web/Media
-images:
-  mainPath: src/main/resources
-  #For Profiles
-  profile:
-    path: ${images.mainPath}/profile
-    absolutePath: ${project.path}/${images.profile.path}
-    url: ${server.url}/${images.profile.path}
+#Media
+resources:
+  path: src/main/resources
+media:
+  path: ${resources.path}/media
+  absolutePath: ${project.path}/${media.path}
+  url: ${server.url}/${media.path}
 #Application
 spring:
   application:
