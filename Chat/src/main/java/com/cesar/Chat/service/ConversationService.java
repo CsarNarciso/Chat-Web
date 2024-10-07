@@ -15,9 +15,9 @@ import java.util.stream.Stream;
 @Service
 public class ConversationService {
 
-    public CreationResponseDTO create(CreationRequestDTO creationRequest){
+    public CreateConversationRspDTO create(CreateConversationRqsDTO createRequest){
 
-        List<Long> participantsIds = creationRequest.getParticipantsIds();
+        List<Long> participantsIds = createRequest.getParticipantsIds();
 
         //Fetch participants details
         List<Participant> participants = participantService.getParticipantsDetails(participantsIds);
@@ -37,14 +37,14 @@ public class ConversationService {
                 Stream.of(conversation).toList());
 
         //Set new unread message for each participant (less for sender)
-        participantService.increaseUnreadMessages(creationRequest.getSenderId(), conversation.getId());
+        participantService.increaseUnreadMessages(createRequest.getSenderId(), conversation.getId());
 
         //Event Publisher - New conversation created
         //when new conversation and its participants are created
         //Data for: conversationId for user conversationsIds attribute
         //Data for: ConversationDTO for WS server
 
-        return CreationResponseDTO
+        return CreateConversationRspDTO
                 .builder()
                 .id(conversation.getId())
                 .participantsUsersIds(participantsIds)
@@ -52,7 +52,7 @@ public class ConversationService {
                 .build();
     }
 
-    public CreationResponseDTO recreate(Long conversationId){
+    public CreateConversationRspDTO recreate(Long conversationId){
 
         //Load conversation data from CACHE
         //If it is not in, get from DB and store in CACHE with TTL
@@ -84,7 +84,7 @@ public class ConversationService {
         //when conversation needs to be recreated for participants in recreateFor list attribute
         //Data for: ConversationDTO for WS Server and User service
 
-        return CreationResponseDTO
+        return CreateConversationRspDTO
                 .builder()
                 .id(conversationId)
                 .participantsUsersIds(participantsIds)
@@ -102,6 +102,10 @@ public class ConversationService {
         //Set participants presence statuses
         presenceService.injectConversationsParticipantsStatuses(conversations);
         return conversations;
+    }
+
+    public ConversationDTO getByParticipantsIds(List<Long> participantsIds){
+        return mapper.map(repo.findByParticipantsIds(participantsIds), ConversationDTO.class);
     }
 
     public void deleteConversation(Long participantId, Long conversationId){
@@ -138,21 +142,13 @@ public class ConversationService {
         //when conversation is deleted by user or permanently
         //Data for: userId, conversationId for User, and WS service
         //Data for: conversationId, recreateFor, isPermanently for Message
-        DeletionResponseDTO
+        DeleteConversationRspDTO
                 .builder()
                 .conversationId(conversationId)
                 .participantId(participantId)
                 .recreateForSomeone(true)
                 .permanently(permanently)
                 .build();
-    }
-
-    //Event Consumer - User data/profile updated
-    //When user updates its data/profile
-    //Data: userDTO
-    //Task: Update conversation participants data. Update it in Cache and DB
-    public void updateParticipantUserDetails(UpdateParticipantDTO participant){
-        participantService.updateUserDetails(participant);
     }
 
     //Event Consumer - New message

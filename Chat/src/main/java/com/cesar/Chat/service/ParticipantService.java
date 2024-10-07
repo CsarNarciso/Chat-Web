@@ -1,6 +1,5 @@
 package com.cesar.Chat.service;
 
-import com.cesar.Chat.dto.UpdateParticipantDTO;
 import com.cesar.Chat.entity.Participant;
 import com.cesar.Chat.repository.ParticipantRepository;
 import org.modelmapper.ModelMapper;
@@ -17,12 +16,6 @@ public class ParticipantService {
                 .stream()
                 .map(user -> mapper.map(user, Participant.class))
                 .toList();
-    }
-
-    public void updateUserDetails(UpdateParticipantDTO participant){
-        repo.save(
-                mapper.map(participant, Participant.class)
-        );
     }
     public void setUnreadMessagesInOne(List<Long> participantsIds){
         List<Participant> participants = new ArrayList<>();

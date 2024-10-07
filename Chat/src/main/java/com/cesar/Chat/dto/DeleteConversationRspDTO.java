@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class DeletionResponseDTO {
+public class DeleteConversationRspDTO {
     private Long conversationId;
     private Long participantId;
     private boolean recreateForSomeone;

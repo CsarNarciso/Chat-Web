@@ -10,11 +10,9 @@ import lombok.Data;
 @Builder
 public class Participant {
     @Id
-    @Column(unique = true)
     private Long id;
-    private String name;
-    @Column(name="image_url")
-    private String profileImageUrl;
+    @Column(name="user_id")
+    private Long userId;
     @Column(name="unread_messages")
     private Integer unreadMessages;
 

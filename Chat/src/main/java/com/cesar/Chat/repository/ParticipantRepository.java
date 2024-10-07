@@ -13,4 +13,6 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
             "WHERE p.userId != :senderId AND" +
             "WHERE p.conversation.id = :conversationId")
     void increaseUnreadMessages(@Param("senderId") Long senderId, @Param("conversationId") Long conversationId);
+
+    Participant findByUserId(Long userId);
 }

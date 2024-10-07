@@ -26,4 +26,6 @@ public class Conversation {
 
     @OneToMany(targetEntity = Participant.class, fetch = FetchType.EAGER)
     private List<Participant> participants;
+    @Column(name="participants_ids")
+    private List<Long> participantsIds;
 }
