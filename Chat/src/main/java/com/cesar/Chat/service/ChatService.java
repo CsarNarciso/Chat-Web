@@ -1,61 +1,61 @@
 package com.cesar.Chat.service;
 
 import com.cesar.Chat.dto.ConversationDTO;
-import com.cesar.Chat.dto.CreateConversationRqsDTO;
+import com.cesar.Chat.dto.MessageDTO;
+import com.cesar.Chat.dto.MessageForSendDTO;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
 @Service
 public class ChatService {
 
-    public void send(SendMessageRqsDTO message) {
+    public void sendMessage(MessageForSendDTO messageRequest) {
 
-        List<Long> participantsIds = Stream.of(message.getSenderId(), message.getRecipientId()).toList();
+        //Get message participants IDs
+        List<Long> participantsIds = Stream
+                .of(
+                        messageRequest.getSenderId(),
+                        messageRequest.getRecipientId())
+                .toList();
 
-        //If message has no conversation ID
-        //(either conversation doesn't exist yet, or sender has deleted it for itself)
-        if(message.getConversationId()==null){
+        //Look for an existent conversation between both users
+        ConversationDTO conversation = conversationService.loadByParticipantsIds(participantsIds);
 
-            //Verify if conversation between both users exists:
-            //by checking if a conversation has those users ids in participants attribute
-            ConversationDTO foundConversation = conversationService.getByParticipantsIds(participantsIds);
+        //If no Conversation ID
+        if(messageRequest.getConversationId()==null){
 
-            //If not...
-            if(foundConversation == null){
-                //Create new one and get new conversation id
-                Long newConversationId = conversationService.create(CreateConversationRqsDTO
-                        .builder()
-                        .senderId(message.getSenderId())
-                        .participantsIds(participantsIds)
-                        .build()).getId();
+            //And a related Conversation doesn't exist
+            if(conversation==null){
+
+                //Create
+                conversation = conversationService.create(messageRequest);
+                messageRequest.setConversationId(conversation.getId());
+
+                //Send message with conversation for both users
+                //Publish Event - ConversationCreated
+                //when message is sent for a new or recreated conversation
+                //Data for: message data for WS Service
             }
-            //If yes...
-            else{
-                //Get conversation id
-                //and recreate for sender (along with other participants in recreateFor attribute) in next step
-                message.setConversationId(foundConversation.getId());
-            }
-
         }
+        else{
 
-        //Check if recreate for someone:
-        //If yes...
-        //Recreate conversation for those participants
-        conversationService.recreate(message.getConversationId(), List.of(message.getRecipientId()));
+            //Create message data
+            MessageDTO message = messageService.send(messageRequest);
 
-        //Store in DB
-        Message entity = mapper.map(message, Message.class);
-        entity.setSentAt(LocalDateTime.now());
-        messageService.save(entity);
+            //Send message data only for user who already have conversation
+            //Publish Event - MessageSent
+            //when message is sent for an existent conversation
+            //Data for: message data for WS Service
 
-        //Event Publisher - New message
-        //when new message is stored in DB/CACHE
-        //Data for: message data (DTO) for WS Service
+            //Check if conversation needs to be recreated for someone (recreateFor list of ids)
+            //Send message with conversation for users who don't have the conversation
+            //Publish Event - ConversationRecreated
+            //when message is sent for a new or recreated conversation
+            //Data for: message data for WS Service
+        }
     }
 
     @Autowired

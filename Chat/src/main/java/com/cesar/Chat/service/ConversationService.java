@@ -1,6 +1,7 @@
 package com.cesar.Chat.service;
 
-import com.cesar.Chat.dto.*;
+import com.cesar.Chat.dto.ConversationDTO;
+import com.cesar.Chat.dto.MessageForSendDTO;
 import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.entity.Participant;
 import com.cesar.Chat.repository.ConversationRepository;
@@ -15,21 +16,11 @@ import java.util.stream.Stream;
 @Service
 public class ConversationService {
 
-    public Long create(MessageForSendDTO createRequest){
+    public ConversationDTO create(MessageForSendDTO createRequest){
 
         List<Long> participantsIds = Stream
                 .of(createRequest.getSenderId(), createRequest.getRecipientId())
                 .toList();
-
-        //Verify already exists a conversation for both users
-        Conversation existentConversation = repo.findByParticipantsIds(participantsIds);
-        if(existentConversation!=null){
-            //Recreate Conversation
-            recreate(existentConversation.getId());
-            //Event Publish - ConversationRecreated
-            //when conversation needs to be recreated for participants in recreateFor list attribute
-            //Data for: ConversationDTO with message content for WS Service
-        }
 
         //Fetch participants details
         List<Participant> participants = participantService.getParticipantsDetails(participantsIds);
@@ -37,12 +28,12 @@ public class ConversationService {
         //Store conversation in DB
         ConversationDTO conversation = mapper.map(
                 repo.save(
-                    Conversation
-                            .builder()
-                            .createdAt(LocalDateTime.now())
-                            .participants(participants)
-                            .participantsIds(participantsIds)
-                            .build()),
+                        Conversation
+                                .builder()
+                                .createdAt(LocalDateTime.now())
+                                .participants(participants)
+                                .participantsIds(participantsIds)
+                                .build()),
                 ConversationDTO.class);
 
         //Set participants presence statuses
@@ -52,21 +43,10 @@ public class ConversationService {
         //Set new unread message for each participant (less for sender)
         participantService.increaseUnreadMessages(createRequest.getSenderId(), conversation.getId());
 
-        //Event Publisher - New conversation created
-        //when new conversation and its participants are created
-        //Data for: conversationId for user conversationsIds attribute
-        //Data for: ConversationDTO for WS server
-        CreateConversationRspDTO creationResponse = CreateConversationRspDTO
-                .builder()
-                .id(conversation.getId())
-                .participantsUsersIds(participantsIds)
-                .recreateForSomeone(false)
-                .build();
-
-        return conversation.getId();
+        return conversation;
     }
 
-    public CreateConversationRspDTO recreate(Long conversationId){
+    public ConversationDTO recreate(Long conversationId){
 
         //Load conversation data from CACHE
         //If it is not in, get from DB and store in CACHE with TTL
@@ -98,12 +78,14 @@ public class ConversationService {
         //when conversation needs to be recreated for participants in recreateFor list attribute
         //Data for: ConversationDTO for WS Server and User service
 
-        return CreateConversationRspDTO
+        return ConversationDTO
                 .builder()
                 .id(conversationId)
-                .participantsUsersIds(participantsIds)
-                .recreateForSomeone(false)
                 .build();
+    }
+
+    public ConversationDTO loadByParticipantsIds(List<Long> participantsIds){
+        return mapper.map(repo.findByParticipantsIds(participantsIds), ConversationDTO.class);
     }
 
     public List<ConversationDTO> loadConversations(List<Long> conversationsId){
@@ -116,10 +98,6 @@ public class ConversationService {
         //Set participants presence statuses
         presenceService.injectConversationsParticipantsStatuses(conversations);
         return conversations;
-    }
-
-    public ConversationDTO getByParticipantsIds(List<Long> participantsIds){
-        return mapper.map(repo.findByParticipantsIds(participantsIds), ConversationDTO.class);
     }
 
     public void deleteConversation(Long participantId, Long conversationId){
@@ -156,38 +134,11 @@ public class ConversationService {
         //when conversation is deleted by user or permanently
         //Data for: userId, conversationId for User, and WS service
         //Data for: conversationId, recreateFor, isPermanently for Message
-        DeleteConversationRspDTO
-                .builder()
-                .conversationId(conversationId)
-                .participantId(participantId)
-                .recreateForSomeone(true)
-                .permanently(permanently)
-                .build();
     }
 
-    //Event Consumer - New message
-    //When existent conversation message is sent
-    //Data: MessageDTO{conversationId, content, sentAt}
-    public void updateByNewMessage(MessageDTO message){
-        //Update in CACHE, after certain time, update in DB
-        //For the moment, update directly in DB
-        //Update last message data
-        repo.save(
-                Conversation
-                        .builder()
-                        .id(message.getConversationId())
-                        .lastMessageContent(message.getContent())
-                        .lastMessageSentAt(message.getSentAt())
-                        .build());
-        //Increase unread messages for recipient
-        participantService.increaseUnreadMessages(message.getSenderId(), message.getConversationId());
-    }
+    //New message
 
-    public void closeConversation(Long participantId){
-        //Clean Unread Messages
-        //In CACHE and DB
-        participantService.cleanUnreadMessages(participantId);
-    }
+    //Clean Unread Messages
 
     @Autowired
     private ConversationRepository repo;
