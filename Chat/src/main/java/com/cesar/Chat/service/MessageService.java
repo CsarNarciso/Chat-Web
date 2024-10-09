@@ -50,6 +50,8 @@ public class MessageService {
                 .toList();
     }
 
+    //Add new unread message in cache each time a message is sent, it is saved in db with status unread
+
     public void injectConversationsUnreadMessages(List<ConversationDTO> conversations, Long senderId){
 
         //Fetch unreadMessages

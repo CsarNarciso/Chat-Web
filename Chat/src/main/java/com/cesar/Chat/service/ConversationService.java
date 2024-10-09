@@ -71,37 +71,6 @@ public class ConversationService {
         return conversations;
     }
 
-    private void injectConversationsDetails(List<ConversationDTO> conversations, Long participantId){
-        conversations
-                .forEach(conversation -> {
-
-                    List<Long> participantsIds = conversation.getParticipantsIds();
-                    List<ParticipantDTO> participants = new ArrayList<>();
-
-                    participantsIds
-                            .forEach(id -> {
-
-                                participants.add(ParticipantDTO
-                                        .builder()
-                                        .userId(id)
-                                        .build());
-                            });
-
-                    conversation.setParticipants(participants);
-
-                    //Set participants user details
-                    userService.injectConversationsParticipantsDetails(
-                            conversations,
-                            participantsIds);
-
-                    //Set participants presence statuses
-                    presenceService.injectConversationsParticipantsStatuses(conversations, participantsIds);
-
-                    //Set new unread message for each participant (less for sender)
-                    messageService.injectConversationsUnreadMessages(conversations, participantId);
-                });
-    }
-
     public ConversationDTO delete(Long conversationId, Long participantId){
 
         //Look for conversation
@@ -142,6 +111,37 @@ public class ConversationService {
         return mapper.map(conversation, ConversationDTO.class);
     }
 
+    private void injectConversationsDetails(List<ConversationDTO> conversations, Long participantId){
+        conversations
+                .forEach(conversation -> {
+
+                    List<Long> participantsIds = conversation.getParticipantsIds();
+                    List<ParticipantDTO> participants = new ArrayList<>();
+
+                    participantsIds
+                            .forEach(id -> {
+
+                                participants.add(ParticipantDTO
+                                        .builder()
+                                        .userId(id)
+                                        .build());
+                            });
+
+                    conversation.setParticipants(participants);
+
+                    //Set participants user details
+                    userService.injectConversationsParticipantsDetails(
+                            conversations,
+                            participantsIds);
+
+                    //Set participants presence statuses
+                    presenceService.injectConversationsParticipantsStatuses(conversations, participantsIds);
+
+                    //Set new unread message for each participant (less for sender)
+                    messageService.injectConversationsUnreadMessages(conversations, participantId);
+                });
+    }
+
     private ConversationDTO getByParticipantsIds(List<Long> participantsIds){
         return mapper.map(repo.findByParticipantsIds(participantsIds), ConversationDTO.class);
     }
@@ -156,6 +156,19 @@ public class ConversationService {
     public Conversation getById(Long id){
         return repo.getReferenceById(id);
     }
+
+    //Read unread messages - clean them and update in cache and db (change status unread to read in batch)
+
+    //----Event Consumer - User Updated---
+    //when User services updates a user details or profileImage url
+    //Data: userId
+    //Task: invalidate that user data (participant) in cache
+
+    //----Event Consumer - User Deleted---
+    //Data: userId
+    //when User services updates a user details or profileImage url
+    //Task: invalidate user data in cache and delete all user messages
+
 
     @Autowired
     private ConversationRepository repo;
