@@ -11,6 +11,20 @@ import java.util.List;
 @Service
 public class ParticipantService {
 
+    public List<Participant> createInBatch(List<Long> usersIds){
+        List<Participant> participants = new ArrayList<>();
+        usersIds
+                .forEach(id -> {
+                    participants.add(
+                            Participant
+                                    .builder()
+                                    .userId(id)
+                                    .build()
+                    );
+                });
+        return participants;
+    }
+
     public List<Participant> getParticipantsDetails(List<Long> participantsIds){
         return userService.getUsersDetails(participantsIds)
                 .stream()

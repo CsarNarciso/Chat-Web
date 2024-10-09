@@ -1,6 +1,8 @@
 package com.cesar.Chat.service;
 
+import com.cesar.Chat.dto.ConversationDTO;
 import com.cesar.Chat.dto.MessageDTO;
+import com.cesar.Chat.dto.MessageForInitDTO;
 import com.cesar.Chat.dto.MessageForSendDTO;
 import com.cesar.Chat.entity.Message;
 import com.cesar.Chat.repository.MessageRepository;
@@ -13,12 +15,30 @@ import java.util.List;
 @Service
 public class MessageService {
 
-    public MessageDTO send(MessageForSendDTO sendRequest){
+    public void send(MessageForSendDTO message){
 
-        //Store in DB
-        Message entity = mapper.map(sendRequest, Message.class);
-        entity.setSentAt(LocalDateTime.now());
-        return mapper.map(repo.save(entity), MessageDTO.class);
+        ConversationDTO conversation = conversationService.getById(message.getConversationId());
+
+        //If conversation exists,
+        if(conversation!=null){
+
+            //and user belongs to
+            if(conversation.getParticipantsIds().contains(message.getSenderId())){
+
+                //Save Message
+                Message entity = mapper.map(message, Message.class);
+                entity.setSentAt(LocalDateTime.now());
+                repo.save(entity);
+
+                //Publish Event - MessageSent
+                //Data for: message for WS Service
+
+                //If conversation needs to be recreated for someone
+                if(!conversation.getRecreateFor().isEmpty()){
+                    conversationService.create(conversation, mapper.map(message, MessageForInitDTO.class));
+                }
+            }
+        }
     }
 
     public List<MessageDTO> loadConversationMessages(Long conversationId){
