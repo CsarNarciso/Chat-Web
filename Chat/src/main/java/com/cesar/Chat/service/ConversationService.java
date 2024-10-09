@@ -58,8 +58,9 @@ public class ConversationService {
         }
 
         //----COMPOSE DATA----
-        injectConversationsDetails(Stream.of(conversation).toList());
 
+        //Set participants user/presence details
+        injectConversationsDetails(Stream.of(conversation).toList());
         //Set new unread message for each participant (less for sender)
         participantService.increaseUnreadMessages(message.getSenderId(), conversation.getId());
 
@@ -67,15 +68,10 @@ public class ConversationService {
         //Data for: conversation and message for WS Service
     }
 
-    public List<ConversationDTO> loadInBatch(List<Long> conversationsIds){
-        //Store them in CACHE with TTL
-        List<ConversationDTO> conversations =
-                repo.findAllById(conversationsIds)
-                        .stream()
-                        .map(c -> mapper.map(c, ConversationDTO.class))
-                        .toList();
-        //Set participants presence statuses
-        presenceService.injectConversationsParticipantsStatuses(conversations);
+    public List<ConversationDTO> load(Long userId){
+        List<ConversationDTO> conversations = getByParticipantId(userId);
+        //Set participants user/presence details
+        injectConversationsDetails(conversations);
         return conversations;
     }
 
@@ -117,6 +113,13 @@ public class ConversationService {
 
     public ConversationDTO getById(Long id){
         return mapper.map(repo.getReferenceById(id), ConversationDTO.class);
+    }
+
+    public List<ConversationDTO> getByParticipantId(Long participantId){
+        return repo.findByParticipantId(participantId)
+                .stream()
+                .map(c -> mapper.map(c, ConversationDTO.class))
+                .toList();
     }
 
     public ConversationDTO getByParticipantsIds(List<Long> participantsIds){
