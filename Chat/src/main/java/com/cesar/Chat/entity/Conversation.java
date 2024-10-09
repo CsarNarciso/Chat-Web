@@ -2,6 +2,7 @@ package com.cesar.Chat.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,4 +21,7 @@ public class Conversation {
     private List<Long> participantsIds;
     @Column(name="recreate_for")
     private List<Long> recreateFor;
+
+    @OneToMany
+    private List<Message> messages;
 }

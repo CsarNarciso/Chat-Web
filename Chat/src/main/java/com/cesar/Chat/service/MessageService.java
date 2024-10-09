@@ -1,9 +1,6 @@
 package com.cesar.Chat.service;
 
-import com.cesar.Chat.dto.ConversationDTO;
-import com.cesar.Chat.dto.MessageDTO;
-import com.cesar.Chat.dto.MessageForInitDTO;
-import com.cesar.Chat.dto.MessageForSendDTO;
+import com.cesar.Chat.dto.*;
 import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.entity.Message;
 import com.cesar.Chat.repository.MessageRepository;
@@ -12,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class MessageService {
@@ -49,6 +48,22 @@ public class MessageService {
                 .stream()
                 .map(m -> mapper.map(m, MessageDTO.class))
                 .toList();
+    }
+
+    public void injectConversationsUnreadMessages(List<ConversationDTO> conversations, Long senderId){
+
+        //Fetch unreadMessages
+        Map<Long, Integer> unreadMessages =
+                repo.getUnreadMessages(senderId)
+                        .stream()
+                        .collect(Collectors.toMap(
+                                UnreadMessagesDTO::getConversationId,
+                                UnreadMessagesDTO::getCount));
+        //Match unreadMessages with conversations
+        conversations
+                .forEach(conversation -> {
+                    conversation.setUnreadMessages(unreadMessages.get(conversation.getId()));
+                });
     }
 
     @Autowired
