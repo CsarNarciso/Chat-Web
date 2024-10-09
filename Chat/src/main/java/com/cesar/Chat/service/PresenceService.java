@@ -1,7 +1,7 @@
 package com.cesar.Chat.service;
 
 import com.cesar.Chat.dto.ConversationDTO;
-import com.cesar.Chat.dto.UserPresenceStatusDTO;
+import com.cesar.Chat.dto.UserPresenceDTO;
 import com.cesar.Chat.feign.PresenceFeign;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +18,10 @@ public class PresenceService {
     public void injectConversationsParticipantsStatuses(List<ConversationDTO> conversations){
 
         //Fetch presence statuses
-        Map<Long, UserPresenceStatusDTO> statuses =
+        Map<Long, UserPresenceDTO> statuses =
                 feign.getByUsersIds(conversationService.getConversationsParticipantsIds(conversations))
                         .stream()
-                        .collect(Collectors.toMap(UserPresenceStatusDTO::getId, Function.identity()));
+                        .collect(Collectors.toMap(UserPresenceDTO::getId, Function.identity()));
 
         //Match statuses with participants
         conversations

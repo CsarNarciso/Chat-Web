@@ -58,7 +58,6 @@ public class ConversationService {
         }
 
         //----COMPOSE DATA----
-
         //Set participants user/presence details
         injectConversationsDetails(Stream.of(conversation).toList());
         //Set new unread message for each participant (less for sender)
@@ -68,34 +67,36 @@ public class ConversationService {
         //Data for: conversation and message for WS Service
     }
 
-    public List<ConversationDTO> load(Long userId){
-        List<ConversationDTO> conversations = getByParticipantId(userId);
+    public List<ConversationDTO> load(Long participantId){
+        List<ConversationDTO> conversations = getByParticipantId(participantId);
         //Set participants user/presence details
         injectConversationsDetails(conversations);
         return conversations;
     }
 
-    public void delete(Long participantId, Long conversationId){
+    public void delete(Long conversationId, Long participantId){
 
         Conversation conversation = repo.getReferenceById(conversationId);
         boolean permanently;
+
         //Get conversation participants Ids
-        List<Long> participantsIds = conversation.getParticipants()
-                .stream()
-                .map(Participant::getId)
-                .toList();
+        List<Long> participantsIds = conversation.getParticipantsIds();
+
         //Add userId to conversation recreateFor list
         List<Long> recreateFor = conversation.getRecreateFor();
         recreateFor.add(participantId);
-        //If recreateFor Ids matches participants Ids...
+
+        //If recreateFor matches participantsIds...
         if(participantsIds.equals(recreateFor)){
+
             //Deletion is permanently
             permanently = true;
             repo.delete(conversation);
         }
         //If not,
         else{
-            //Update in DB and CACHE with TTL
+
+            //Update recreateFor list
             permanently = false;
             repo.save(
                     Conversation
@@ -106,9 +107,7 @@ public class ConversationService {
             );
         }
         //Event Publisher - Conversation Deleted
-        //when conversation is deleted by user or permanently
-        //Data for: userId, conversationId for User, and WS service
-        //Data for: conversationId, recreateFor, isPermanently for Message
+        //Data for: participantId, conversationId for WS service
     }
 
     public ConversationDTO getById(Long id){
