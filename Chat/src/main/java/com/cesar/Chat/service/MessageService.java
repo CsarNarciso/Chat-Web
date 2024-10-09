@@ -4,6 +4,7 @@ import com.cesar.Chat.dto.ConversationDTO;
 import com.cesar.Chat.dto.MessageDTO;
 import com.cesar.Chat.dto.MessageForInitDTO;
 import com.cesar.Chat.dto.MessageForSendDTO;
+import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.entity.Message;
 import com.cesar.Chat.repository.MessageRepository;
 import org.modelmapper.ModelMapper;
@@ -17,7 +18,7 @@ public class MessageService {
 
     public void send(MessageForSendDTO message){
 
-        ConversationDTO conversation = conversationService.getById(message.getConversationId());
+        Conversation conversation = conversationService.getById(message.getConversationId());
 
         //If conversation exists,
         if(conversation!=null){
@@ -35,7 +36,9 @@ public class MessageService {
 
                 //If conversation needs to be recreated for someone
                 if(!conversation.getRecreateFor().isEmpty()){
-                    conversationService.create(conversation, mapper.map(message, MessageForInitDTO.class));
+                    conversationService.create(
+                            mapper.map(conversation, ConversationDTO.class),
+                            mapper.map(message, MessageForInitDTO.class));
                 }
             }
         }

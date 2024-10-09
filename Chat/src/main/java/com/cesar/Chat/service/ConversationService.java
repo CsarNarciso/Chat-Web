@@ -76,7 +76,7 @@ public class ConversationService {
     public ConversationDTO delete(Long conversationId, Long participantId){
 
         //Look for conversation
-        Conversation conversation = repo.getReferenceById(conversationId);
+        Conversation conversation = getById(conversationId);
         boolean permanently;
 
         //If exists...
@@ -163,8 +163,8 @@ public class ConversationService {
                 .toList();
     }
 
-    public ConversationDTO getById(Long id){
-        return mapper.map(repo.getReferenceById(id), ConversationDTO.class);
+    public Conversation getById(Long id){
+        return repo.getReferenceById(id);
     }
 
     @Autowired
