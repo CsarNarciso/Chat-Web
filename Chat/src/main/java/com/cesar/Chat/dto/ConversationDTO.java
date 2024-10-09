@@ -12,5 +12,5 @@ public class ConversationDTO {
     private LocalDateTime createdAt;
     private List<ParticipantDTO> participants;
     private List<Long> participantsIds;
-    private List<Long> recreateFor;
+    private Integer unreadMessages;
 }

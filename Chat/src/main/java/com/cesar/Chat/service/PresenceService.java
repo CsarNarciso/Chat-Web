@@ -6,7 +6,6 @@ import com.cesar.Chat.feign.PresenceFeign;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -15,11 +14,11 @@ import java.util.stream.Collectors;
 @Service
 public class PresenceService {
 
-    public void injectConversationsParticipantsStatuses(List<ConversationDTO> conversations){
-
+    public void injectConversationsParticipantsStatuses(List<ConversationDTO> conversations,
+                                                        List<Long> participantsIds){
         //Fetch presence statuses
         Map<Long, UserPresenceDTO> statuses =
-                feign.getByUsersIds(conversationService.getConversationsParticipantsIds(conversations))
+                feign.getByUsersIds(participantsIds)
                         .stream()
                         .collect(Collectors.toMap(UserPresenceDTO::getId, Function.identity()));
 

@@ -19,4 +19,5 @@ public class Message {
     @Column(name="sent_at")
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime sentAt;
+    private boolean read;
 }

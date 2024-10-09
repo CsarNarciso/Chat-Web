@@ -2,8 +2,8 @@ package com.cesar.Chat.service;
 
 import com.cesar.Chat.dto.ConversationDTO;
 import com.cesar.Chat.dto.MessageForInitDTO;
+import com.cesar.Chat.dto.ParticipantDTO;
 import com.cesar.Chat.entity.Conversation;
-import com.cesar.Chat.entity.Participant;
 import com.cesar.Chat.repository.ConversationRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,17 +35,11 @@ public class ConversationService {
             if(existentConversation==null){
 
                 //----CREATE----
-
-                //Create participants
-                List<Participant> participants = participantService.createInBatch(usersIds);
-
-                //Store conversation in DB
                 conversation = mapper.map(
                         repo.save(
                                 Conversation
                                         .builder()
                                         .createdAt(LocalDateTime.now())
-                                        .participants(participants)
                                         .participantsIds(usersIds)
                                         .build()),
                         ConversationDTO.class);
@@ -59,9 +53,9 @@ public class ConversationService {
 
         //----COMPOSE DATA----
         //Set participants user/presence details
-        injectConversationsDetails(Stream.of(conversation).toList());
+        createParticipants(
+                Stream.of(conversation).toList());
         //Set new unread message for each participant (less for sender)
-        participantService.increaseUnreadMessages(message.getSenderId(), conversation.getId());
 
         //----PUBLISH EVENT - ConversationCreated----
         //Data for: conversation and message for WS Service
@@ -74,7 +68,7 @@ public class ConversationService {
         if(!conversations.isEmpty()){
 
             //Set participants user/presence details
-            injectConversationsDetails(conversations);
+            createParticipants(conversations);
         }
         return conversations;
     }
@@ -82,7 +76,7 @@ public class ConversationService {
     public ConversationDTO delete(Long conversationId, Long participantId){
 
         //Look for conversation
-        ConversationDTO conversation = getById(conversationId);
+        Conversation conversation = repo.getReferenceById(conversationId);
         boolean permanently;
 
         //If exists...
@@ -116,22 +110,35 @@ public class ConversationService {
                 );
             }
         }
-        return conversation;
+        return mapper.map(conversation, ConversationDTO.class);
     }
 
-    private ConversationDTO getById(Long id){
-        return mapper.map(repo.getReferenceById(id), ConversationDTO.class);
-    }
+    private void createParticipants(List<ConversationDTO> conversations){
+        conversations
+                .forEach(conversation -> {
 
-    private List<ConversationDTO> getByParticipantId(Long participantId){
-        return repo.findByParticipantId(participantId)
-                .stream()
-                .map(c -> mapper.map(c, ConversationDTO.class))
-                .toList();
-    }
+                    List<Long> participantsIds = conversation.getParticipantsIds();
+                    List<ParticipantDTO> participants = new ArrayList<>();
 
-    private ConversationDTO getByParticipantsIds(List<Long> participantsIds){
-        return mapper.map(repo.findByParticipantsIds(participantsIds), ConversationDTO.class);
+                    participantsIds
+                            .forEach(participantId -> {
+
+                                participants.add(ParticipantDTO
+                                        .builder()
+                                        .userId(participantId)
+                                        .build());
+                            });
+
+                    conversation.setParticipants(participants);
+
+                    //Set participants user details
+                    userService.injectConversationsParticipantsDetails(
+                            conversations,
+                            participantsIds);
+
+                    //Set participants presence statuses
+                    presenceService.injectConversationsParticipantsStatuses(conversations, participantsIds);
+                });
     }
 
     private List<Long> getConversationsParticipantsIds(List<ConversationDTO> conversations){
@@ -145,17 +152,23 @@ public class ConversationService {
         return participantsUsersIds;
     }
 
-    private void injectConversationsDetails(List<ConversationDTO> conversations){
-        //Set participants user details
-        userService.injectConversationsParticipantsDetails(conversations);
-        //Set participants presence statuses
-        presenceService.injectConversationsParticipantsStatuses(conversations);
+    private ConversationDTO getByParticipantsIds(List<Long> participantsIds){
+        return mapper.map(repo.findByParticipantsIds(participantsIds), ConversationDTO.class);
+    }
+
+    private List<ConversationDTO> getByParticipantId(Long participantId){
+        return repo.findByParticipantId(participantId)
+                .stream()
+                .map(c -> mapper.map(c, ConversationDTO.class))
+                .toList();
+    }
+
+    public ConversationDTO getById(Long id){
+        return mapper.map(repo.getReferenceById(id), ConversationDTO.class);
     }
 
     @Autowired
     private ConversationRepository repo;
-    @Autowired
-    private ParticipantService participantService;
     @Autowired
     private PresenceService presenceService;
     @Autowired

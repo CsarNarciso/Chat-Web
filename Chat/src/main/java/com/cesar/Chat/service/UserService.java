@@ -14,10 +14,10 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
 
-    public void injectConversationsParticipantsDetails(List<ConversationDTO> conversations){
+    public void injectConversationsParticipantsDetails(List<ConversationDTO> conversations, List<Long> participantsIds){
         //Fetch details
         Map<Long, UserDTO> details =
-                feign.getDetails(conversationService.getConversationsParticipantsIds(conversations))
+                feign.getDetails(participantsIds)
                         .stream()
                         .collect(Collectors.toMap(UserDTO::getId, Function.identity()));
 
@@ -30,9 +30,6 @@ public class UserService {
                 });
     }
 
-    public List<UserDTO> getUsersDetails(List<Long> usersIds) {
-        return feign.getDetails(usersIds);
-    }
     @Autowired
     private UserFeign feign;
     @Autowired
