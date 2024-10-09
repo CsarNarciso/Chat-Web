@@ -1,5 +1,6 @@
 package com.cesar.Chat.service;
 
+import com.cesar.Chat.dto.ConversationDTO;
 import com.cesar.Chat.entity.Participant;
 import com.cesar.Chat.repository.ParticipantRepository;
 import org.modelmapper.ModelMapper;
@@ -25,12 +26,6 @@ public class ParticipantService {
         return participants;
     }
 
-    public List<Participant> getParticipantsDetails(List<Long> participantsIds){
-        return userService.getUsersDetails(participantsIds)
-                .stream()
-                .map(user -> mapper.map(user, Participant.class))
-                .toList();
-    }
     public void setUnreadMessagesInOne(List<Long> participantsIds){
         List<Participant> participants = new ArrayList<>();
         participantsIds
@@ -55,6 +50,7 @@ public class ParticipantService {
                         .build()
         );
     }
+
     @Autowired
     private ParticipantRepository repo;
     @Autowired

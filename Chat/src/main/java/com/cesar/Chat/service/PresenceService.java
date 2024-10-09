@@ -1,12 +1,12 @@
 package com.cesar.Chat.service;
 
 import com.cesar.Chat.dto.ConversationDTO;
-import com.cesar.Chat.dto.ParticipantDTO;
-import com.cesar.Chat.dto.PresenceStatusDTO;
+import com.cesar.Chat.dto.UserPresenceStatusDTO;
 import com.cesar.Chat.feign.PresenceFeign;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -17,32 +17,25 @@ public class PresenceService {
 
     public void injectConversationsParticipantsStatuses(List<ConversationDTO> conversations){
 
-        //Get participants Ids
-        List<Long> participantsUsersIds = conversations
-                .stream()
-                .flatMap(c -> c.getParticipants().stream())
-                .map(ParticipantDTO::getUserId).collect(Collectors.toList());
-
         //Fetch presence statuses
-        Map<Long, PresenceStatusDTO> statuses =
-                presenceFeign.getStatuses(participantsUsersIds)
+        Map<Long, UserPresenceStatusDTO> statuses =
+                feign.getByUsersIds(conversationService.getConversationsParticipantsIds(conversations))
                         .stream()
-                        .collect(Collectors.toMap(PresenceStatusDTO::getUserId, Function.identity()));
+                        .collect(Collectors.toMap(UserPresenceStatusDTO::getId, Function.identity()));
 
         //Match statuses with participants
         conversations
                 .stream()
                 .flatMap(c -> c.getParticipants().stream())
                 .forEach(participant -> {
-                    PresenceStatusDTO status = statuses.get(participant.getUserId());
-                    if(status != null) {
-                        mapper.map(participant, status);
-                    }
+                    mapper.map(participant, statuses.get(participant.getUserId()));
                 });
     }
 
     @Autowired
-    private PresenceFeign presenceFeign;
+    private PresenceFeign feign;
+    @Autowired
+    private ConversationService conversationService;
     @Autowired
     private ModelMapper mapper;
 }

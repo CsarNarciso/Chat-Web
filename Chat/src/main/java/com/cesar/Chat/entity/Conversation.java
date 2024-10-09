@@ -16,11 +16,12 @@ public class Conversation {
     @Column(name="created_at")
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime createdAt;
-    @Column(name="recreate_for")
-    private List<Long> recreateFor;
 
     @OneToMany(targetEntity = Participant.class, fetch = FetchType.EAGER)
     private List<Participant> participants;
+
     @Column(name="participants_ids")
     private List<Long> participantsIds;
+    @Column(name="recreate_for")
+    private List<Long> recreateFor;
 }

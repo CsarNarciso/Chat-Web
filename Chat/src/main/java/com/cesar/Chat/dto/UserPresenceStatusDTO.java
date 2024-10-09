@@ -4,8 +4,8 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class PresenceStatusDTO {
-    private Long userId;
+public class UserPresenceStatusDTO {
+    private Long id;
     private String presenceStatus;
     private LocalDateTime lastSeen;
 }

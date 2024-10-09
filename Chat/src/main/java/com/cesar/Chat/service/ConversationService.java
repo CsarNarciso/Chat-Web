@@ -2,7 +2,6 @@ package com.cesar.Chat.service;
 
 import com.cesar.Chat.dto.ConversationDTO;
 import com.cesar.Chat.dto.MessageForInitDTO;
-import com.cesar.Chat.dto.MessageForSendDTO;
 import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.entity.Participant;
 import com.cesar.Chat.repository.ConversationRepository;
@@ -10,6 +9,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -60,7 +60,7 @@ public class ConversationService {
         //----COMPOSE DATA----
 
         //Set participants user details
-        List<Participant> participants = participantService.getParticipantsDetails(conversation.getParticipantsIds());
+        userService.injectConversationsParticipantsDetails(Stream.of(conversation).toList());
 
         //Set participants presence statuses
         presenceService.injectConversationsParticipantsStatuses(
@@ -129,12 +129,25 @@ public class ConversationService {
         return mapper.map(repo.findByParticipantsIds(participantsIds), ConversationDTO.class);
     }
 
+    public List<Long> getConversationsParticipantsIds(List<ConversationDTO> conversations){
+        List<Long> participantsUsersIds = new ArrayList<>();
+        conversations
+                .forEach(conversation -> {
+                    participantsUsersIds.addAll(
+                            conversation.getParticipantsIds()
+                    );
+                });
+        return participantsUsersIds;
+    }
+
     @Autowired
     private ConversationRepository repo;
     @Autowired
     private ParticipantService participantService;
     @Autowired
     private PresenceService presenceService;
+    @Autowired
+    private UserService userService;
     @Autowired
     private ModelMapper mapper;
 }
