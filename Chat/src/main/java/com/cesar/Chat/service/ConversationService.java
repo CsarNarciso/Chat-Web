@@ -68,64 +68,73 @@ public class ConversationService {
     }
 
     public List<ConversationDTO> load(Long participantId){
+
         List<ConversationDTO> conversations = getByParticipantId(participantId);
-        //Set participants user/presence details
-        injectConversationsDetails(conversations);
+
+        if(!conversations.isEmpty()){
+
+            //Set participants user/presence details
+            injectConversationsDetails(conversations);
+        }
         return conversations;
     }
 
-    public void delete(Long conversationId, Long participantId){
+    public ConversationDTO delete(Long conversationId, Long participantId){
 
-        Conversation conversation = repo.getReferenceById(conversationId);
+        //Look for conversation
+        ConversationDTO conversation = getById(conversationId);
         boolean permanently;
 
-        //Get conversation participants Ids
-        List<Long> participantsIds = conversation.getParticipantsIds();
+        //If exists...
+        if(conversation!=null){
 
-        //Add userId to conversation recreateFor list
-        List<Long> recreateFor = conversation.getRecreateFor();
-        recreateFor.add(participantId);
+            //Get conversation participants Ids
+            List<Long> participantsIds = conversation.getParticipantsIds();
 
-        //If recreateFor matches participantsIds...
-        if(participantsIds.equals(recreateFor)){
+            //Add userId to conversation recreateFor list
+            List<Long> recreateFor = conversation.getRecreateFor();
+            recreateFor.add(participantId);
 
-            //Deletion is permanently
-            permanently = true;
-            repo.delete(conversation);
+            //If recreateFor matches participantsIds...
+            if(participantsIds.equals(recreateFor)){
+
+                //Deletion is permanently
+                permanently = true;
+                repo.deleteById(conversationId);
+            }
+            //If not,
+            else{
+
+                //Update recreateFor list
+                permanently = false;
+                repo.save(
+                        Conversation
+                                .builder()
+                                .id(conversationId)
+                                .recreateFor(recreateFor)
+                                .build()
+                );
+            }
         }
-        //If not,
-        else{
-
-            //Update recreateFor list
-            permanently = false;
-            repo.save(
-                    Conversation
-                            .builder()
-                            .id(conversationId)
-                            .recreateFor(recreateFor)
-                            .build()
-            );
-        }
-        //Event Publisher - Conversation Deleted
-        //Data for: participantId, conversationId for WS service
+        return conversation;
     }
 
-    public ConversationDTO getById(Long id){
+    private ConversationDTO getById(Long id){
         return mapper.map(repo.getReferenceById(id), ConversationDTO.class);
     }
 
-    public List<ConversationDTO> getByParticipantId(Long participantId){
+    private List<ConversationDTO> getByParticipantId(Long participantId){
         return repo.findByParticipantId(participantId)
                 .stream()
                 .map(c -> mapper.map(c, ConversationDTO.class))
                 .toList();
     }
 
-    public ConversationDTO getByParticipantsIds(List<Long> participantsIds){
+    private ConversationDTO getByParticipantsIds(List<Long> participantsIds){
         return mapper.map(repo.findByParticipantsIds(participantsIds), ConversationDTO.class);
     }
 
-    public List<Long> getConversationsParticipantsIds(List<ConversationDTO> conversations){
+    private List<Long> getConversationsParticipantsIds(List<ConversationDTO> conversations){
         List<Long> participantsUsersIds = new ArrayList<>();
         conversations
                 .forEach(conversation -> {
@@ -136,7 +145,7 @@ public class ConversationService {
         return participantsUsersIds;
     }
 
-    public void injectConversationsDetails(List<ConversationDTO> conversations){
+    private void injectConversationsDetails(List<ConversationDTO> conversations){
         //Set participants user details
         userService.injectConversationsParticipantsDetails(conversations);
         //Set participants presence statuses
