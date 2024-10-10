@@ -35,7 +35,7 @@ public class UserService {
 
         //Event Publisher - User updated
         //when user details (username, email) is updated
-        //Data for: username for Conversation Service
+        //Data for: username for Chat Service
         //Data for: email for Auth Server
     }
 
@@ -51,7 +51,7 @@ public class UserService {
 
         //Event Publisher - User Profile Image Updated
         //when user image is updated
-        //Data for: new image url for Conversation Service
+        //Data for: new image url for Chat Service
     }
 
     public List<UserDTO> getByIds(List<Long> ids){
@@ -59,6 +59,20 @@ public class UserService {
                 .stream()
                 .map( u -> mapper.map(u, UserDTO.class) )
                 .toList();
+    }
+
+    public UserDTO delete(Long id){
+
+        UserDTO user = mapper.map(repo.getReferenceById(id), UserDTO.class);
+
+        if(user!=null){
+            //Remove Profile Image from Media Server
+            mediaService.delete(user.getProfileImageUrl());
+            repo.deleteById(id);
+        }
+        //Event Publisher - User Deleted
+        //Data: userId for Chat and Social services
+        return user;
     }
 
     @Autowired

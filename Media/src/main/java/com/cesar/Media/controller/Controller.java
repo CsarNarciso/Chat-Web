@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/media")
 public class Controller {
+
     @PostMapping
     public ResponseEntity<?> uploadProfileImage(@RequestParam MultipartFile imageMetadata, @RequestParam String oldPath){
         return ResponseEntity
@@ -18,6 +19,12 @@ public class Controller {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(profileService.upload(imageMetadata, oldPath));
     }
+
+    @DeleteMapping()
+    public void delete(@RequestParam String path) {
+        profileService.delete(path);
+    }
+
     @Autowired
     private MediaService profileService;
 }

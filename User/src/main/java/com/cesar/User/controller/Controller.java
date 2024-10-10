@@ -58,6 +58,14 @@ public class Controller {
                 .body(service.getByIds(ids));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable Long id){
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(service.delete(id));
+    }
+
     @Autowired
     private UserService service;
 }

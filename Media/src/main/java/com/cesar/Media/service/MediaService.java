@@ -39,6 +39,15 @@ public class MediaService {
         }
         return null;
     }
+
+    public void delete(String path) {
+        try {
+            Files.deleteIfExists(Path.of(path));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Value("${media.absolutePath}")
     private String mediaPath;
     @Value("${media.url}")
