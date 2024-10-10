@@ -1,16 +1,16 @@
 #Application
 spring:
   application:
-    name: presence-service
+    name: social-service
   #Config client
   cloud:
     config:
+      uri: config-service
       discovery:
         enabled: true
-        serviceId: config-server
-      uri: config-server
+        serviceId: config-service
   config:
-    import: optional:configserver:lb://config-server
+    import: optional:configserver:lb://config-service
 #Eureka client
 eureka:
   client:
