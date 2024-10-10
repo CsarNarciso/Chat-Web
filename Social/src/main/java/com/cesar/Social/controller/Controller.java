@@ -1,6 +1,6 @@
-package com.cesar.Presence.controller;
+package com.cesar.Social.controller;
 
-import com.cesar.Presence.service.PresenceService;
+import com.cesar.Social.service.PresenceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -12,30 +12,33 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @RestController
-@RequestMapping("/presences")
+@RequestMapping("/social")
 public class Controller {
 
     @PostMapping("/connect/{userId}")
     public void connect(@PathVariable Long userId) {
-        service.connect(userId);
+        presenceService.connect(userId);
     }
+
     @PutMapping("/disconnect/{userId}")
     public void disconnect(@PathVariable Long userId) {
-        service.disconnect(userId);
+        presenceService.disconnect(userId);
         //Wait for reconnection...,
         scheduler.schedule(() -> {
             //Handle if user remains disconnected...
-            service.removeOffline(userId);
+            presenceService.removeOffline(userId);
         }, 5, TimeUnit.SECONDS);
     }
+
     @GetMapping
     public ResponseEntity<?> getStatuses(List<Long> usersIds){
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(service.getStatuses(usersIds));
+                .body(presenceService.getStatuses(usersIds));
     }
+
     @Autowired
-    private PresenceService service;
+    private PresenceService presenceService;
     ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 }

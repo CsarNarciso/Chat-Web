@@ -11,7 +11,7 @@
 	<groupId>com.cesar</groupId>
 	<artifactId>Social</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Presence</name>
+	<name>Social</name>
 	<description>Manage all presence-related and relationships logic</description>
 	<url/>
 	<licenses>

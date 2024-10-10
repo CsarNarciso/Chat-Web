@@ -57,6 +57,7 @@ public class ConversationService {
 
         //----PUBLISH EVENT - ConversationCreated----
         //Data for: conversation and message for WS Service
+        //Data for: userId, conversationId for Presence Service (Social Graph service if it was implemented)
     }
 
     public List<ConversationDTO> load(Long participantId){
@@ -115,6 +116,10 @@ public class ConversationService {
                 );
             }
         }
+
+        //----PUBLISH EVENT - ConversationDeleted----
+        //Data for: userId, conversationId for Presence Service (Social Graph service if it was implemented)
+
         return mapper.map(conversation, ConversationDTO.class);
     }
 
