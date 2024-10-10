@@ -13,22 +13,34 @@ import java.util.List;
 public class UserService {
 
     public UserDTO create(CreateRequestDTO createRequest){
+
         User user = mapper.map(createRequest, User.class);
+
         //Upload profile image
         String profileImageURL = mediaService.upload(createRequest.getProfileImageMetadata(), null);
+
         //Store URL in user entity
         user.setProfileImageUrl(profileImageURL);
         return mapper.map(repo.save(user), UserDTO.class);
     }
+
+    public UserDTO getByUsername(String username){
+        return mapper.map(repo.findByUsername(username), UserDTO.class);
+    }
+
     public UpdateResponseDTO updateDetails(UpdateRequestDTO updateRequest){
+
         return mapper.map(repo.save(
                 mapper.map(updateRequest, User.class)), UpdateResponseDTO.class);
+
         //Event Publisher - User updated
         //when user details (username, email) is updated
         //Data for: username for Conversation Service
         //Data for: email for Auth Server
     }
+
     public String updateProfileImage(Long id, MultipartFile imageMetadata, String oldPath){
+
         return repo.save(
                 User
                         .builder()
@@ -36,6 +48,7 @@ public class UserService {
                         .profileImageUrl(mediaService.upload(imageMetadata, oldPath))
                         .build()
         ).getProfileImageUrl();
+
         //Event Publisher - User Profile Image Updated
         //when user image is updated
         //Data for: new image url for Conversation Service
@@ -47,9 +60,7 @@ public class UserService {
                 .map( u -> mapper.map(u, UserDTO.class) )
                 .toList();
     }
-    public UserDTO getById(Long id){
-        return mapper.map(repo.getReferenceById(id), UserDTO.class);
-    }
+
     @Autowired
     private UserRepository repo;
     @Autowired

@@ -22,6 +22,15 @@ public class Controller {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(service.create(createRequest));
     }
+
+    @GetMapping("/{username}")
+    public ResponseEntity<?> getByUsername(@PathVariable String username){
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(service.getByUsername(username));
+    }
+
     @PutMapping
     public ResponseEntity<?> updateDetails(@RequestBody UpdateRequestDTO updatedDetails){
         return ResponseEntity
@@ -29,6 +38,7 @@ public class Controller {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(service.updateDetails(updatedDetails));
     }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> updateProfileImage(
             @PathVariable Long id,
@@ -39,13 +49,7 @@ public class Controller {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(service.updateProfileImage(id, imageMetadata, oldPath));
     }
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getById(@PathVariable Long id){
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(service.getById(id));
-    }
+
     @GetMapping
     public ResponseEntity<?> getByIds(@RequestBody List<Long> ids){
         return ResponseEntity
@@ -53,6 +57,7 @@ public class Controller {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(service.getByIds(ids));
     }
+
     @Autowired
     private UserService service;
 }
