@@ -1,6 +1,7 @@
 package com.cesar.Social.controller;
 
 import com.cesar.Social.service.PresenceService;
+import com.cesar.Social.service.RelationshipService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,7 +39,17 @@ public class Controller {
                 .body(presenceService.getStatuses(usersIds));
     }
 
+    @GetMapping("/{userId}")
+    public ResponseEntity<?> getUserRelationships(@PathVariable Long userId){
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(relationshipService.getByUserId(userId));
+    }
+
     @Autowired
     private PresenceService presenceService;
+    @Autowired
+    private RelationshipService relationshipService;
     ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 }
