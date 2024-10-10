@@ -25,6 +25,14 @@ public class ConversationController {
                 .body(service.load(userId));
     }
 
+    @PutMapping("/{conversationId}/{userId}")
+    public ResponseEntity<?> onCleanUnreadMessages(@PathVariable Long conversationId, @PathVariable Long userId){
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(service.cleanUnreadMessages(conversationId, userId));
+    }
+
     @DeleteMapping("/{conversationId}/{userId}")
     public ResponseEntity<?> onDelete(@PathVariable Long conversationId, @PathVariable Long userId){
         return ResponseEntity

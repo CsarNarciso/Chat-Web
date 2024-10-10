@@ -71,6 +71,13 @@ public class ConversationService {
         return conversations;
     }
 
+    public ConversationDTO cleanUnreadMessages(Long conversationId, Long userId){
+        //Update in DB
+        messageService.cleanConversationUnreadMessages(conversationId, userId);
+        //Clean them in cache (for conversationDTO object)
+        return null;
+    }
+
     public ConversationDTO delete(Long conversationId, Long participantId){
 
         //Look for conversation
@@ -157,18 +164,15 @@ public class ConversationService {
         return repo.getReferenceById(id);
     }
 
-    //Read unread messages - clean them and update in cache and db (change status unread to read in batch)
-
     //----Event Consumer - User Updated---
     //when User services updates a user details or profileImage url
     //Data: userId
     //Task: invalidate that user data (participant) in cache
 
     //----Event Consumer - User Deleted---
+    //when User services deletes a user
     //Data: userId
-    //when User services updates a user details or profileImage url
     //Task: invalidate user data in cache and delete all user messages
-
 
     @Autowired
     private ConversationRepository repo;

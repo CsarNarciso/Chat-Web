@@ -25,9 +25,14 @@ public class MessageService {
             //and user belongs to
             if(conversation.getParticipantsIds().contains(message.getSenderId())){
 
-                //Save Message
                 Message entity = mapper.map(message, Message.class);
+                entity.setRead(false);
                 entity.setSentAt(LocalDateTime.now());
+
+                //Add new unread message
+                //Add in CACHE to correspondent ConversationDTO object
+
+                //Save Message
                 repo.save(entity);
 
                 //Publish Event - MessageSent
@@ -50,7 +55,9 @@ public class MessageService {
                 .toList();
     }
 
-    //Add new unread message in cache each time a message is sent, it is saved in db with status unread
+    public void cleanConversationUnreadMessages(Long conversationId, Long senderId){
+        repo.cleanConversationUnreadMessages(conversationId, senderId);
+    }
 
     public void injectConversationsUnreadMessages(List<ConversationDTO> conversations, Long senderId){
 
