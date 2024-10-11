@@ -3,7 +3,7 @@ package com.cesar.Social.dto;
 import lombok.Data;
 
 @Data
-public class ProfileImageUpdatedDTO {
+public class UpdateProfileImageDTO {
     private Long userId;
     private String imageUrl;
 }

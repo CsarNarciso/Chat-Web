@@ -1,9 +1,13 @@
 package com.cesar.Social.service;
 
+import com.cesar.Social.dto.ConversationCreatedDTO;
+import com.cesar.Social.dto.ConversationDeletedDTO;
+import com.cesar.Social.dto.RelationshipDTO;
+import com.cesar.Social.entity.Relationship;
+import com.cesar.Social.repository.RelationshipRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 

@@ -3,7 +3,7 @@ package com.cesar.Social.dto;
 import lombok.Data;
 
 @Data
-public class UserUpdatedDTO {
+public class UpdateUserDTO {
     private Long id;
     private String username;
     private String email;

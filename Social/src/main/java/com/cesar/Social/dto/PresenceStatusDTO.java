@@ -4,7 +4,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class PresenceStatusUpdatedDTO {
+public class PresenceStatusDTO {
     private Long userId;
     private String status;
     private LocalDateTime lastSeen;
