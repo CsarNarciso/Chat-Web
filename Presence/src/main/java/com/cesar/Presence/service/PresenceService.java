@@ -1,7 +1,6 @@
-package com.cesar.Social.service;
+package com.cesar.Presence.service;
 
-import com.cesar.Social.dto.PresenceStatusDTO;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.cesar.Presence.dto.PresenceStatusDTO;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -27,8 +26,7 @@ public class PresenceService {
         }
         //Event Publisher - User Online
         //when user connects
-        //Data for: user relationships and presence data for WS server
-        relationshipService.getByUserId(userId);
+        //Data for: user presence data for Social Service
     }
     public void disconnect(Long userId) {
         //Mark as Offline,
@@ -42,20 +40,18 @@ public class PresenceService {
 
         //Event Publisher - User Offline
         //when user starts disconnection (is registered as offline)
-        //Data for: user relationships and presence data for WS server
-        relationshipService.getByUserId(userId);
+        //Data for: user presence data for Social Service
     }
     public void removeOffline(Long userId){
         if (presences.get(userId).getStatus().equals("OFFLINE")) {
             presences.remove(userId);
             //Event Publisher - User disconnected
             //when user pass certain time offline
-            //Data for: user relationships and presence data for WS server
+            //Data for: user presence data for Social Service
             PresenceStatusDTO presence = PresenceStatusDTO
                     .builder()
                     .userId(userId)
                     .build();
-            relationshipService.getByUserId(userId);
         }
     }
     public List<PresenceStatusDTO> getStatuses(List<Long> usersIds){
@@ -68,6 +64,4 @@ public class PresenceService {
     }
 
     private final Map<Long, PresenceStatusDTO> presences = new ConcurrentHashMap<>();
-    @Autowired
-    private RelationshipService relationshipService;
 }

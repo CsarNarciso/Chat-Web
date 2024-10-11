@@ -1,7 +1,6 @@
-package com.cesar.Social.controller;
+package com.cesar.Presence.controller;
 
-import com.cesar.Social.service.PresenceService;
-import com.cesar.Social.service.RelationshipService;
+import com.cesar.Presence.service.PresenceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,7 +12,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @RestController
-@RequestMapping("/social")
+@RequestMapping("/presence")
 public class Controller {
 
     @PostMapping("/connect/{userId}")
@@ -39,17 +38,7 @@ public class Controller {
                 .body(presenceService.getStatuses(usersIds));
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<?> getUserRelationships(@PathVariable Long userId){
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(relationshipService.getByUserId(userId));
-    }
-
     @Autowired
     private PresenceService presenceService;
-    @Autowired
-    private RelationshipService relationshipService;
     ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 }

@@ -1,4 +1,4 @@
-package com.cesar.Social.dto;
+package com.cesar.Presence.dto;
 
 import lombok.Builder;
 import lombok.Data;

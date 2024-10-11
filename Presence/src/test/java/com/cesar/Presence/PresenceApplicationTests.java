@@ -1,4 +1,4 @@
-package com.cesar.Social;
+package com.cesar.Presence;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

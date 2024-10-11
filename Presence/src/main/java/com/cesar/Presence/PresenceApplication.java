@@ -1,11 +1,11 @@
-package com.cesar.Social;
+package com.cesar.Presence;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SocialApplication {
+public class PresenceApplication {
 	public static void main(String[] args) {
-		SpringApplication.run(SocialApplication.class, args);
+		SpringApplication.run(PresenceApplication.class, args);
 	}
 }
