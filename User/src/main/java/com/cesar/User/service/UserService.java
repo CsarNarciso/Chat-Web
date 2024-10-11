@@ -30,22 +30,16 @@ public class UserService {
 
     public UpdateResponseDTO updateDetails(UpdateRequestDTO updateRequest){
 
-        //GET SOCIAL RELATIONSHIPS FOR THIS USER TO PROVIDE THIS TO WS SERVICE TOO
-        RelationshipDTO userRelationships = socialService.getUserRelationships(updateRequest.getId());
-
         return mapper.map(repo.save(
                 mapper.map(updateRequest, User.class)), UpdateResponseDTO.class);
 
         //Event Publisher - User updated
         //when user details (username, email) is updated
-        //Data for: username and relationships for Chat Service and WS
+        //Data for: username for Chat and Social services
         //Data for: email for Auth Server
     }
 
     public String updateProfileImage(Long id, MultipartFile imageMetadata, String oldPath){
-
-        //GET SOCIAL RELATIONSHIPS FOR THIS USER TO PROVIDE THIS TO WS SERVICE TOO
-        RelationshipDTO userRelationships = socialService.getUserRelationships(id);
 
         return repo.save(
                 User
@@ -57,7 +51,7 @@ public class UserService {
 
         //Event Publisher - User Profile Image Updated
         //when user image is updated
-        //Data for: new image url and relationships for Chat Service and WS
+        //Data: userId and relationships for Chat and Social services
     }
 
     public UserDTO delete(Long id){
@@ -70,11 +64,8 @@ public class UserService {
             repo.deleteById(id);
         }
 
-        //GET SOCIAL RELATIONSHIPS FOR THIS USER TO PROVIDE THIS TO WS SERVICE TOO
-        RelationshipDTO userRelationships = socialService.getUserRelationships(id);
-
         //Event Publisher - User Deleted
-        //Data: userId and relationships for Chat, Social and WS services
+        //Data: userId and relationships for Chat and Social services
 
         return user;
     }
@@ -90,8 +81,6 @@ public class UserService {
     private UserRepository repo;
     @Autowired
     private MediaService mediaService;
-    @Autowired
-    private SocialService socialService;
     @Autowired
     private ModelMapper mapper;
 }
