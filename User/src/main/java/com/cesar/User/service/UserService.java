@@ -51,7 +51,7 @@ public class UserService {
 
         //Event Publisher - User Profile Image Updated
         //when user image is updated
-        //Data: userId and relationships for Chat and Social services
+        //Data: userId and new image url for Chat and Social services
     }
 
     public UserDTO delete(Long id){

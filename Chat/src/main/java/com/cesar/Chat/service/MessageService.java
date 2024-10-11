@@ -6,6 +6,7 @@ import com.cesar.Chat.entity.Message;
 import com.cesar.Chat.repository.MessageRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,8 +36,10 @@ public class MessageService {
                 //Save Message
                 repo.save(entity);
 
-                //Publish Event - MessageSent
-                //Data for: message for WS Service
+                //Send
+                messagingTemplate.convertAndSend(
+                        "/topic/conversation/"+conversation.getId(),
+                        message);
 
                 //If conversation needs to be recreated for someone
                 if(!conversation.getRecreateFor().isEmpty()){
@@ -79,6 +82,8 @@ public class MessageService {
     private MessageRepository repo;
     @Autowired
     private ConversationService conversationService;
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
     @Autowired
     private ModelMapper mapper;
 }

@@ -51,6 +51,11 @@ public class SocialService {
                 });
     }
 
+    //----Event Consumer - User Deleted---
+    //when User Service deletes a user
+    //Data: userId
+    //Task: notify deleted user relationships
+
     @Autowired
     private RelationshipService relationshipService;
     @Autowired

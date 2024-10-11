@@ -7,6 +7,7 @@ import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.repository.ConversationRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,6 +18,8 @@ import java.util.stream.Stream;
 public class ConversationService {
 
     public void create(ConversationDTO conversation, MessageForInitDTO message){
+
+        List<Long> createFor = new ArrayList<>();
 
         //If request is not for recreation
         if(conversation==null){
@@ -29,7 +32,7 @@ public class ConversationService {
                     .toList();
 
             //Look for an existent conversation between both users
-            ConversationDTO existentConversation = getByParticipantsIds(usersIds);
+            Conversation existentConversation = getByParticipantsIds(usersIds);
 
             //If don't exists
             if(existentConversation==null){
@@ -43,11 +46,18 @@ public class ConversationService {
                                         .participantsIds(usersIds)
                                         .build()),
                         ConversationDTO.class);
+                createFor = conversation.getParticipantsIds();
             }
             else{
 
                 //----RECREATE----
-                conversation=existentConversation;
+                repo.save(
+                        Conversation
+                                .builder()
+                                .recreateFor(null)
+                                .build());
+                createFor = existentConversation.getRecreateFor();
+                conversation=mapper.map(existentConversation, ConversationDTO.class);
             }
         }
 
@@ -56,8 +66,12 @@ public class ConversationService {
         injectConversationsDetails(Stream.of(conversation).toList(), message.getSenderId());
 
         //----PUBLISH EVENT - ConversationCreated----
-        //Data for: conversation and message for WS Service
-        //Data for: userId, conversationId for Presence Service (Social Graph service if it was implemented)
+        //Data for: actionPerformed, conversationId, participantsIds, recreateForIds for Social service
+
+        //----SEND CONVERSATION DATA----
+        for (Long participantId : createFor) {
+            messagingTemplate.convertAndSendToUser(participantId.toString(), "/user/reply", conversation);
+        }
     }
 
     public List<ConversationDTO> load(Long participantId){
@@ -154,8 +168,8 @@ public class ConversationService {
                 });
     }
 
-    private ConversationDTO getByParticipantsIds(List<Long> participantsIds){
-        return mapper.map(repo.findByParticipantsIds(participantsIds), ConversationDTO.class);
+    private Conversation getByParticipantsIds(List<Long> participantsIds){
+        return repo.findByParticipantsIds(participantsIds);
     }
 
     private List<ConversationDTO> getByParticipantId(Long participantId){
@@ -187,6 +201,8 @@ public class ConversationService {
     private MessageService messageService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
     @Autowired
     private ModelMapper mapper;
 }
