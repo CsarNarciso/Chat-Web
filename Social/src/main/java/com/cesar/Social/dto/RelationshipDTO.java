@@ -1,6 +1,7 @@
 package com.cesar.Social.dto;
 
 import lombok.Data;
+
 import java.util.List;
 
 @Data
