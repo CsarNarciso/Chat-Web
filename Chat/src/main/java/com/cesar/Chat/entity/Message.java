@@ -2,12 +2,15 @@ package com.cesar.Chat.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.data.redis.core.RedisHash;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name="messages")
+@RedisHash("Message")
 @Data
-public class Message {
+public class Message implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

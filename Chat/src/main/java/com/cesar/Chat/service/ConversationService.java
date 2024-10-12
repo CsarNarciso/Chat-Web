@@ -5,6 +5,8 @@ import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.repository.ConversationRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -15,6 +17,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 @Service
+@EnableCaching
 public class ConversationService {
 
     public void create(ConversationDTO conversation, MessageForInitDTO message){
@@ -193,30 +196,15 @@ public class ConversationService {
     }
 
     //----Event Consumer - User Updated---
-    //when User service updates a user details
-    //Data: userId
-    //Task: invalidate that user data (participant) in cache
-    @KafkaListener
-    public void onUserUpdate(){
-
-    }
-
-    //----Event Consumer - User Image Updated---
-    //when User service updates a user profileImage
-    //Data: userId, new imageUrl
-    //Task: invalidate that user data (participant) in cache
-    @KafkaListener
-    public void onUserImageUpdate(){
-
+    @KafkaListener(topics = "UserUpdated", groupId = "${spring.kafka.consumer.group-id}")
+    public void onUserUpdate(Long userId){
+        redisTemplate.opsForHash().delete(REDIS_HASH_KEY, id);
     }
 
     //----Event Consumer - User Deleted---
-    //when User services deletes a user
-    //Data: userId
-    //Task: invalidate user data in cache and delete all user messages
-    @KafkaListener
-    public void onUserDelete(){
-
+    @KafkaListener(topics = "UserDeleted", groupId = "${spring.kafka.consumer.group-id}")
+    public void onUserDelete(Long userId){
+        redisTemplate.opsForHash().delete(REDIS_HASH_KEY, id);
     }
 
     @Autowired
@@ -231,6 +219,9 @@ public class ConversationService {
     private KafkaTemplate<String, Object> kafkaTemplate;
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+    private final String REDIS_HASH_KEY = "Conversation";
     @Autowired
     private ModelMapper mapper;
 }
