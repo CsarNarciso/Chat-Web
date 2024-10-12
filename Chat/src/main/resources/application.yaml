@@ -12,6 +12,21 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  #Kafka Config
+  kafka:
+    bootstrap-servers: kafka
+    properties:
+      spring:
+        json:
+          trusted:
+            packages: *
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: ${spring.application.name}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
   #Config client
   cloud:
     config:

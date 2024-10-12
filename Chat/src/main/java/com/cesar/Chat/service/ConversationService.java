@@ -1,8 +1,6 @@
 package com.cesar.Chat.service;
 
-import com.cesar.Chat.dto.ConversationDTO;
-import com.cesar.Chat.dto.MessageForInitDTO;
-import com.cesar.Chat.dto.ParticipantDTO;
+import com.cesar.Chat.dto.*;
 import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.repository.ConversationRepository;
 import org.modelmapper.ModelMapper;
@@ -68,8 +66,11 @@ public class ConversationService {
         injectConversationsDetails(Stream.of(conversation).toList(), message.getSenderId());
 
         //----PUBLISH EVENT - ConversationCreated----
-        //Data for: actionPerformed, conversationId, participantsIds, recreateForIds for Social service
-        kafkaTemplate.send();
+        kafkaTemplate.send("ConversationCreated", ConversationCreatedDTO
+                .builder()
+                .conversationId(conversation.getId())
+                .createFor(createFor)
+                .build());
 
 
         //----SEND CONVERSATION DATA----
@@ -136,8 +137,11 @@ public class ConversationService {
         }
 
         //----PUBLISH EVENT - ConversationDeleted----
-        //Data for: userId, conversationId for Presence Service (Social Graph service if it was implemented)
-        kafkaTemplate.send();
+        kafkaTemplate.send("ConversationDeleted", ConversationDeletedDTO
+                .builder()
+                .conversationId(conversationId)
+                .participantId(participantId)
+                .build());
 
         return mapper.map(conversation, ConversationDTO.class);
     }
@@ -224,7 +228,7 @@ public class ConversationService {
     @Autowired
     private UserService userService;
     @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private KafkaTemplate<String, Object> kafkaTemplate;
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
     @Autowired

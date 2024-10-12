@@ -32,7 +32,7 @@ public class MessageService {
                 entity.setSentAt(LocalDateTime.now());
 
                 //Add new unread message
-                //Add in CACHE to correspondent ConversationDTO object
+                //Add in CACHE to correspondent Conversation Participant UnreadMessagesDTO object
 
                 //Save Message
                 repo.save(entity);
