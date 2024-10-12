@@ -7,6 +7,8 @@ import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.repository.ConversationRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -67,6 +69,8 @@ public class ConversationService {
 
         //----PUBLISH EVENT - ConversationCreated----
         //Data for: actionPerformed, conversationId, participantsIds, recreateForIds for Social service
+        kafkaTemplate.send();
+
 
         //----SEND CONVERSATION DATA----
         for (Long participantId : createFor) {
@@ -133,6 +137,7 @@ public class ConversationService {
 
         //----PUBLISH EVENT - ConversationDeleted----
         //Data for: userId, conversationId for Presence Service (Social Graph service if it was implemented)
+        kafkaTemplate.send();
 
         return mapper.map(conversation, ConversationDTO.class);
     }
@@ -184,14 +189,31 @@ public class ConversationService {
     }
 
     //----Event Consumer - User Updated---
-    //when User services updates a user details or profileImage url
+    //when User service updates a user details
     //Data: userId
     //Task: invalidate that user data (participant) in cache
+    @KafkaListener
+    public void onUserUpdate(){
+
+    }
+
+    //----Event Consumer - User Image Updated---
+    //when User service updates a user profileImage
+    //Data: userId, new imageUrl
+    //Task: invalidate that user data (participant) in cache
+    @KafkaListener
+    public void onUserImageUpdate(){
+
+    }
 
     //----Event Consumer - User Deleted---
     //when User services deletes a user
     //Data: userId
     //Task: invalidate user data in cache and delete all user messages
+    @KafkaListener
+    public void onUserDelete(){
+
+    }
 
     @Autowired
     private ConversationRepository repo;
@@ -201,6 +223,8 @@ public class ConversationService {
     private MessageService messageService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
     @Autowired

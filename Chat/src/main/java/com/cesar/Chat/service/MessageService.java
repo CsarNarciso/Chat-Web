@@ -6,6 +6,7 @@ import com.cesar.Chat.entity.Message;
 import com.cesar.Chat.repository.MessageRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -82,6 +83,8 @@ public class MessageService {
     private MessageRepository repo;
     @Autowired
     private ConversationService conversationService;
+    @Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
     @Autowired
