@@ -67,7 +67,7 @@ public class MessageService {
 
         //Fetch unreadMessages
         Map<Long, Integer> unreadMessages =
-                repo.getUnreadMessages(senderId)
+                getUnreadMessages(senderId)
                         .stream()
                         .collect(Collectors.toMap(
                                 UnreadMessagesDTO::getConversationId,
@@ -77,6 +77,10 @@ public class MessageService {
                 .forEach(conversation -> {
                     conversation.setUnreadMessages(unreadMessages.get(conversation.getId()));
                 });
+    }
+
+    private List<UnreadMessagesDTO> getUnreadMessages(Long senderId){
+        return repo.getUnreadMessages(senderId);
     }
 
     @Autowired

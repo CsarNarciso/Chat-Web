@@ -13,7 +13,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
 
     List<Message> findByConversationId(Long conversationId);
 
-    @Query("SELECT c.id AS conversationId, COUNT(m) AS count " +
+    @Query("SELECT c.id AS conversationId, :senderId AS participantId, COUNT(m) AS count " +
             "FROM Messages m JOIN m.conversation c" +
             "WHERE m.senderId!=:senderId AND m.read=false" +
             "GROUP BY c.id")
