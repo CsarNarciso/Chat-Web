@@ -5,6 +5,7 @@ import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.repository.ConversationRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -16,8 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-@Service
 @EnableCaching
+@Service
 public class ConversationService {
 
     public void create(ConversationDTO conversation, MessageForInitDTO message){
@@ -84,7 +85,10 @@ public class ConversationService {
 
     public List<ConversationDTO> load(Long participantId){
 
-        List<ConversationDTO> conversations = getByParticipantId(participantId);
+        List<ConversationDTO> conversations = getByParticipantId(participantId)
+                .stream()
+                .map(c -> mapper.map(c, ConversationDTO.class))
+                .toList();
 
         if(!conversations.isEmpty()){
 
@@ -123,6 +127,7 @@ public class ConversationService {
                 //Deletion is permanently
                 permanently = true;
                 repo.deleteById(conversationId);
+                redisTemplate.opsForHash().delete(REDIS_HASH_KEY, conversationId);
             }
             //If not,
             else{
@@ -150,61 +155,59 @@ public class ConversationService {
     }
 
     private void injectConversationsDetails(List<ConversationDTO> conversations, Long participantId){
-        conversations
-                .forEach(conversation -> {
 
-                    List<Long> participantsIds = conversation.getParticipantsIds();
-                    List<ParticipantDTO> participants = new ArrayList<>();
+        List<Long> participantsIds = new ArrayList<>();
 
-                    participantsIds
-                            .forEach(id -> {
+        for (ConversationDTO conversation : conversations) {
 
-                                participants.add(ParticipantDTO
-                                        .builder()
-                                        .userId(id)
-                                        .build());
-                            });
+            //Get recipients participants (conversation face for sender)
 
-                    conversation.setParticipants(participants);
+            Long recipientId = conversation.getParticipantsIds()
+                    .stream()
+                    .takeWhile(id -> id != participantId)
+                    .findFirst().orElse(null);
+            participantsIds.add(recipientId);
 
-                    //Set participants user details
-                    userService.injectConversationsParticipantsDetails(
-                            conversations,
-                            participantsIds);
+            conversation.setRecipient(
+                    ParticipantDTO
+                            .builder()
+                            .userId(recipientId)
+                            .build());
+        }
 
-                    //Set participants presence statuses
-                    presenceService.injectConversationsParticipantsStatuses(conversations, participantsIds);
+        //Set participants user details
+        userService.injectConversationsParticipantsDetails(conversations, participantsIds);
 
-                    //Set new unread message for each participant (less for sender)
-                    messageService.injectConversationsUnreadMessages(conversations, participantId);
-                });
+        //Set participants presence statuses
+        presenceService.injectConversationsParticipantsStatuses(conversations, participantsIds);
+
+        //Set new unread message for each participant (less for sender)
+        messageService.injectConversationsUnreadMessages(conversations, participantId);
     }
 
+    @Cacheable
     private Conversation getByParticipantsIds(List<Long> participantsIds){
         return repo.findByParticipantsIds(participantsIds);
     }
 
-    private List<ConversationDTO> getByParticipantId(Long participantId){
-        return repo.findByParticipantId(participantId)
-                .stream()
-                .map(c -> mapper.map(c, ConversationDTO.class))
-                .toList();
+    @Cacheable
+    private List<Conversation> getByParticipantId(Long participantId){
+        return repo.findByParticipantId(participantId);
     }
 
+    @Cacheable
     public Conversation getById(Long id){
         return repo.getReferenceById(id);
     }
 
-    //----Event Consumer - User Updated---
     @KafkaListener(topics = "UserUpdated", groupId = "${spring.kafka.consumer.group-id}")
     public void onUserUpdate(Long userId){
-        redisTemplate.opsForHash().delete(REDIS_HASH_KEY, id);
+        userService.invalidate(userId);
     }
 
-    //----Event Consumer - User Deleted---
     @KafkaListener(topics = "UserDeleted", groupId = "${spring.kafka.consumer.group-id}")
     public void onUserDelete(Long userId){
-        redisTemplate.opsForHash().delete(REDIS_HASH_KEY, id);
+        userService.invalidate(userId);
     }
 
     @Autowired
@@ -221,7 +224,8 @@ public class ConversationService {
     private SimpMessagingTemplate messagingTemplate;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
-    private final String REDIS_HASH_KEY = "Conversation";
     @Autowired
     private ModelMapper mapper;
+
+    private final String REDIS_HASH_KEY = "Conversation";
 }

@@ -10,7 +10,7 @@ import java.util.List;
 public class ConversationDTO {
     private Long id;
     private LocalDateTime createdAt;
-    private List<ParticipantDTO> participants;
+    private ParticipantDTO recipient;
     private List<Long> participantsIds;
     private Integer unreadMessages;
 }
