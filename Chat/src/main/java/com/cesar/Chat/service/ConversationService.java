@@ -13,8 +13,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 @EnableCaching
@@ -85,24 +84,76 @@ public class ConversationService {
 
     public List<ConversationDTO> load(Long participantId){
 
-        List<ConversationDTO> conversations = getByParticipantId(participantId)
+        String userConversationsKey = generateUserConversationsKey(participantId);
+        List<Conversation> conversations = new ArrayList<>();
+
+        //Fetch user conversations Ids from Cache
+        List<Long> conversationsIds = redisTemplate.opsForList().range(userConversationsKey, 0, -1)
+                .stream()
+                .map(id -> (Long) id)
+                .toList();
+
+        //If not in Cache
+        if(conversationsIds.isEmpty()){
+
+            //Then from DB
+            conversations = getByParticipantId(participantId);
+
+            conversationsIds = conversations
+                    .stream()
+                    .map(Conversation::getId)
+                    .toList();
+
+            //And store in Cache
+        }
+        else {
+
+            Set<String> conversationKeys = new HashSet<>();
+
+            conversationsIds
+                    .forEach(conversationId -> {
+                        conversationKeys.add(generateConversationKey(conversationId));
+                    });
+
+            conversations = redisTemplate.opsForValue().multiGet(conversationKeys)
+                    .stream()
+                    .map(c -> (Conversation) c)
+                    .toList();
+
+            List<Long> missingCacheConversationsIds = new ArrayList<>();
+
+            if(!conversations.isEmpty()){
+                conversations
+                        .forEach(conversation -> {
+                            if(conversation==null){
+                                missingCacheConversationsIds.add(conversation.getId());
+                            }
+                        });
+            }
+            if(!missingCacheConversationsIds.isEmpty()){
+                List<Conversation> missingConversations = repo.findAllById(missingCacheConversationsIds);
+                conversations = conversations.stream().dropWhile(c -> c==null).toList();
+                conversations.addAll(missingConversations);
+                //Store them in Cache
+                Map<String, Conversation> keysAndValues = new HashMap<>();
+                for(int i = 0; i<missingCacheConversationsIds.size(); i++){
+                    keysAndValues.put(generateConversationKey(
+                            missingCacheConversationsIds.get(i)),
+                            missingConversations.get(i));
+                }
+                redisTemplate.opsForValue().multiSet(keysAndValues);
+            }
+        }
+
+        List<ConversationDTO> dtos = conversations
                 .stream()
                 .map(c -> mapper.map(c, ConversationDTO.class))
                 .toList();
 
-        if(!conversations.isEmpty()){
+        //Set participants' user/presence details and unread messages counts
+        injectConversationsDetails(dtos, participantId);
 
-            //Set participants' user/presence details and unread messages counts
-            injectConversationsDetails(conversations, participantId);
-        }
-        return conversations;
-    }
-
-    public ConversationDTO cleanUnreadMessages(Long conversationId, Long userId){
-        //Update in DB
-        messageService.cleanConversationUnreadMessages(conversationId, userId);
-        //Clean them in cache (for conversationDTO object)
-        return null;
+        return dtos;
     }
 
     public ConversationDTO delete(Long conversationId, Long participantId){
@@ -200,6 +251,8 @@ public class ConversationService {
         return repo.getReferenceById(id);
     }
 
+
+
     @KafkaListener(topics = "UserUpdated", groupId = "${spring.kafka.consumer.group-id}")
     public void onUserUpdate(Long userId){
         userService.invalidate(userId);
@@ -208,6 +261,16 @@ public class ConversationService {
     @KafkaListener(topics = "UserDeleted", groupId = "${spring.kafka.consumer.group-id}")
     public void onUserDelete(Long userId){
         userService.invalidate(userId);
+    }
+
+
+
+
+    private String generateConversationKey(Long conversationId){
+        return String.format("%s", conversationId);
+    }
+    private String generateUserConversationsKey(Long userId){
+        return String.format("%s:conversations", userId);
     }
 
     @Autowired
@@ -219,13 +282,11 @@ public class ConversationService {
     @Autowired
     private UserService userService;
     @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
     private KafkaTemplate<String, Object> kafkaTemplate;
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-    @Autowired
     private ModelMapper mapper;
-
-    private final String REDIS_HASH_KEY = "Conversation";
 }
