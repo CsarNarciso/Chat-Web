@@ -4,19 +4,14 @@ import com.cesar.Chat.dto.*;
 import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.entity.Message;
 import com.cesar.Chat.repository.MessageRepository;
-import io.lettuce.core.api.sync.RedisListCommands;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import org.yaml.snakeyaml.serializer.Serializer;
-
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @EnableCaching
 @Service
@@ -41,19 +36,18 @@ public class MessageService {
 
                 //Save Message
                 repo.save(entity);
-                redisTemplate.opsForHash().put(
-                        REDIS_KEY,
-                        generateMessageRedisKey(senderId, conversationId),
-                        entity);
+                //In Cache
+                String messagesKey = generateMessagesKey(conversationId);
+                redisTemplate.opsForList().rightPush(messagesKey, entity);
 
                 //Send
                 messagingTemplate.convertAndSend(
                         "/topic/conversation/"+conversation.getId(),
                         message);
 
-                //Increment Unread Message
-                String key = generateUnreadKey(senderId);
-                redisTemplate.opsForHash().increment(key, conversationId, 1);
+                //Increment Unread Message in Cache
+                String unreadKey = generateUnreadKey(senderId);
+                redisTemplate.opsForHash().increment(unreadKey, conversationId, 1);
 
                 //If conversation needs to be recreated for someone
                 if(!conversation.getRecreateFor().isEmpty()){
@@ -67,18 +61,21 @@ public class MessageService {
 
     public List<MessageDTO> loadConversationMessages(Long conversationId) {
 
-        String key = String.format("conversation:%s:messages", conversationId);
+        String key = generateMessagesKey(conversationId);
 
-        //Fetch participant messages from Cache
-        List<Message> conversationMessages = redisTemplate.opsForList().range(key, 0, -1);
+        //Fetch conversation messages from Cache
+        List<Message> conversationMessages = redisTemplate.opsForList().range(key, 0, -1)
+                .stream()
+                .map(m -> (Message) m)
+                .toList();
 
         //If not in Cache
         if (conversationMessages==null || conversationMessages.isEmpty()){
             //, then from DB
-            List<Message> messagesFromDB = repo.findByConversationId(conversationId);
+            List<Message> dbMessages = repo.findByConversationId(conversationId);
             //And store in Cache
-            redisTemplate.opsForList().rightPushAll(key, messagesFromDB);
-            conversationMessages = messagesFromDB;
+            redisTemplate.opsForList().rightPushAll(key, dbMessages);
+            conversationMessages = dbMessages;
         }
 
         return  conversationMessages
@@ -145,38 +142,58 @@ public class MessageService {
         redisTemplate.opsForHash().put(key, conversationId, 0);
     }
 
-    public void onUserDeleted(Long userId) {
+    public void onUserDeleted(Long userId, List<Long> conversationIds) {
 
-        //Delete user messages
+        //Delete user messages in DB
         repo.deleteBySenderId(userId);
-        redisTemplate.opsForHash().delete(REDIS_KEY, generateMessageRedisKey(userId,null));
+
+        //In Cache
+        conversationIds
+                .forEach(conversationId -> {
+
+                    //For each user's conversation...
+                    String messageKey = generateMessagesKey(conversationId);
+
+                    //Get actual conversation messages list from Cache to filter out user messages
+                    List<Message> messages = redisTemplate.opsForList().range(messageKey, 0, -1)
+                            .stream()
+                            .map(m -> (Message) m)
+                            .dropWhile(m -> m.getSenderId().equals(userId))
+                            .toList();
+
+                    //And update in Cache
+                    redisTemplate.delete(messageKey);
+                    redisTemplate.opsForList().rightPushAll(messageKey, messages);
+                });
 
         //Unread Messages
-        String key = generateUnreadKey(userId);
-        redisTemplate.opsForHash().delete(key, "*");
+        String unreadKey = generateUnreadKey(userId);
+        redisTemplate.delete(unreadKey);
     }
 
     public void onConversationDeleted(Long conversationId, List<Long> participantsIds){
 
         //Delete conversation messages
         repo.deleteByConversationId(conversationId);
-        redisTemplate.opsForHash().delete(REDIS_KEY, generateMessageRedisKey(null, conversationId));
+        String messagesKey = generateMessagesKey(conversationId);
+        redisTemplate.delete(messagesKey);
 
         //Unread Messages
         participantsIds
                 .forEach(participantId -> {
-                    String key = generateUnreadKey(participantId);
-                    redisTemplate.opsForHash().delete(key, conversationId);
+                    String unreadKey = generateUnreadKey(participantId);
+                    redisTemplate.opsForHash().delete(unreadKey, conversationId);
                 });
     }
 
 
 
-    public void injectConversationsUnreadMessages(List<ConversationDTO> conversations, Long senderId){
-
+    public void injectConversationsUnreadMessages(List<ConversationDTO> conversations,
+                                                  List<Long> conversationIds,
+                                                  Long senderId){
         //Fetch unreadMessages
         Map<Long, Integer> unreadMessages =
-                getUnreadMessages(senderId);
+                getUnreadMessages(senderId, conversationIds);
 
         //Match unreadMessages with conversations
         conversations
@@ -187,9 +204,11 @@ public class MessageService {
 
 
 
-
+    private String generateMessagesKey(Long conversationId){
+        return String.format("%s:messages", conversationId);
+    }
     private String generateUnreadKey(Long participantId){
-        return String.format("unread:%s", participantId);
+        return String.format("%s:unread", participantId);
     }
 
     @Autowired
@@ -197,11 +216,7 @@ public class MessageService {
     @Autowired
     private ConversationService conversationService;
     @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
-    @Autowired
     private RedisTemplate<String, Object> redisTemplate;
-    @Autowired
-    private RedisListCommands<String, Object> redisListCommands;
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
     @Autowired
