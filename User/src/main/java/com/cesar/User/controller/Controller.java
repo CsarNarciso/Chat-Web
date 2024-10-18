@@ -16,11 +16,12 @@ import java.util.List;
 public class Controller {
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody CreateRequestDTO createRequest){
+    public ResponseEntity<?> create(@RequestBody CreateRequestDTO createRequest,
+                                    @RequestParam MultipartFile imageMetadata){
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(service.create(createRequest));
+                .body(service.create(createRequest, imageMetadata));
     }
 
     @GetMapping("/{id}")

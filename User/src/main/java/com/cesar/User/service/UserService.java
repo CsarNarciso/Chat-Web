@@ -21,13 +21,12 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
 
-    public UserDTO create(CreateRequestDTO createRequest){
+    public UserDTO create(CreateRequestDTO createRequest, MultipartFile imageMetadata){
 
         User user = mapper.map(createRequest, User.class);
 
         //Upload profile image, and store URL in user entity
-        String profileImageURL = mediaService.upload(
-                createRequest.getProfileImageMetadata(), null);
+        String profileImageURL = mediaService.upload(imageMetadata, null);
         user.setProfileImageUrl(profileImageURL);
 
         //Store in DB
