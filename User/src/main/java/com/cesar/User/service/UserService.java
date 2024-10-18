@@ -5,10 +5,19 @@ import com.cesar.User.entity.User;
 import com.cesar.User.repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+@EnableCaching
 @Service
 public class UserService {
 
@@ -16,69 +25,166 @@ public class UserService {
 
         User user = mapper.map(createRequest, User.class);
 
-        //Upload profile image
-        String profileImageURL = mediaService.upload(createRequest.getProfileImageMetadata(), null);
-
-        //Store URL in user entity
+        //Upload profile image, and store URL in user entity
+        String profileImageURL = mediaService.upload(
+                createRequest.getProfileImageMetadata(), null);
         user.setProfileImageUrl(profileImageURL);
-        return mapper.map(repo.save(user), UserDTO.class);
+
+        //Store in DB
+        user = repo.save(user);
+
+        //Store in Cache
+        String userKey = generateUserKey(user.getId());
+        redisTemplate.opsForValue().set(userKey, user);
+
+        return mapToDTO(user);
     }
 
-    public UserDTO getByUsername(String username){
-        return mapper.map(repo.findByUsername(username), UserDTO.class);
+
+    public UserDTO getById(Long id){
+
+        //Try to fetch from Cache
+        String userKey = generateUserKey(id);
+        User user = (User) redisTemplate.opsForValue().get(userKey);
+
+        //If not in Cache
+        if(user==null){
+
+            //Then from DB
+            user = repo.getReferenceById(id);
+
+            //And store in Cache
+            redisTemplate.opsForValue().set(userKey,user);
+        }
+        return mapToDTO(user);
     }
 
-    public UpdateResponseDTO updateDetails(UpdateRequestDTO updateRequest){
 
-        return mapper.map(repo.save(
-                mapper.map(updateRequest, User.class)), UpdateResponseDTO.class);
+    public UserDTO updateDetails(UpdateRequestDTO updateRequest){
+
+        //Update in DB
+        User user = repo.save(mapper.map(updateRequest, User.class));
+
+        //Update in Cache
+        String userKey = generateUserKey(updateRequest.getId());
+        redisTemplate.delete(userKey);
+        redisTemplate.opsForValue().set(userKey, user);
 
         //Event Publisher - User updated
-        //when user details (username, email) is updated
-        //Data for: username for Chat and Social services
-        //Data for: email for Auth Server
+        //when user details (username) is updated
+        //Data for: UserDTO{username for Social service}
+        return  mapToDTO(user);
     }
+
 
     public String updateProfileImage(Long id, MultipartFile imageMetadata, String oldPath){
 
-        return repo.save(
-                User
-                        .builder()
-                        .id(id)
-                        .profileImageUrl(mediaService.upload(imageMetadata, oldPath))
-                        .build()
-        ).getProfileImageUrl();
+        //Update in DB
+        User user = repo.save(User.builder()
+                .id(id)
+                .profileImageUrl(mediaService.upload(imageMetadata, oldPath))
+                .build());
 
-        //Event Publisher - User Profile Image Updated
+        //Update in Cache
+        String userKey = generateUserKey(id);
+        redisTemplate.delete(userKey);
+        redisTemplate.opsForValue().set(userKey, user);
+
+        //Event Publisher - User Updated
         //when user image is updated
-        //Data: userId and new image url for Chat and Social services
+        //Data: UserDTO{new image url for Social service}
+        return user.getProfileImageUrl();
     }
+
 
     public UserDTO delete(Long id){
 
-        UserDTO user = mapper.map(repo.getReferenceById(id), UserDTO.class);
+        User user = repo.getReferenceById(id);
 
+        //If exists...
         if(user!=null){
+
             //Remove Profile Image from Media Server
             mediaService.delete(user.getProfileImageUrl());
+
+            //Delete in DB
             repo.deleteById(id);
+
+            //And invalidate in Cache
+            String userKey = generateUserKey(id);
+            redisTemplate.delete(userKey);
         }
 
         //Event Publisher - User Deleted
         //Data: userId and relationships for Chat and Social services
-
-        return user;
+        return mapToDTO(user);
     }
 
+
     public List<UserDTO> getByIds(List<Long> ids){
-        return repo.findAllById(ids)
+
+        //Try to fetch from Cache
+        Set<String> userKeys = ids
                 .stream()
-                .map( u -> mapper.map(u, UserDTO.class) )
+                .map(this::generateUserKey)
+                .collect(Collectors.toSet());
+
+        List<User> users = Objects.requireNonNull(redisTemplate.opsForValue().multiGet(userKeys))
+                .stream()
+                .map(u -> (User) u)
+                .toList();
+
+        //If missing cache
+        List<Long> missingCacheIds = users
+                .stream()
+                .filter(u -> !ids.contains(u.getId()))
+                .map(User::getId)
+                .toList();
+
+        if(!missingCacheIds.isEmpty()){
+
+            //Get from DB
+            List<User> missingUsers = repo.findAllById(missingCacheIds);
+            users.addAll(missingUsers);
+
+            //And store in Cache
+            Map<String, User> missingUserKeys = missingUsers
+                    .stream()
+                    .collect(Collectors.toMap(
+                            u -> generateUserKey(u.getId()),
+                            Function.identity()));
+            redisTemplate.opsForValue().multiSet(missingUserKeys);
+        }
+        return mapToDTOS(users);
+    }
+
+
+
+
+
+
+    private UserDTO mapToDTO(User user){
+        return mapper.map(user, UserDTO.class);
+    }
+
+    private List<UserDTO> mapToDTOS(List<User> users){
+        return users
+                .stream()
+                .map(u -> mapper.map(u, UserDTO.class))
                 .toList();
     }
 
+    private String generateUserKey(Long id){
+        return String.format("%s", id);
+    }
+
+
     @Autowired
     private UserRepository repo;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private KafkaTemplate<String, Object> kafkaTemplate;
     @Autowired
     private MediaService mediaService;
     @Autowired

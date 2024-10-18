@@ -23,12 +23,12 @@ public class Controller {
                 .body(service.create(createRequest));
     }
 
-    @GetMapping("/{username}")
-    public ResponseEntity<?> getByUsername(@PathVariable String username){
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getById(@PathVariable Long id){
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(service.getByUsername(username));
+                .body(service.getById(id));
     }
 
     @PutMapping
