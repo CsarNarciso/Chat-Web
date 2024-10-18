@@ -171,19 +171,25 @@ public class MessageService {
         redisTemplate.delete(unreadKey);
     }
 
-    public void onConversationDeleted(Long conversationId, List<Long> participantsIds){
+    public void onConversationDeleted(Long conversationId, Long participantId, boolean permanently){
 
-        //Delete conversation messages
-        repo.deleteByConversationId(conversationId);
-        String messagesKey = generateMessagesKey(conversationId);
-        redisTemplate.delete(messagesKey);
+        //If deletion is permanently (for all participants)...
+        if(permanently){
 
-        //Unread Messages
-        participantsIds
-                .forEach(participantId -> {
-                    String unreadKey = generateUnreadKey(participantId);
-                    redisTemplate.opsForHash().delete(unreadKey, conversationId);
-                });
+            //Delete conversation messages in DB
+            repo.deleteByConversationId(conversationId);
+
+            //In Cache
+            String conversationMessagesKey = generateMessagesKey(conversationId);
+            redisTemplate.delete(conversationMessagesKey);
+        }
+
+        //Mark unread messages in DB as read (for participant)
+        repo.cleanConversationUnreadMessages(participantId, conversationId);
+
+        //And delete in Cache
+        String unreadKey = generateUnreadKey(participantId);
+        redisTemplate.opsForHash().delete(unreadKey, conversationId);
     }
 
 

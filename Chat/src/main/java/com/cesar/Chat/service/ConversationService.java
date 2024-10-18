@@ -74,7 +74,7 @@ public class ConversationService {
                 });
 
         //----COMPOSE DATA----
-        //Set participants' user/presence details and unread messages counts
+        //Set participants' user/presence details, last message data and unread messages counts
         injectConversationsDetails(Stream.of(conversation).toList(), message.getSenderId());
 
 
@@ -113,7 +113,7 @@ public class ConversationService {
             redisTemplate.opsForList().rightPushAll(userConversationsKey, conversations);
         }
 
-        //Set participants' user/presence details and unread messages counts
+        //Set participants' user/presence details, last message data and unread messages counts
         List<ConversationDTO> conversationDTOS = mapToDTO(conversations);
         injectConversationsDetails(conversationDTOS, userId);
 
@@ -154,6 +154,9 @@ public class ConversationService {
                         .map(this::generateUserConversationsKey)
                         .collect(Collectors.toSet());
                 redisTemplate.delete(userConversationsKeys);
+
+                //Ask Message service to delete deleted conversation messages/unread counts
+                messageService.onConversationDeleted(conversationId, participantsIds);
             }
             //If not,
             else{
@@ -174,6 +177,8 @@ public class ConversationService {
                 redisTemplate.delete(userConversationsKey);
             }
         }
+        //Ask Message service to delete deleted conversation messages/unread counts
+        messageService.onConversationDeleted(conversationId, participantId, permanently);
 
         //----PUBLISH EVENT - ConversationDeleted----
         kafkaTemplate.send("ConversationDeleted", ConversationDeletedDTO
