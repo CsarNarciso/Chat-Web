@@ -17,8 +17,8 @@ public class RedisConfiguration {
     public JedisConnectionFactory connectionFactory(){
         return new JedisConnectionFactory(
                 new RedisStandaloneConfiguration(
-                        "redis",
-                        6379));
+                        "chat-redis",
+                        6382));
     }
 
     @Bean

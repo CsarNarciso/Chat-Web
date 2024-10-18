@@ -40,29 +40,12 @@ public class UserService {
     }
 
 
-    public UserDTO getById(Long id){
-
-        //Try to fetch from Cache
-        String userKey = generateUserKey(id);
-        User user = (User) redisTemplate.opsForValue().get(userKey);
-
-        //If not in Cache
-        if(user==null){
-
-            //Then from DB
-            user = repo.getReferenceById(id);
-
-            //And store in Cache
-            redisTemplate.opsForValue().set(userKey,user);
-        }
-        return mapToDTO(user);
-    }
-
 
     public UserDTO updateDetails(UpdateRequestDTO updateRequest){
 
         //Update in DB
         User user = repo.save(mapper.map(updateRequest, User.class));
+        UserDTO dto = mapToDTO(user);
 
         //Update in Cache
         String userKey = generateUserKey(updateRequest.getId());
@@ -70,9 +53,10 @@ public class UserService {
         redisTemplate.opsForValue().set(userKey, user);
 
         //Event Publisher - User updated
-        //when user details (username) is updated
         //Data for: UserDTO{username for Social service}
-        return  mapToDTO(user);
+        kafkaTemplate.send("UserUpdated", dto);
+
+        return dto;
     }
 
 
@@ -90,8 +74,9 @@ public class UserService {
         redisTemplate.opsForValue().set(userKey, user);
 
         //Event Publisher - User Updated
-        //when user image is updated
         //Data: UserDTO{new image url for Social service}
+        kafkaTemplate.send("UserUpdated", mapToDTO(user));
+
         return user.getProfileImageUrl();
     }
 
@@ -115,7 +100,28 @@ public class UserService {
         }
 
         //Event Publisher - User Deleted
-        //Data: userId and relationships for Chat and Social services
+        //Data: userId for Chat and Social services
+        kafkaTemplate.send("UserDeleted", id);
+
+        return mapToDTO(user);
+    }
+
+
+    public UserDTO getById(Long id){
+
+        //Try to fetch from Cache
+        String userKey = generateUserKey(id);
+        User user = (User) redisTemplate.opsForValue().get(userKey);
+
+        //If not in Cache
+        if(user==null){
+
+            //Then from DB
+            user = repo.getReferenceById(id);
+
+            //And store in Cache
+            redisTemplate.opsForValue().set(userKey,user);
+        }
         return mapToDTO(user);
     }
 

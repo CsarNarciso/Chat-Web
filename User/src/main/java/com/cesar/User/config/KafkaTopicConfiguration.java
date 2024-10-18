@@ -8,19 +8,19 @@ import org.springframework.kafka.config.TopicBuilder;
 
 @EnableKafka
 @Configuration
-public class KafkaTopicsConfiguration {
+public class KafkaTopicConfiguration {
 
     @Bean
-    public NewTopic conversationCreatedTopic() {
+    public NewTopic userUpdatedTopic() {
         return TopicBuilder.name("UserUpdated")
                 .partitions(1)
                 .replicas(1)
                 .build();
     }
     @Bean
-    public NewTopic conversationDeletedTopic() {
+    public NewTopic userDeletedTopic() {
         return TopicBuilder.name("UserDeleted")
-                .partitions(1)
+                .partitions(2)
                 .replicas(1)
                 .build();
     }

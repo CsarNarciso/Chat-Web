@@ -17,7 +17,7 @@ public class RedisConfiguration {
     public JedisConnectionFactory connectionFactory(){
         return new JedisConnectionFactory(
                 new RedisStandaloneConfiguration(
-                        "redis",
+                        "user-redis",
                         6379));
     }
 
