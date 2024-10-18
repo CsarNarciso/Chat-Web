@@ -11,6 +11,7 @@ import java.util.List;
 @Table(name="conversations")
 @RedisHash("Conversation")
 @Data
+@RequiredArgsConstructor
 @Builder
 public class Conversation implements Serializable {
     @Id

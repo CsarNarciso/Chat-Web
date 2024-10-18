@@ -5,7 +5,6 @@ import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.repository.ConversationRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -14,6 +13,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @EnableCaching
@@ -23,6 +23,7 @@ public class ConversationService {
     public void create(ConversationDTO conversation, MessageForInitDTO message){
 
         List<Long> createFor = new ArrayList<>();
+        Conversation savedEntity = new Conversation();
 
         //If request is not for recreation
         if(conversation==null){
@@ -41,32 +42,41 @@ public class ConversationService {
             if(existentConversation==null){
 
                 //----CREATE----
-                conversation = mapper.map(
-                        repo.save(
-                                Conversation
-                                        .builder()
-                                        .createdAt(LocalDateTime.now())
-                                        .participantsIds(usersIds)
-                                        .build()),
-                        ConversationDTO.class);
+                savedEntity = repo.save(
+                        Conversation
+                                .builder()
+                                .createdAt(LocalDateTime.now())
+                                .participantsIds(usersIds)
+                                .build());
+                conversation = mapper.map(savedEntity, ConversationDTO.class);
                 createFor = conversation.getParticipantsIds();
             }
             else{
 
                 //----RECREATE----
-                repo.save(
+                createFor = existentConversation.getRecreateFor();
+                existentConversation = repo.save(
                         Conversation
                                 .builder()
+                                .id(existentConversation.getId())
                                 .recreateFor(null)
                                 .build());
-                createFor = existentConversation.getRecreateFor();
-                conversation=mapper.map(existentConversation, ConversationDTO.class);
+                savedEntity = existentConversation;
+                conversation = mapper.map(existentConversation, ConversationDTO.class);
             }
         }
+
+        //Store in Cache
+        Conversation finalCreatedConversation = savedEntity;
+        createFor
+                .forEach(id -> {
+                    redisTemplate.opsForList().rightPush(generateUserConversationsKey(id), finalCreatedConversation);
+                });
 
         //----COMPOSE DATA----
         //Set participants' user/presence details and unread messages counts
         injectConversationsDetails(Stream.of(conversation).toList(), message.getSenderId());
+
 
         //----PUBLISH EVENT - ConversationCreated----
         kafkaTemplate.send("ConversationCreated", ConversationCreatedDTO
@@ -75,86 +85,43 @@ public class ConversationService {
                 .createFor(createFor)
                 .build());
 
-
         //----SEND CONVERSATION DATA----
         for (Long participantId : createFor) {
             messagingTemplate.convertAndSendToUser(participantId.toString(), "/user/reply", conversation);
         }
     }
 
-    public List<ConversationDTO> load(Long participantId){
 
-        String userConversationsKey = generateUserConversationsKey(participantId);
-        List<Conversation> conversations = new ArrayList<>();
+    public List<ConversationDTO> load(Long userId){
 
-        //Fetch user conversations Ids from Cache
-        List<Long> conversationsIds = redisTemplate.opsForList().range(userConversationsKey, 0, -1)
+        //Try to fetch from Cache
+        String userConversationsKey = generateUserConversationsKey(userId);
+
+        List<Conversation> conversations = Objects.requireNonNull(redisTemplate.opsForList()
+                        .range(userConversationsKey, 0, -1))
                 .stream()
-                .map(id -> (Long) id)
+                .map(c -> (Conversation) c)
                 .toList();
 
-        //If not in Cache
-        if(conversationsIds.isEmpty()){
+        //Check for missing cache
+        if(conversations.isEmpty()){
 
-            //Then from DB
-            conversations = getByParticipantId(participantId);
-
-            conversationsIds = conversations
-                    .stream()
-                    .map(Conversation::getId)
-                    .toList();
+            //Then get from DB
+            conversations = repo.findByParticipantId(userId);
 
             //And store in Cache
+            redisTemplate.opsForList().rightPushAll(userConversationsKey, conversations);
         }
-        else {
-
-            Set<String> conversationKeys = new HashSet<>();
-
-            conversationsIds
-                    .forEach(conversationId -> {
-                        conversationKeys.add(generateConversationKey(conversationId));
-                    });
-
-            conversations = redisTemplate.opsForValue().multiGet(conversationKeys)
-                    .stream()
-                    .map(c -> (Conversation) c)
-                    .toList();
-
-            List<Long> missingCacheConversationsIds = new ArrayList<>();
-
-            if(!conversations.isEmpty()){
-                conversations
-                        .forEach(conversation -> {
-                            if(conversation==null){
-                                missingCacheConversationsIds.add(conversation.getId());
-                            }
-                        });
-            }
-            if(!missingCacheConversationsIds.isEmpty()){
-                List<Conversation> missingConversations = repo.findAllById(missingCacheConversationsIds);
-                conversations = conversations.stream().dropWhile(c -> c==null).toList();
-                conversations.addAll(missingConversations);
-                //Store them in Cache
-                Map<String, Conversation> keysAndValues = new HashMap<>();
-                for(int i = 0; i<missingCacheConversationsIds.size(); i++){
-                    keysAndValues.put(generateConversationKey(
-                            missingCacheConversationsIds.get(i)),
-                            missingConversations.get(i));
-                }
-                redisTemplate.opsForValue().multiSet(keysAndValues);
-            }
-        }
-
-        List<ConversationDTO> dtos = conversations
-                .stream()
-                .map(c -> mapper.map(c, ConversationDTO.class))
-                .toList();
 
         //Set participants' user/presence details and unread messages counts
-        injectConversationsDetails(dtos, participantId);
+        List<ConversationDTO> conversationDTOS = mapToDTO(conversations);
+        injectConversationsDetails(conversationDTOS, userId);
 
-        return dtos;
+        return conversationDTOS;
     }
+
+
+
 
     public ConversationDTO delete(Long conversationId, Long participantId){
 
@@ -177,14 +144,24 @@ public class ConversationService {
 
                 //Deletion is permanently
                 permanently = true;
+
+                //Delete in DB
                 repo.deleteById(conversationId);
-                redisTemplate.opsForHash().delete(REDIS_HASH_KEY, conversationId);
+
+                //In Cache
+                Set<String> userConversationsKeys = participantsIds
+                        .stream()
+                        .map(this::generateUserConversationsKey)
+                        .collect(Collectors.toSet());
+                redisTemplate.delete(userConversationsKeys);
             }
             //If not,
             else{
 
-                //Update recreateFor list
+                //Deletion is local
                 permanently = false;
+
+                //Update recreateFor list
                 repo.save(
                         Conversation
                                 .builder()
@@ -192,6 +169,9 @@ public class ConversationService {
                                 .recreateFor(recreateFor)
                                 .build()
                 );
+                //Delete in Cache
+                String userConversationsKey = generateUserConversationsKey(participantId);
+                redisTemplate.delete(userConversationsKey);
             }
         }
 
@@ -205,9 +185,13 @@ public class ConversationService {
         return mapper.map(conversation, ConversationDTO.class);
     }
 
+
+
+
     private void injectConversationsDetails(List<ConversationDTO> conversations, Long participantId){
 
         List<Long> participantsIds = new ArrayList<>();
+        List<Long> conversationsIds = mapToIds(conversations);
 
         for (ConversationDTO conversation : conversations) {
 
@@ -233,23 +217,38 @@ public class ConversationService {
         presenceService.injectConversationsParticipantsStatuses(conversations, participantsIds);
 
         //Set new unread message for each participant (less for sender)
-        messageService.injectConversationsUnreadMessages(conversations, participantId);
+        messageService.injectConversationsUnreadMessages(conversations, conversationsIds, participantId);
     }
 
-    @Cacheable
+
+
     private Conversation getByParticipantsIds(List<Long> participantsIds){
         return repo.findByParticipantsIds(participantsIds);
     }
 
-    @Cacheable
-    private List<Conversation> getByParticipantId(Long participantId){
-        return repo.findByParticipantId(participantId);
-    }
 
-    @Cacheable
+
     public Conversation getById(Long id){
         return repo.getReferenceById(id);
     }
+
+
+
+    private List<ConversationDTO> mapToDTO(List<Conversation> conversations){
+        return conversations
+                .stream()
+                .map(c -> mapper.map(c, ConversationDTO.class))
+                .toList();
+    }
+
+    private List<Long> mapToIds(List<ConversationDTO> conversations){
+        return conversations
+                .stream()
+                .map(ConversationDTO::getId)
+                .toList();
+    }
+
+
 
 
 
@@ -265,10 +264,6 @@ public class ConversationService {
 
 
 
-
-    private String generateConversationKey(Long conversationId){
-        return String.format("%s", conversationId);
-    }
     private String generateUserConversationsKey(Long userId){
         return String.format("%s:conversations", userId);
     }
