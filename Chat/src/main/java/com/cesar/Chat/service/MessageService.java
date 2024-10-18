@@ -42,7 +42,7 @@ public class MessageService {
                 redisTemplate.opsForList().rightPush(messagesKey, entity);
 
                 //Send
-                messagingTemplate.convertAndSend(
+                webSocketTemplate.convertAndSend(
                         "/topic/conversation/"+conversation.getId(),
                         message);
 
@@ -301,7 +301,7 @@ public class MessageService {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
     @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    private SimpMessagingTemplate webSocketTemplate;
     @Autowired
     private ModelMapper mapper;
 }

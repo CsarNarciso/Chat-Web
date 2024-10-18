@@ -88,7 +88,7 @@ public class ConversationService {
 
         //----SEND CONVERSATION DATA----
         for (Long participantId : createFor) {
-            messagingTemplate.convertAndSendToUser(participantId.toString(), "/user/reply", conversation);
+            webSocketTemplate.convertAndSendToUser(participantId.toString(), "/user/reply", conversation);
         }
     }
 
@@ -285,7 +285,7 @@ public class ConversationService {
     @Autowired
     private KafkaTemplate<String, Object> kafkaTemplate;
     @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    private SimpMessagingTemplate webSocketTemplate;
     @Autowired
     private ModelMapper mapper;
 }

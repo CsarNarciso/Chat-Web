@@ -6,9 +6,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.TopicBuilder;
 
-@Configuration
 @EnableKafka
-public class KafkaConfiguration {
+@Configuration
+public class KafkaTopicsConfiguration {
     
     @Bean
     public NewTopic conversationCreatedTopic() {

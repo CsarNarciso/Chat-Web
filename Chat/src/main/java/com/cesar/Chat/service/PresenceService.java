@@ -1,6 +1,7 @@
 package com.cesar.Chat.service;
 
 import com.cesar.Chat.dto.ConversationDTO;
+import com.cesar.Chat.dto.ParticipantDTO;
 import com.cesar.Chat.dto.UserPresenceDTO;
 import com.cesar.Chat.feign.PresenceFeign;
 import org.modelmapper.ModelMapper;
@@ -24,10 +25,8 @@ public class PresenceService {
 
         //Match statuses with participants
         conversations
-                .stream()
-                .flatMap(c -> c.getParticipants().stream())
-                .forEach(participant -> {
-                    mapper.map(participant, statuses.get(participant.getUserId()));
+                .forEach(c -> {
+                    mapper.map(c.getRecipient(), statuses.get(c.getRecipient().getUserId()));
                 });
     }
 
