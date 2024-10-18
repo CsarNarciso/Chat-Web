@@ -25,6 +25,9 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     void cleanConversationUnreadMessages(@Param("senderId") Long senderId,
                                          @Param("conversationId") Long conversationId);
 
+    @Query("SELECT m FROM Message m WHERE m.conversationId IN :conversationIds")
+    List<Message> findByConversationIds(@Param("conversationIds") List<Long> conversationIds);
+
     List<Message> findByConversationId(Long conversationId);
 
     void deleteBySenderId(Long senderId);

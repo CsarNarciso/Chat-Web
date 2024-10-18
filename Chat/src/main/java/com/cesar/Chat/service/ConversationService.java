@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 @Service
 public class ConversationService {
 
+
     public void create(ConversationDTO conversation, MessageForInitDTO message){
 
         List<Long> createFor = new ArrayList<>();
@@ -49,7 +50,7 @@ public class ConversationService {
                                 .participantsIds(usersIds)
                                 .build());
                 conversation = mapper.map(savedEntity, ConversationDTO.class);
-                createFor = conversation.getParticipantsIds();
+                createFor = usersIds;
             }
             else{
 
@@ -67,15 +68,15 @@ public class ConversationService {
         }
 
         //Store in Cache
-        Conversation finalCreatedConversation = savedEntity;
+        Conversation finalSavedEntity = savedEntity;
         createFor
                 .forEach(id -> {
-                    redisTemplate.opsForList().rightPush(generateUserConversationsKey(id), finalCreatedConversation);
+                    redisTemplate.opsForList().rightPush(generateUserConversationsKey(id), finalSavedEntity);
                 });
 
         //----COMPOSE DATA----
         //Set participants' user/presence details, last message data and unread messages counts
-        injectConversationsDetails(Stream.of(conversation).toList(), message.getSenderId());
+        injectConversationsDetails(Stream.of(savedEntity).toList(), message.getSenderId());
 
 
         //----PUBLISH EVENT - ConversationCreated----
@@ -93,33 +94,9 @@ public class ConversationService {
 
 
     public List<ConversationDTO> load(Long userId){
-
-        //Try to fetch from Cache
-        String userConversationsKey = generateUserConversationsKey(userId);
-
-        List<Conversation> conversations = Objects.requireNonNull(redisTemplate.opsForList()
-                        .range(userConversationsKey, 0, -1))
-                .stream()
-                .map(c -> (Conversation) c)
-                .toList();
-
-        //Check for missing cache
-        if(conversations.isEmpty()){
-
-            //Then get from DB
-            conversations = repo.findByParticipantId(userId);
-
-            //And store in Cache
-            redisTemplate.opsForList().rightPushAll(userConversationsKey, conversations);
-        }
-
         //Set participants' user/presence details, last message data and unread messages counts
-        List<ConversationDTO> conversationDTOS = mapToDTO(conversations);
-        injectConversationsDetails(conversationDTOS, userId);
-
-        return conversationDTOS;
+        return injectConversationsDetails(getByUserId(userId), userId);
     }
-
 
 
 
@@ -127,7 +104,7 @@ public class ConversationService {
 
         //Look for conversation
         Conversation conversation = getById(conversationId);
-        boolean permanently;
+        boolean permanently = false;
 
         //If exists...
         if(conversation!=null){
@@ -156,7 +133,7 @@ public class ConversationService {
                 redisTemplate.delete(userConversationsKeys);
 
                 //Ask Message service to delete deleted conversation messages/unread counts
-                messageService.onConversationDeleted(conversationId, participantsIds);
+                messageService.onConversationDeleted(conversationId, participantId, permanently);
             }
             //If not,
             else{
@@ -191,53 +168,95 @@ public class ConversationService {
     }
 
 
+    private List<ConversationDTO> injectConversationsDetails(List<Conversation> conversations,
+                                                             Long participantId){
+        List<Long> recipientIds = new ArrayList<>();
+        List<Long> conversationIds = mapToIds(conversations);
+        List<ConversationDTO> conversationDTOS = mapToDTO(conversations);
 
+        //For each conversation
+        for (int i = 0; i < conversations.size(); i++){
 
-    private void injectConversationsDetails(List<ConversationDTO> conversations, Long participantId){
-
-        List<Long> participantsIds = new ArrayList<>();
-        List<Long> conversationsIds = mapToIds(conversations);
-
-        for (ConversationDTO conversation : conversations) {
-
-            //Get recipients participants (conversation face for sender)
-
-            Long recipientId = conversation.getParticipantsIds()
+            //Get and set recipient reference (conversation face for sender)
+            Long recipientId = conversations.get(i).getParticipantsIds()
                     .stream()
                     .takeWhile(id -> id != participantId)
                     .findFirst().orElse(null);
-            participantsIds.add(recipientId);
+            recipientIds.add(recipientId);
 
-            conversation.setRecipient(
+            conversationDTOS.get(i).setRecipient(
                     ParticipantDTO
                             .builder()
                             .userId(recipientId)
                             .build());
         }
-
         //Set participants user details
-        userService.injectConversationsParticipantsDetails(conversations, participantsIds);
+        userService.injectConversationsParticipantsDetails(conversationDTOS, recipientIds);
 
         //Set participants presence statuses
-        presenceService.injectConversationsParticipantsStatuses(conversations, participantsIds);
+        presenceService.injectConversationsParticipantsStatuses(conversationDTOS, recipientIds);
 
-        //Set new unread message for each participant (less for sender)
-        messageService.injectConversationsUnreadMessages(conversations, conversationsIds, participantId);
+        //Set last messages data and unread messages counts
+        messageService.injectConversationsMessagesDetails(
+                conversationDTOS, conversationIds, participantId);
+
+        return conversationDTOS;
     }
 
 
+
+    private List<Conversation> getByUserId(Long userId){
+
+        //Try to fetch from Cache
+        String userConversationsKey = generateUserConversationsKey(userId);
+
+        List<Conversation> conversations = Objects.requireNonNull(redisTemplate.opsForList()
+                        .range(userConversationsKey, 0, -1))
+                .stream()
+                .map(c -> (Conversation) c)
+                .toList();
+
+        //Check for missing cache
+        if(conversations.isEmpty()){
+
+            //Then get from DB
+            conversations = repo.findByParticipantId(userId);
+
+            //And store in Cache
+            redisTemplate.opsForList().rightPushAll(userConversationsKey, conversations);
+        }
+        return conversations;
+    }
+
+    public Conversation getById(Long id){
+        return repo.getReferenceById(id);
+    }
 
     private Conversation getByParticipantsIds(List<Long> participantsIds){
         return repo.findByParticipantsIds(participantsIds);
     }
 
 
+    @KafkaListener(topics = "UserDeleted", groupId = "${spring.kafka.consumer.group-id}")
+    public void onUserDeleted(Long userId){
 
-    public Conversation getById(Long id){
-        return repo.getReferenceById(id);
+        //Invalidate user conversations in cache
+        String userConversationsKey = generateUserConversationsKey(userId);
+        List<Conversation> conversations = getByUserId(userId);
+        List<Long> conversationsIds = mapToIds(conversations);
+        redisTemplate.delete(userConversationsKey);
+
+        //Invalidate user messages and unread counts
+        messageService.onUserDeleted(userId, conversationsIds);
     }
 
 
+
+
+
+    private String generateUserConversationsKey(Long userId){
+        return String.format("%s:conversations", userId);
+    }
 
     private List<ConversationDTO> mapToDTO(List<Conversation> conversations){
         return conversations
@@ -246,31 +265,11 @@ public class ConversationService {
                 .toList();
     }
 
-    private List<Long> mapToIds(List<ConversationDTO> conversations){
+    private List<Long> mapToIds(List<Conversation> conversations){
         return conversations
                 .stream()
-                .map(ConversationDTO::getId)
+                .map(Conversation::getId)
                 .toList();
-    }
-
-
-
-
-
-    @KafkaListener(topics = "UserUpdated", groupId = "${spring.kafka.consumer.group-id}")
-    public void onUserUpdate(Long userId){
-        userService.invalidate(userId);
-    }
-
-    @KafkaListener(topics = "UserDeleted", groupId = "${spring.kafka.consumer.group-id}")
-    public void onUserDelete(Long userId){
-        userService.invalidate(userId);
-    }
-
-
-
-    private String generateUserConversationsKey(Long userId){
-        return String.format("%s:conversations", userId);
     }
 
     @Autowired
