@@ -6,8 +6,8 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class PresenceStatusDTO {
-    private Long userId;
+public class UserPresenceDTO {
+    private Long id;
     private String status;
     private LocalDateTime lastSeen;
 }

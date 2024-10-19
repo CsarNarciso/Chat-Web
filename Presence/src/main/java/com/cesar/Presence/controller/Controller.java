@@ -12,7 +12,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @RestController
-@RequestMapping("/presence")
+@RequestMapping("/presences")
 public class Controller {
 
     @PostMapping("/connect/{userId}")
@@ -31,11 +31,11 @@ public class Controller {
     }
 
     @GetMapping
-    public ResponseEntity<?> getStatuses(List<Long> usersIds){
+    public ResponseEntity<?> getStatuses(List<Long> userIds){
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(presenceService.getStatuses(usersIds));
+                .body(presenceService.getPresences(userIds));
     }
 
     @Autowired
