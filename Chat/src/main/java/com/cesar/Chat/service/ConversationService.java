@@ -238,16 +238,16 @@ public class ConversationService {
 
 
     @KafkaListener(topics = "UserDeleted", groupId = "${spring.kafka.consumer.group-id}")
-    public void onUserDeleted(Long userId){
+    public void onUserDeleted(Long id){
 
         //Invalidate user conversations in cache
-        String userConversationsKey = generateUserConversationsKey(userId);
-        List<Conversation> conversations = getByUserId(userId);
+        String userConversationsKey = generateUserConversationsKey(id);
+        List<Conversation> conversations = getByUserId(id);
         List<Long> conversationsIds = mapToIds(conversations);
         redisTemplate.delete(userConversationsKey);
 
         //Invalidate user messages and unread counts
-        messageService.onUserDeleted(userId, conversationsIds);
+        messageService.onUserDeleted(id, conversationsIds);
     }
 
 

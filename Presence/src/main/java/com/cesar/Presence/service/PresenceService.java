@@ -4,6 +4,8 @@ import com.cesar.Presence.dto.UserPresenceDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -27,6 +29,7 @@ public class PresenceService {
 
             //Reconnect - CHECK THIS
             //IN REDIS, THIS IS NOT REPLACING, WE NEED TO USE HASHES...
+            //OR FIRST INVALIDATE, THEN SET AGAIN
             //THEN, CHECK HOW WE CAN RETRIEVE ALL CACHES IN A DTO OBJECT
             redisTemplate.opsForValue().set(userPresenceKey, presence);
         }
@@ -35,9 +38,10 @@ public class PresenceService {
             //Connect
             redisTemplate.opsForValue().set(userPresenceKey, presence);
         }
+
         //Event Publisher - User Online
-        //when user connects
-        //Data for: user presence data for Social Service
+        //Data for: presence data for Social Service
+        kafkaTemplate.send("PresenceUpdated", presence);
     }
 
 
@@ -55,8 +59,8 @@ public class PresenceService {
         redisTemplate.opsForValue().set(userPresenceKey, presence);
 
         //Event Publisher - User Offline
-        //when user starts disconnection (is registered as offline)
-        //Data for: user presence data for Social Service
+        //Data for: presence data for Social Service
+        kafkaTemplate.send("PresenceUpdated", presence);
     }
 
 
@@ -68,11 +72,14 @@ public class PresenceService {
         //If still Offline...
         if (presence.getStatus().equals("OFFLINE")) {
 
+            //Forgot it
+
             //Remove it from Cache
             redisTemplate.delete(userPresenceKey);
-            //Event Publisher - User disconnected
-            //when user pass certain time offline
-            //Data for: user presence data for Social Service
+
+            //Event Publisher - Presence Forgotten
+            //Data for: user id for Social Service
+            kafkaTemplate.send("PresenceForgotten", userId);
         }
     }
 
@@ -95,6 +102,17 @@ public class PresenceService {
 
 
 
+    @KafkaListener(topics = "UserDeleted", groupId = "${spring.kafka.consumer.group-id}")
+    public void onUserDeleted(Long id){
+
+        //Forgot user presence
+        String userPresenceKey = generateUserPresenceKey(id);
+        redisTemplate.delete(userPresenceKey);
+    }
+
+
+
+
 
     private String generateUserPresenceKey(Long id){
         return String.format("%s", id);
@@ -102,4 +120,6 @@ public class PresenceService {
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private KafkaTemplate<String, Object> kafkaTemplate;
 }

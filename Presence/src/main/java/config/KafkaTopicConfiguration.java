@@ -11,8 +11,15 @@ import org.springframework.kafka.config.TopicBuilder;
 public class KafkaTopicConfiguration {
 
     @Bean
-    public NewTopic presenceTopic() {
-        return TopicBuilder.name("")
+    public NewTopic presenceUpdatedTopic() {
+        return TopicBuilder.name("PresenceUpdated")
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
+    @Bean
+    public NewTopic presenceForgottenTopic() {
+        return TopicBuilder.name("PresenceForgotten")
                 .partitions(1)
                 .replicas(1)
                 .build();
