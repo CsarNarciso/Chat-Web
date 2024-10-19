@@ -20,7 +20,7 @@ public class KafkaTopicConfiguration {
     @Bean
     public NewTopic userDeletedTopic() {
         return TopicBuilder.name("UserDeleted")
-                .partitions(2)
+                .partitions(3)
                 .replicas(1)
                 .build();
     }
