@@ -5,8 +5,6 @@ import java.util.List;
 
 @Data
 public class ConversationCreatedDTO {
-    private Long conversationId;
-    private String action;
-    private List<Long> participantsIds;
-    private List<Long> recreatedForIds;
+    private Long id;
+    private List<Long> createFor;
 }

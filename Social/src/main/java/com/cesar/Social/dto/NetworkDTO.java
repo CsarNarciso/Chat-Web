@@ -1,11 +1,10 @@
 package com.cesar.Social.dto;
 
 import lombok.Data;
-
 import java.util.List;
 
 @Data
-public class RelationshipDTO {
+public class NetworkDTO {
     private Long userId;
-    private List<Long> conversationsIds;
+    private List<Long> conversationIds;
 }

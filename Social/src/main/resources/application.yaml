@@ -18,9 +18,24 @@ spring:
       uri: config-service
       discovery:
         enabled: true
-        serviceId: config-service
+        serviceId: ${spring.cloud.config.uri}
   config:
     import: optional:configserver:lb://${spring.cloud.config.uri}
+  #Kafka Config
+  kafka:
+    bootstrap-servers: kafka
+    properties:
+      spring:
+        json:
+          trusted:
+            packages: *
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: ${spring.application.name}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
 #Eureka client
 eureka:
   client:

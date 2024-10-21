@@ -8,12 +8,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class SocialService {
 
+
     //Event Consumer - User Presence Status Change
     //when user connects/disconnects on Presence Service
     //Data: userId, status
     //Task: send notification to users who have a conversation with this user
     public void presenceStatusUpdated(PresenceStatusDTO statusUpdated){
-        RelationshipDTO relationship = relationshipService.getByUserId(statusUpdated.getUserId());
+        NetworkDTO relationship = relationshipService.getByUserId(statusUpdated.getUserId());
         relationship.getConversationsIds()
                 .forEach(participantId -> {
                     template.convertAndSendToUser(
@@ -22,12 +23,13 @@ public class SocialService {
                             statusUpdated);
                 });
     }
+
     //Event Consumer - User details/profile Update
     //when User Service updates a user details
     //Data: userId, updated data
     //Task: send notification to users who have a conversation with this user
     public void userDetailsUpdated(UpdateUserDTO updatedUser){
-        RelationshipDTO relationship = relationshipService.getByUserId(updatedUser.getId());
+        NetworkDTO relationship = relationshipService.getByUserId(updatedUser.getId());
         relationship.getConversationsIds()
                 .forEach(participantId -> {
                     template.convertAndSendToUser(
@@ -36,12 +38,13 @@ public class SocialService {
                             updatedUser);
                 });
     }
+
     //Event Consumer - User profile image Update
     //when User Service updates a user profile image
     //Data: userId, newImageUrl
     //Task: send notification to users who have a conversation with this user
     public void profileImageUpdated(UpdateProfileImageDTO updatedImage){
-        RelationshipDTO relationship = relationshipService.getByUserId(updatedImage.getUserId());
+        NetworkDTO relationship = relationshipService.getByUserId(updatedImage.getUserId());
         relationship.getConversationsIds()
                 .forEach(participantId -> {
                     template.convertAndSendToUser(
@@ -56,8 +59,9 @@ public class SocialService {
     //Data: userId
     //Task: notify deleted user relationships
 
-    @Autowired
-    private RelationshipService relationshipService;
+
     @Autowired
     private SimpMessagingTemplate template;
+    @Autowired
+    private NetworkService relationshipService;
 }
