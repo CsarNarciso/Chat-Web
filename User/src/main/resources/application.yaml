@@ -12,9 +12,6 @@ media:
 spring:
   application:
     name: user-service
-  #Postgres datasource
-  datasource:
-    driverClassName: org.postgresql.Driver
   #Hibernate JPA
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -25,12 +22,12 @@ spring:
   #Config client
   cloud:
     config:
+      uri: configuration-service
       discovery:
         enabled: true
-        serviceId: config-server
-      uri: config-server
+        serviceId: ${spring.cloud.config.uir}
   config:
-    import: optional:configserver:lb://config-server
+    import: optional:configserver:lb://${spring.cloud.config.uir}
   #Kafka Config
   kafka:
     bootstrap-servers: kafka
@@ -48,4 +45,4 @@ eureka:
     registerWithEureka: true
     fetchRegistry: true
     serviceUrl:
-      defaultZone: http://eureka-server:8761/eureka
+      defaultZone: http://discovery:8761/eureka

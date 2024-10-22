@@ -1,25 +1,26 @@
 package com.cesar.Chat.entity;
 
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.cassandra.core.mapping.Column;
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
+import org.springframework.data.cassandra.core.mapping.Table;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
-@Entity
-@Table(name="conversations")
+
 @Data
 @RequiredArgsConstructor
 @Builder
+@Table("conversations")
 public class Conversation implements Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column(name="created_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime createdAt;
-    @Column(name="participants_ids")
-    private List<Long> participantsIds;
-    @Column(name="recreate_for")
+    @PrimaryKeyColumn(name = "id", ordinal = 0)
+    private UUID id;
+    @PrimaryKeyColumn(name = "participant_ids", ordinal = 1)
+    private List<Long> participantIds;
+    @Column("recreate_for")
     private List<Long> recreateFor;
+    @Column("created_at")
+    private LocalDateTime createdAt;
 }

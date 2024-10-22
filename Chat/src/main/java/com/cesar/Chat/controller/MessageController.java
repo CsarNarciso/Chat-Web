@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/messages")
@@ -18,11 +19,19 @@ public class MessageController {
     }
 
     @GetMapping("/{conversationId}")
-    public ResponseEntity<?> onLoadMessages(@PathVariable Long conversationId) {
+    public ResponseEntity<?> onLoad(@PathVariable UUID conversationId) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(service.loadConversationMessages(conversationId));
+    }
+
+    @PutMapping("/clean.unread/{conversationId}/{userId}")
+    public ResponseEntity<?> onCleanUnread(@PathVariable UUID conversationId, @PathVariable Long userId){
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(service.cleanConversationUnreadMessages(conversationId, userId));
     }
 
     @Autowired

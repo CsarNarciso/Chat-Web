@@ -2,7 +2,7 @@ services:
   social:
     build: Social/.
     ports:
-      - "8004:8004"}
+      - "8004:8004"
     env_file:
       - Social/.env
     environment:
@@ -10,6 +10,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
       - SPRING_JPA_HIBERNATE_DDL_AUTO=${SPRING_JPA_HIBERNATE_DDL_AUTO}
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
     depends_on:
       discovery:
         condition: service_healthy
@@ -17,9 +18,11 @@ services:
         condition: service_healthy
       social-db:
         condition: service_healthy
+      social-redis:
+        condition: service_healthy
     networks:
       - discovery-net
-      - social-db-net
+      - social-net
     healthcheck:
       test: ["CMD", "curl", "--fail", "--silent", "localhost:8004/actuator/health"]
       start_period: 20s
@@ -37,7 +40,7 @@ services:
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     networks:
-      - social-db-net
+      - social-net
     volumes:
       - social-db-vol:/var/lib/mysql
     healthcheck:
@@ -46,7 +49,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  social-redis:
+    image: redis
+    ports:
+      - "6380:6380"
+    networks:
+      - social-net
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      start_period: 20s
+      interval: 10s
+      timeout: 5s
+      retries: 5
 networks:
-  social-db-net:
+  social-net:
 volumes:
   social-db-vol:

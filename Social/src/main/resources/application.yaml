@@ -2,12 +2,9 @@
 spring:
   application:
     name: social-service
-  #Postgres datasource
-  datasource:
-    driverClassName: org.postgresql.Driver
   #Hibernate JPA
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
     show-sql: true
     properties:
       hibernate:
@@ -15,7 +12,7 @@ spring:
   #Config client
   cloud:
     config:
-      uri: config-service
+      uri: configuration-service
       discovery:
         enabled: true
         serviceId: ${spring.cloud.config.uri}
@@ -42,4 +39,4 @@ eureka:
     registerWithEureka: true
     fetchRegistry: true
     serviceUrl:
-      defaultZone: http://eureka-server:8761/eureka
+      defaultZone: http://discovery:8761/eureka

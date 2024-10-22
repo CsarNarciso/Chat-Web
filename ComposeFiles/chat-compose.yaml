@@ -6,10 +6,12 @@ services:
     env_file:
       - Chat/.env
     environment:
-      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
-      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
-      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=${SPRING_JPA_HIBERNATE_DDL_AUTO}
+      - SPRING_DATA_CASSANDRA_KEYSPACE_NAME=${SPRING_DATA_CASSANDRA_KEYSPACE_NAME}
+      - SPRING_DATA_CASSANDRA_CONTACT_POINTS=${SPRING_DATA_CASSANDRA_CONTACT_POINTS}
+      - SPRING_DATA_CASSANDRA_PORT=${SPRING_DATA_CASSANDRA_PORT}
+      - SPRING_DATA_CASSANDRA_LOCAL_DATACENTER=${SPRING_DATA_CASSANDRA_LOCAL_DATACENTER}
+      - SPRING_DATA_CASSANDRA_SCHEMA_ACTION=${SPRING_DATA_CASSANDRA_SCHEMA_ACTION}
+      - SPRING_DATA_CASSANDRA_CREATE_KEYSPACE=${SPRING_DATA_CASSANDRA_CREATE_KEYSPACE}
     depends_on:
       discovery:
         condition: service_healthy
@@ -19,12 +21,11 @@ services:
         condition: service_healthy
       chat-redis:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
     networks:
       - discovery-net
-      - chat-db-net
-      - chat-redis-net
-    volumes:
-      - chat-db-vol:/data/postgres
+      - chat-net
     healthcheck:
       test: [ "CMD", "curl", "--fail", "--silent", "localhost:8002/actuator/health" ]
       start_period: 20s
@@ -34,19 +35,13 @@ services:
   chat-db:
     image: cassandra
     ports:
-      - "5432:5432"
-    env_file:
-      - Chat/.env
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - "9042:9042"
     networks:
-      - chat-db-net
+      - chat-net
     volumes:
-      - chat-db-vol:/data/postgres
+      - chat-db-vol:/var/lib/cassandra
     healthcheck:
-      test: [ "CMD", "pg_isready", "-d", "db", "-U", "postgres" ]
+      test: ["cqlsh", "-u cassandra", "-p cassandra", "-k <YOUR_KEYSPACE_NAME>"]
       start_period: 20s
       interval: 10s
       timeout: 5s
@@ -54,23 +49,16 @@ services:
   chat-redis:
     image: redis
     ports:
-      - "5432:5432"
-    env_file:
-      - Chat/.env
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - "6382:6382"
     networks:
-      - chat-redis-net
+      - chat-net
     healthcheck:
-      test: [ "CMD", "pg_isready", "-d", "db", "-U", "postgres" ]
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
       start_period: 20s
       interval: 10s
       timeout: 5s
       retries: 5
 networks:
-  chat-db-net:
-  chat-redis-net:
+  chat-net:
 volumes:
   chat-db-vol:

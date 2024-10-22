@@ -2,35 +2,33 @@ package com.cesar.Chat.repository;
 
 import com.cesar.Chat.dto.UnreadMessagesDTO;
 import com.cesar.Chat.entity.Message;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.cassandra.repository.AllowFiltering;
+import org.springframework.data.cassandra.repository.CassandraRepository;
+import org.springframework.data.cassandra.repository.Query;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface MessageRepository extends JpaRepository<Message, Long> {
+public interface MessageRepository extends CassandraRepository<Message, UUID> {
 
-    @Query("SELECT m.conversationId AS conversationId, COUNT(m) AS count " +
-            "FROM Message m" +
-            "WHERE m.senderId!=:senderId AND m.read=false AND m.conversationId IN :conversationsIds" +
-            "GROUP BY conversationId")
-    List<UnreadMessagesDTO> getUnreadMessages(@Param("senderId") Long senderId,
-                                              @Param("conversationsIds") List<Long> conversationsIds);
+    @Query("SELECT conversation_id, COUNT(*) FROM messages " +
+            "WHERE sender_id!=?0 AND read=false AND conversation_id IN ?1 " +
+            "GROUP BY conversation_id")
+    List<UnreadMessagesDTO> getUnreadMessages(Long senderId, List<UUID> conversationsIds);
 
-    @Modifying
-    @Query("UPDATE m Message m SET m.read=true " +
-            "WHERE m.conversationId=:conversationId AND m.senderId!=:senderId")
-    void cleanConversationUnreadMessages(@Param("senderId") Long senderId,
-                                         @Param("conversationId") Long conversationId);
+    @Query("UPDATE messages SET read=true WHERE sender_id!=?0 AND conversation_id=?1")
+    void cleanConversationUnreadMessages(Long senderId, UUID conversationId);
 
-    @Query("SELECT m FROM Message m WHERE m.conversationId IN :conversationIds")
-    List<Message> findByConversationIds(@Param("conversationIds") List<Long> conversationIds);
+    @AllowFiltering
+    List<Message> findAllByConversationId(UUID conversationId);
 
-    List<Message> findByConversationId(Long conversationId);
+    @AllowFiltering
+    List<Message> findAllByConversationIds(List<UUID> conversationIds);
 
+    @AllowFiltering
     void deleteBySenderId(Long senderId);
 
-    void deleteByConversationId(Long conversationId);
+    @AllowFiltering
+    void deleteByConversationId(UUID conversationId);
 }

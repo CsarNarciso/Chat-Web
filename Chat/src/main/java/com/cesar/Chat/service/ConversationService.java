@@ -46,8 +46,9 @@ public class ConversationService {
                 savedEntity = repo.save(
                         Conversation
                                 .builder()
+                                .id(UUID.randomUUID())
                                 .createdAt(LocalDateTime.now())
-                                .participantsIds(usersIds)
+                                .participantIds(usersIds)
                                 .build());
                 conversation = mapper.map(savedEntity, ConversationDTO.class);
                 createFor = usersIds;
@@ -82,7 +83,7 @@ public class ConversationService {
         //----PUBLISH EVENT - ConversationCreated----
         kafkaTemplate.send("ConversationCreated", ConversationCreatedDTO
                 .builder()
-                .conversationId(conversation.getId())
+                .id(conversation.getId())
                 .createFor(createFor)
                 .build());
 
@@ -103,7 +104,7 @@ public class ConversationService {
 
 
 
-    public ConversationDTO delete(Long conversationId, Long participantId){
+    public ConversationDTO delete(UUID conversationId, Long participantId){
 
         //Look for conversation
         Conversation conversation = getById(conversationId);
@@ -113,7 +114,7 @@ public class ConversationService {
         if(conversation!=null){
 
             //Get conversation participants Ids
-            List<Long> participantsIds = conversation.getParticipantsIds();
+            List<Long> participantsIds = conversation.getParticipantIds();
 
             //Add userId to conversation recreateFor list
             List<Long> recreateFor = conversation.getRecreateFor();
@@ -142,7 +143,6 @@ public class ConversationService {
             else{
 
                 //Deletion is local
-                permanently = false;
 
                 //Update recreateFor list
                 repo.save(
@@ -163,7 +163,7 @@ public class ConversationService {
         //----PUBLISH EVENT - ConversationDeleted----
         kafkaTemplate.send("ConversationDeleted", ConversationDeletedDTO
                 .builder()
-                .conversationId(conversationId)
+                .id(conversationId)
                 .participantId(participantId)
                 .permanently(permanently)
                 .build());
@@ -175,16 +175,16 @@ public class ConversationService {
     private List<ConversationDTO> injectConversationsDetails(List<Conversation> conversations,
                                                              Long participantId){
         List<Long> recipientIds = new ArrayList<>();
-        List<Long> conversationIds = mapToIds(conversations);
+        List<UUID> conversationIds = mapToIds(conversations);
         List<ConversationDTO> conversationDTOS = mapToDTO(conversations);
 
         //For each conversation
         for (int i = 0; i < conversations.size(); i++){
 
             //Get and set recipient reference (conversation face for sender)
-            Long recipientId = conversations.get(i).getParticipantsIds()
+            Long recipientId = conversations.get(i).getParticipantIds()
                     .stream()
-                    .takeWhile(id -> id != participantId)
+                    .takeWhile(id -> !id.equals(participantId))
                     .findFirst().orElse(null);
             recipientIds.add(recipientId);
 
@@ -232,12 +232,12 @@ public class ConversationService {
         return conversations;
     }
 
-    public Conversation getById(Long id){
-        return repo.getReferenceById(id);
+    public Conversation getById(UUID id){
+        return repo.getById(id);
     }
 
     private Conversation getByParticipantsIds(List<Long> participantsIds){
-        return repo.findByParticipantsIds(participantsIds);
+        return repo.findByParticipantIds(participantsIds);
     }
 
 
@@ -247,7 +247,7 @@ public class ConversationService {
         //Invalidate user conversations in cache
         String userConversationsKey = generateUserConversationsKey(id);
         List<Conversation> conversations = getByUserId(id);
-        List<Long> conversationsIds = mapToIds(conversations);
+        List<UUID> conversationsIds = mapToIds(conversations);
         redisTemplate.delete(userConversationsKey);
 
         //Invalidate user messages and unread counts
@@ -269,7 +269,7 @@ public class ConversationService {
                 .toList();
     }
 
-    private List<Long> mapToIds(List<Conversation> conversations){
+    private List<UUID> mapToIds(List<Conversation> conversations){
         return conversations
                 .stream()
                 .map(Conversation::getId)

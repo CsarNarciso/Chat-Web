@@ -17,16 +17,16 @@ spring:
   #Config client
   cloud:
     config:
+      uri: configuration-service
       discovery:
         enabled: true
-        serviceId: config-server
-      uri: config-server
+        serviceId: ${spring.cloud.config.uri}
   config:
-    import: optional:configserver:lb://config-server
+    import: optional:configserver:lb://${spring.cloud.config.uri}
 #Eureka client
 eureka:
   client:
     registerWithEureka: true
     fetchRegistry: true
     serviceUrl:
-      defaultZone: http://eureka-server:8761/eureka
+      defaultZone: http://discovery:8761/eureka

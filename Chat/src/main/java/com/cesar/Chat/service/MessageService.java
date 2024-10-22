@@ -26,16 +26,17 @@ public class MessageService {
         if(conversation!=null){
 
             Long senderId = message.getSenderId();
-            Long conversationId = conversation.getId();
+            UUID conversationId = conversation.getId();
 
             //and user belongs to
-            if(conversation.getParticipantsIds().contains(senderId)){
+            if(conversation.getParticipantIds().contains(senderId)){
 
                 Message entity = mapper.map(message, Message.class);
                 entity.setRead(false);
                 entity.setSentAt(LocalDateTime.now());
 
                 //Save Message
+                entity.setId(UUID.randomUUID());
                 repo.save(entity);
                 //In Cache
                 String messagesKey = generateMessagesKey(conversationId);
@@ -62,7 +63,7 @@ public class MessageService {
 
 
 
-    public List<MessageDTO> loadConversationMessages(Long conversationId) {
+    public List<MessageDTO> loadConversationMessages(UUID conversationId) {
 
         String key = generateMessagesKey(conversationId);
 
@@ -75,7 +76,7 @@ public class MessageService {
         //If not in Cache
         if (conversationMessages==null || conversationMessages.isEmpty()){
             //, then from DB
-            List<Message> dbMessages = repo.findByConversationId(conversationId);
+            List<Message> dbMessages = repo.findAllByConversationId(conversationId);
             //And store in Cache
             redisTemplate.opsForList().rightPushAll(key, dbMessages);
             conversationMessages = dbMessages;
@@ -89,17 +90,18 @@ public class MessageService {
 
 
 
-    public void cleanConversationUnreadMessages(Long conversationId, Long participantId){
+    public UUID cleanConversationUnreadMessages(UUID conversationId, Long participantId){
         String key = generateUnreadKey(participantId);
         //In DB
         repo.cleanConversationUnreadMessages(participantId, conversationId);
         //In Cache
         redisTemplate.opsForHash().put(key, conversationId, 0);
+        return conversationId;
     }
 
 
 
-    public void onUserDeleted(Long userId, List<Long> conversationIds) {
+    public void onUserDeleted(Long userId, List<UUID> conversationIds) {
 
         //Delete user messages in DB
         repo.deleteBySenderId(userId);
@@ -130,7 +132,7 @@ public class MessageService {
 
 
 
-    public void onConversationDeleted(Long conversationId, Long participantId, boolean permanently){
+    public void onConversationDeleted(UUID conversationId, Long participantId, boolean permanently){
 
         //If deletion is permanently (for all participants)...
         if(permanently){
@@ -154,20 +156,20 @@ public class MessageService {
 
 
     public void injectConversationsMessagesDetails(List<ConversationDTO> conversations,
-                                                   List<Long> conversationIds,
+                                                   List<UUID> conversationIds,
                                                    Long senderId){
         //Fetch last messages
-        Map<Long, LastMessageDTO> lastMessages = getLastMessages(senderId, conversationIds);
+        Map<UUID, LastMessageDTO> lastMessages = getLastMessages(senderId, conversationIds);
 
         //Fetch unreadMessages
-        Map<Long, Integer> unreadMessages =
+        Map<UUID, Integer> unreadMessages =
                 getUnreadMessages(senderId, conversationIds);
 
         //Match data with conversations
         conversations
                 .forEach(conversation -> {
 
-                    Long conversationId = conversation.getId();
+                    UUID conversationId = conversation.getId();
 
                     conversation.setUnreadMessagesCount(unreadMessages.get(conversationId));
                     conversation.setLastMessage(lastMessages.get(conversationId));
@@ -179,11 +181,11 @@ public class MessageService {
 
 
 
-    private Map<Long, LastMessageDTO> getLastMessages(Long participantId, List<Long> conversationIds){
+    private Map<UUID, LastMessageDTO> getLastMessages(Long participantId, List<UUID> conversationIds){
 
         //Fetch last message details of each conversation
-        Map<Long, LastMessageDTO> lastMessages = new HashMap<>();
-        List<Long> missingCacheConversationMessagesIds = new ArrayList<>();
+        Map<UUID, LastMessageDTO> lastMessages = new HashMap<>();
+        List<UUID> missingCacheConversationMessagesIds = new ArrayList<>();
 
         conversationIds
                 .forEach(id -> {
@@ -205,7 +207,7 @@ public class MessageService {
         if(!missingCacheConversationMessagesIds.isEmpty()){
 
             //Then, get all messages from DB
-            List<Message> dbMessages = repo.findByConversationIds(missingCacheConversationMessagesIds);
+            List<Message> dbMessages = repo.findAllByConversationIds(missingCacheConversationMessagesIds);
 
             //And for each missing conversation
             missingCacheConversationMessagesIds
@@ -234,13 +236,13 @@ public class MessageService {
 
 
 
-    private Map<Long, Integer> getUnreadMessages(Long participantId, List<Long> conversationIds){
+    private Map<UUID, Integer> getUnreadMessages(Long participantId, List<UUID> conversationIds){
 
         String key = generateUnreadKey(participantId);
         Set<Object> hashes = new HashSet<>(conversationIds);
 
-        Map<Long, Integer> unreadMessages = new HashMap<>();
-        List<Long> missingCacheCountsConversationIds = new ArrayList<>();
+        Map<UUID, Integer> unreadMessages = new HashMap<>();
+        List<UUID> missingCacheCountsConversationIds = new ArrayList<>();
 
         //Fetch Conversation unread messages counts from Cache
         List<Object> counts = redisTemplate.opsForHash().multiGet(key, hashes);
@@ -250,7 +252,7 @@ public class MessageService {
 
             for(int i = 0; i < conversationIds.size(); i++){
 
-                Long conversationId = conversationIds.get(i);
+                UUID conversationId = conversationIds.get(i);
                 Integer count = (Integer) counts.get(i);
 
                 if(count!=null){
@@ -270,7 +272,7 @@ public class MessageService {
             dbCounts
                     .forEach(unreadMessage -> {
 
-                        Long conversationId = unreadMessage.getConversationId();
+                        UUID conversationId = unreadMessage.getConversationId();
                         Integer count = unreadMessage.getCount();
 
                         unreadMessages.put(conversationId, count);
@@ -285,7 +287,7 @@ public class MessageService {
 
 
 
-    private String generateMessagesKey(Long conversationId){
+    private String generateMessagesKey(UUID conversationId){
         return String.format("%s:messages", conversationId);
     }
     private String generateUnreadKey(Long participantId){
