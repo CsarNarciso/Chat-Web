@@ -1,0 +1,5 @@
+server:
+  port: 8002
+service:
+  application:
+    name: chat-service

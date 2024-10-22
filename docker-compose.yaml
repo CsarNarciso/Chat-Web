@@ -1,7 +1,0 @@
-networks:
-  eureka-net:
-  postgres-net:
-  mysql-net:
-volumes:
-  postgres-vol:
-  mysql-vol:

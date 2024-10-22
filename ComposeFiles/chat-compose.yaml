@@ -1,10 +1,10 @@
 services:
-  user:
-    build: User/.
+  chat:
+    build: Chat/.
     ports:
-      - "8001:8001"
+      - "8002:8002"
     env_file:
-      - User/.env
+      - Chat/.env
     environment:
       - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
@@ -15,31 +15,54 @@ services:
         condition: service_healthy
       configuration:
         condition: service_healthy
-      user-db:
+      chat-db:
+        condition: service_healthy
+      chat-redis:
         condition: service_healthy
     networks:
       - discovery-net
-      - user-db-net
+      - chat-db-net
+      - chat-redis-net
+    volumes:
+      - chat-db-vol:/data/postgres
     healthcheck:
-      test: ["CMD", "curl", "--fail", "--silent", "localhost:8001/actuator/health"]
+      test: [ "CMD", "curl", "--fail", "--silent", "localhost:8002/actuator/health" ]
       start_period: 20s
       interval: 10s
       timeout: 5s
       retries: 5
-  user-db:
-    image: postgres
+  chat-db:
+    image: cassandra
     ports:
       - "5432:5432"
     env_file:
-      - User/.env
+      - Chat/.env
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     networks:
-      - user-db-net
+      - chat-db-net
     volumes:
-      - user-db-vol:/data/postgres
+      - chat-db-vol:/data/postgres
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-d", "db", "-U", "postgres" ]
+      start_period: 20s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  chat-redis:
+    image: redis
+    ports:
+      - "5432:5432"
+    env_file:
+      - Chat/.env
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - chat-redis-net
     healthcheck:
       test: [ "CMD", "pg_isready", "-d", "db", "-U", "postgres" ]
       start_period: 20s
@@ -47,6 +70,7 @@ services:
       timeout: 5s
       retries: 5
 networks:
-  user-db-net:
+  chat-db-net:
+  chat-redis-net:
 volumes:
-  user-db-vol:
+  chat-db-vol:

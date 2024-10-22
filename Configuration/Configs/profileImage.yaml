@@ -1,5 +1,0 @@
-spring:
-  application:
-    name: profileImage-service
-server:
-  port: 8005
