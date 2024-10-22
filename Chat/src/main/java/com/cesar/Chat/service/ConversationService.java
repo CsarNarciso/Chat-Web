@@ -88,7 +88,10 @@ public class ConversationService {
 
         //----SEND CONVERSATION DATA----
         for (Long participantId : createFor) {
-            webSocketTemplate.convertAndSendToUser(participantId.toString(), "/user/reply", conversation);
+            webSocketTemplate.convertAndSendToUser(
+                    participantId.toString(),
+                    "/user/reply/createConversation",
+                    conversation);
         }
     }
 

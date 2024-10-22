@@ -35,7 +35,7 @@ public class SocialService {
         network.getConversationIds()
             .forEach(id -> {
                 websocketTemplate.convertAndSend(
-                        String.format("/queue/reply/conversation/%s", id),
+                        String.format("/topic/conversation/%s", id),
                         message);
             });
     }

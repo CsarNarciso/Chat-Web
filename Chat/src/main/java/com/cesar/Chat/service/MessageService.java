@@ -43,7 +43,7 @@ public class MessageService {
 
                 //Send
                 webSocketTemplate.convertAndSend(
-                        "/topic/conversation/"+conversation.getId(),
+                        String.format("/topic/conversation/%s",conversationId),
                         message);
 
                 //Increment Unread Message in Cache
