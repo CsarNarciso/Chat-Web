@@ -8,4 +8,5 @@ import lombok.Data;
 public class ConversationDeletedDTO {
     private Long participantId;
     private Long conversationId;
+    private boolean permanently;
 }

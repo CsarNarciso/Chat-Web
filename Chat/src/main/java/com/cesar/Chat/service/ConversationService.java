@@ -162,6 +162,7 @@ public class ConversationService {
                 .builder()
                 .conversationId(conversationId)
                 .participantId(participantId)
+                .permanently(permanently)
                 .build());
 
         return mapper.map(conversation, ConversationDTO.class);

@@ -12,7 +12,7 @@
 	<artifactId>Social</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Social</name>
-	<description>Manage Social Relationships connections and interactions.</description>
+	<description>Manage Social networks, connections and interactions.</description>
 	<url/>
 	<licenses>
 		<license/>

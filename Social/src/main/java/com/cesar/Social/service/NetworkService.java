@@ -36,24 +36,15 @@ public class NetworkService {
     }
 
 
-
-
-
-
-
-
-
-
     @KafkaListener(topics = "ConversationCreated", groupId = "${spring.kafka.consumer.group-id}")
     public void onConversationCreated(ConversationCreatedDTO conversation){
 
         List<Long> createFor = conversation.getCreateFor();
+        Map<String, Network> cacheValues = new HashMap<>();
+        Set<String> userNetworkKeys = new HashSet<>();
 
         //Get references from DB
         List<Network> networks = repo.findByUserIds(createFor);
-
-        Map<String, Network> cacheValues = new HashMap<>();
-        Set<String> userNetworkKeys = new HashSet<>();
 
         //Add new conversation ID to each user network involved on creation
         networks
@@ -75,15 +66,23 @@ public class NetworkService {
     }
 
 
-    //Event Consumer - ConversationDeleted
-    //participantId, conversationId
+    @KafkaListener(topics = "ConversationDeleted", groupId = "${spring.kafka.consumer.group-id}")
     public void onConversationDeleted(ConversationDeletedDTO conversation){
 
-        Relationship relationship = repo.findByUserId(conversation.getParticipantId());
+        if(conversation.isPermanently()) {
 
-        //Remove conversationId from user relationships
-        relationship.getConversationIds().removeIf(c -> c.equals(conversation.getConversationId()));
-        repo.save(relationship);
+            //Remove conversation ID from user network
+            Network network = repo.findByUserId(conversation.getParticipantId());
+            network.getConversationIds().removeIf(id -> id.equals(conversation.getConversationId()));
+
+            //Update in DB
+            repo.save(network);
+
+            //And Cache
+            String userNetworkKey = generateUserNetworkKey(conversation.getParticipantId());
+            redisTemplate.delete(userNetworkKey);
+            redisTemplate.opsForValue().set(userNetworkKey, network);
+        }
     }
 
 

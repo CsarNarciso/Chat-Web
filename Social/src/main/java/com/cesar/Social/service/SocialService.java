@@ -2,66 +2,46 @@ package com.cesar.Social.service;
 
 import com.cesar.Social.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SocialService {
 
-
-    //Event Consumer - User Presence Status Change
-    //when user connects/disconnects on Presence Service
-    //Data: userId, status
-    //Task: send notification to users who have a conversation with this user
-    public void presenceStatusUpdated(PresenceStatusDTO statusUpdated){
-        NetworkDTO relationship = relationshipService.getByUserId(statusUpdated.getUserId());
-        relationship.getConversationsIds()
-                .forEach(participantId -> {
-                    template.convertAndSendToUser(
-                            participantId.toString(),
-                            "/queue/reply/",
-                            statusUpdated);
-                });
+    @KafkaListener(topics = "PresenceUpdated", groupId = "${spring.kafka.consumer.group-id}")
+    public void onPresenceUpdated(UserPresenceDTO presence){
+        notifyInvolvedOnesOnUserNetwork(presence.getId(), presence);
     }
 
-    //Event Consumer - User details/profile Update
-    //when User Service updates a user details
-    //Data: userId, updated data
-    //Task: send notification to users who have a conversation with this user
-    public void userDetailsUpdated(UpdateUserDTO updatedUser){
-        NetworkDTO relationship = relationshipService.getByUserId(updatedUser.getId());
-        relationship.getConversationsIds()
-                .forEach(participantId -> {
-                    template.convertAndSendToUser(
-                            participantId.toString(),
-                            "/queue/reply/",
-                            updatedUser);
-                });
+    @KafkaListener(topics = "UserUpdated", groupId = "${spring.kafka.consumer.group-id}")
+    public void onUserUpdated(UserUpdatedDTO user){
+        notifyInvolvedOnesOnUserNetwork(user.getId(), user);
     }
 
-    //Event Consumer - User profile image Update
-    //when User Service updates a user profile image
-    //Data: userId, newImageUrl
-    //Task: send notification to users who have a conversation with this user
-    public void profileImageUpdated(UpdateProfileImageDTO updatedImage){
-        NetworkDTO relationship = relationshipService.getByUserId(updatedImage.getUserId());
-        relationship.getConversationsIds()
-                .forEach(participantId -> {
-                    template.convertAndSendToUser(
-                            participantId.toString(),
-                            "/queue/reply/",
-                            updatedImage);
-                });
+    @KafkaListener(topics = "UserDeleted", groupId = "${spring.kafka.consumer.group-id}")
+    public void onUserDeleted(Long userId){
+        notifyInvolvedOnesOnUserNetwork(userId, "Deleted");
     }
 
-    //----Event Consumer - User Deleted---
-    //when User Service deletes a user
-    //Data: userId
-    //Task: notify deleted user relationships
 
+
+    private void notifyInvolvedOnesOnUserNetwork(Long userId, Object message){
+
+        //Fetch user network (relationships)
+        NetworkDTO network = relationshipService.getByUserId(userId);
+
+        //For involved conversations
+        network.getConversationIds()
+            .forEach(id -> {
+                websocketTemplate.convertAndSend(
+                        String.format("/queue/reply/conversation/%s", id),
+                        message);
+            });
+    }
 
     @Autowired
-    private SimpMessagingTemplate template;
+    private SimpMessagingTemplate websocketTemplate;
     @Autowired
     private NetworkService relationshipService;
 }
