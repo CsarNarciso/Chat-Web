@@ -4,15 +4,17 @@ services:
     ports:
       - "8004:8004"
     environment:
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
-      SPRING_DATASOURCE_DRIVER_CLASS_NAME: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
+      SPRING_DATASOURCE_URL: ${SOCIAL_SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SOCIAL_SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SOCIAL_SPRING_DATASOURCE_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SOCIAL_SPRING_JPA_HIBERNATE_DDL_AUTO}
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: ${SOCIAL_SPRING_DATASOURCE_DRIVER_CLASS_NAME}
     depends_on:
       discovery:
         condition: service_healthy
       configuration:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
       social-db:
         condition: service_healthy
@@ -20,6 +22,7 @@ services:
         condition: service_healthy
     networks:
       - discovery-net
+      - kafka-net
       - social-net
     healthcheck:
       test: ["CMD", "curl", "--fail", "--silent", "localhost:8004/actuator/health"]

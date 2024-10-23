@@ -41,7 +41,6 @@ public class NetworkService {
 
         List<Long> createFor = conversation.getCreateFor();
         Map<String, Network> cacheValues = new HashMap<>();
-        Set<String> userNetworkKeys = new HashSet<>();
 
         //Get references from DB
         List<Network> networks = repo.findByUserIds(createFor);
@@ -54,14 +53,12 @@ public class NetworkService {
 
                     String userNetworkKey = generateUserNetworkKey(network.getUserId());
                     cacheValues.put(userNetworkKey, network);
-                    userNetworkKeys.add(userNetworkKey);
                 });
 
         //Update in DB
         repo.saveAll(networks);
 
         //And try to update in Cache
-        redisTemplate.delete(userNetworkKeys);
         redisTemplate.opsForValue().multiSet(cacheValues);
     }
 
@@ -80,7 +77,6 @@ public class NetworkService {
 
             //And Cache
             String userNetworkKey = generateUserNetworkKey(conversation.getParticipantId());
-            redisTemplate.delete(userNetworkKey);
             redisTemplate.opsForValue().set(userNetworkKey, network);
         }
     }
