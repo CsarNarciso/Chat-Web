@@ -4,24 +4,25 @@ services:
     ports:
       - "8001:8001"
     environment:
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
-      SPRING_DATASOURCE_DRIVER_CLASS_NAME: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
+      SPRING_DATASOURCE_URL: ${USER_SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${USER_SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${USER_SPRING_DATASOURCE_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${USER_SPRING_JPA_HIBERNATE_DDL_AUTO}
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: ${USER_SPRING_DATASOURCE_DRIVER_CLASS_NAME}
     depends_on:
       discovery:
         condition: service_healthy
       configuration:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
       user-db:
         condition: service_healthy
       user-redis:
         condition: service_healthy
-      kafka:
-        condition: service_healthy
     networks:
       - discovery-net
+      - kafka-net
       - user-net
     healthcheck:
       test: ["CMD", "curl", "--fail", "--silent", "localhost:8001/actuator/health"]
@@ -35,7 +36,7 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     networks:
       - user-net

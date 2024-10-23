@@ -6,17 +6,10 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     ports:
       - '2181:2181'
-    healthcheck:
-      test: ["CMD", "echo srvr | nc localhost 2181 | grep Mode"]
-      start_period: 20s
-      interval: 10s
-      timeout: 5s
-      retries: 5
   kafka:
     image: confluentinc/cp-kafka:latest
     depends_on:
-      zookeeper:
-        condition: service_healthy
+      - zookeeper
     ports:
       - '9092:9092'
     environment:
@@ -26,9 +19,5 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT: PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-    healthcheck:
-      test: ["CMD", "/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server kafka:9092 || exit 1"]
-      start_period: 20s
-      interval: 10s
-      timeout: 5s
-      retries: 5
+networks:
+  kafka-net:

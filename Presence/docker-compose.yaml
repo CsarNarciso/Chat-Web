@@ -10,8 +10,6 @@ services:
         condition: service_healthy
       presence-redis:
         condition: service_healthy
-      kafka:
-        condition: service_healthy
     networks:
       - discovery-net
       - presence-net
@@ -25,8 +23,6 @@ services:
     image: redis
     ports:
       - "6381:6381"
-    networks:
-      - presence-net
     healthcheck:
       test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
       start_period: 20s

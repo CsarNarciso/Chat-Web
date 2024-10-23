@@ -15,14 +15,15 @@ services:
         condition: service_healthy
       configuration:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
       chat-db:
         condition: service_healthy
       chat-redis:
         condition: service_healthy
-      kafka:
-        condition: service_healthy
     networks:
       - discovery-net
+      - kafka-net
       - chat-net
     healthcheck:
       test: [ "CMD", "curl", "--fail", "--silent", "localhost:8002/actuator/health" ]
@@ -39,7 +40,7 @@ services:
     volumes:
       - chat-db-vol:/var/lib/cassandra
     healthcheck:
-      test: ["CMD", "cqlsh", "-u cassandra", "-p cassandra", "-k <YOUR_KEYSPACE_NAME>"]
+      test: ["CMD", "cqlsh", "-u cassandra", "-p cassandra", "-k ${CASSANDRA_KEYSPACE}"]
       start_period: 20s
       interval: 10s
       timeout: 5s

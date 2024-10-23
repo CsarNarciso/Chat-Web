@@ -8,6 +8,8 @@ services:
         condition: service_healthy
       configuration:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
     networks:
       - discovery-net
     healthcheck:
