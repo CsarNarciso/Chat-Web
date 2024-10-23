@@ -8,7 +8,7 @@ spring:
       uri: configuration-service
       discovery:
         enabled: true
-        serviceId: config-service
+        serviceId: ${spring.cloud.config.uri}
   config:
     import: optional:configserver:lb://${spring.cloud.config.uri}
 #Eureka client

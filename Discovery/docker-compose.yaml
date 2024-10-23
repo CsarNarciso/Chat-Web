@@ -1,6 +1,6 @@
 services:
   discovery:
-    build: Discovery/.
+    build: .
     ports:
       - "8761:8761"
     networks:

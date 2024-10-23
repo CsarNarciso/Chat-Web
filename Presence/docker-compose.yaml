@@ -1,6 +1,6 @@
 services:
   presence:
-    build: Presence/.
+    build: .
     ports:
       - "8003:8003"
     depends_on:

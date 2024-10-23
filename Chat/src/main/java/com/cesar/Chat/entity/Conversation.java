@@ -11,7 +11,7 @@ import java.util.UUID;
 
 
 @Data
-@RequiredArgsConstructor
+@AllArgsConstructor
 @Builder
 @Table("conversations")
 public class Conversation implements Serializable {

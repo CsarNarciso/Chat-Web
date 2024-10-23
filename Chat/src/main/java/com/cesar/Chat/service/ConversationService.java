@@ -24,7 +24,7 @@ public class ConversationService {
     public void create(ConversationDTO conversation, MessageForInitDTO message){
 
         List<Long> createFor = new ArrayList<>();
-        Conversation savedEntity = new Conversation();
+        Conversation savedEntity = Conversation.builder().build();
 
         //If request is not for recreation
         if(conversation==null){

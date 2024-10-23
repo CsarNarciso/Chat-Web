@@ -1,0 +1,1 @@
+docker-compose -f .\Discovery\docker-compose.yaml -f .\Configuration\docker-compose.yaml -f .\Gateway\docker-compose.yaml -f .\Kafka\docker-compose.yaml -f .\User\docker-compose.yaml -f .\Chat\docker-compose.yaml -f .\Media\docker-compose.yaml -f .\Presence\docker-compose.yaml -f .\Social\docker-compose.yaml up

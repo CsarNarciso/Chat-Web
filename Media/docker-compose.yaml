@@ -1,8 +1,8 @@
 services:
-  gateway:
-    build: Gateway/.
+  media:
+    build: .
     ports:
-      - "8000:8000"
+      - "8005:8005"
     depends_on:
       discovery:
         condition: service_healthy
@@ -11,7 +11,7 @@ services:
     networks:
       - discovery-net
     healthcheck:
-      test: ["CMD", "curl", "--fail", "--silent", "localhost:8000/actuator/health"]
+      test: ["CMD", "curl", "--fail", "--silent", "localhost:8005/actuator/health"]
       start_period: 20s
       interval: 10s
       timeout: 5s

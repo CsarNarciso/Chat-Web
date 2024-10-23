@@ -1,4 +1,4 @@
-package config;
+package com.cesar.Presence.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

@@ -14,10 +14,13 @@ public class RouterConfiguration {
         return builder.routes()
 
                 .route( r -> r
-                        .path("/users.api/**")
+                        .path("/users/**")
                         .uri("lb://user-service"))
                 .route( r -> r
-                        .path("/chat-service/**")
+                        .path("/conversations/**")
+                        .uri("lb://chat-service"))
+                .route( r -> r
+                        .path("/messages/**")
                         .uri("lb://chat-service"))
                 .build();
     }

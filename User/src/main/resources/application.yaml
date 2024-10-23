@@ -46,3 +46,8 @@ eureka:
     fetchRegistry: true
     serviceUrl:
       defaultZone: http://discovery:8761/eureka
+#Services
+services:
+  media:
+    url: media-service
+    path: /media
