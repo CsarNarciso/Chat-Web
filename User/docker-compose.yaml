@@ -1,14 +1,15 @@
 services:
   user:
-    build: .
+    build: User/.
     ports:
       - "8001:8001"
     environment:
-      SPRING_DATASOURCE_URL: ${USER_SPRING_DATASOURCE_URL}
-      SPRING_DATASOURCE_USERNAME: ${USER_SPRING_DATASOURCE_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${USER_SPRING_DATASOURCE_PASSWORD}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: ${USER_SPRING_JPA_HIBERNATE_DDL_AUTO}
-      SPRING_DATASOURCE_DRIVER_CLASS_NAME: ${USER_SPRING_DATASOURCE_DRIVER_CLASS_NAME}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
+      SPRING_JPA_DATABASE_PLATFORM: ${SPRING_JPA_DATABASE_PLATFORM}
     depends_on:
       discovery:
         condition: service_healthy
@@ -16,51 +17,15 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      user-db:
+      postgres:
         condition: service_healthy
-      user-redis:
+      redis:
         condition: service_healthy
     networks:
-      - discovery-net
-      - kafka-net
-      - user-net
+      - project-net
     healthcheck:
       test: ["CMD", "curl", "--fail", "--silent", "localhost:8001/actuator/health"]
       start_period: 20s
       interval: 10s
       timeout: 5s
       retries: 5
-  user-db:
-    image: postgres
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    networks:
-      - user-net
-    volumes:
-      - user-db-vol:/data/postgres
-    healthcheck:
-      test: [ "CMD", "pg_isready", "-d", "db", "-U", "postgres" ]
-      start_period: 20s
-      interval: 10s
-      timeout: 5s
-      retries: 5
-  user-redis:
-    image: redis
-    ports:
-      - "6379:6379"
-    networks:
-      - user-net
-    healthcheck:
-      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
-      start_period: 20s
-      interval: 10s
-      timeout: 5s
-      retries: 5
-networks:
-  user-net:
-volumes:
-  user-db-vol:

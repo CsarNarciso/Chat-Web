@@ -1,2 +1,0 @@
-docker-compose -f .\Discovery\docker-compose.yaml -f .\Configuration\docker-compose.yaml -f .\Kafka\docker-compose.yaml up
-docker-compose -f .\Gateway\docker-compose.yaml -f .\User\docker-compose.yaml --env-file .\User\.env -f .\Chat\docker-compose.yaml --env-file .\Chat\.env -f .\Media\docker-compose.yaml -f .\Presence\docker-compose.yaml -f .\Social\docker-compose.yaml --env-file .\Social\.env up

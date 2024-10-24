@@ -233,7 +233,7 @@ public class ConversationService {
     }
 
     public Conversation getById(UUID id){
-        return repo.getById(id);
+        return repo.getReferenceById(id);
     }
 
     private Conversation getByParticipantsIds(List<Long> participantsIds){

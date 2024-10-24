@@ -14,6 +14,11 @@ public class SocialService {
         notifyInvolvedOnesOnUserNetwork(presence.getId(), presence);
     }
 
+    @KafkaListener(topics = "PresenceForgotten", groupId = "${spring.kafka.consumer.group-id}")
+    public void onPresenceForgotten(Long userId){
+        notifyInvolvedOnesOnUserNetwork(userId, "PresenceForgotten");
+    }
+
     @KafkaListener(topics = "UserUpdated", groupId = "${spring.kafka.consumer.group-id}")
     public void onUserUpdated(UserUpdatedDTO user){
         notifyInvolvedOnesOnUserNetwork(user.getId(), user);
@@ -21,7 +26,7 @@ public class SocialService {
 
     @KafkaListener(topics = "UserDeleted", groupId = "${spring.kafka.consumer.group-id}")
     public void onUserDeleted(Long userId){
-        notifyInvolvedOnesOnUserNetwork(userId, "Deleted");
+        notifyInvolvedOnesOnUserNetwork(userId, "UserDeleted");
     }
 
 

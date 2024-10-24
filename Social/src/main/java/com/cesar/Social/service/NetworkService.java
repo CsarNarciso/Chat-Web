@@ -70,7 +70,7 @@ public class NetworkService {
 
             //Remove conversation ID from user network
             Network network = repo.findByUserId(conversation.getParticipantId());
-            network.getConversationIds().removeIf(id -> id.equals(conversation.getConversationId()));
+            network.getConversationIds().removeIf(id -> id.equals(conversation.getId()));
 
             //Update in DB
             repo.save(network);

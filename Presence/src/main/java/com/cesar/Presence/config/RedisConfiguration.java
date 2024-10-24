@@ -1,9 +1,7 @@
 package com.cesar.Presence.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -19,8 +17,8 @@ public class RedisConfiguration {
     public JedisConnectionFactory connectionFactory(){
         return new JedisConnectionFactory(
                 new RedisStandaloneConfiguration(
-                        "presence-redis",
-                        6381));
+                        "redis",
+                        6379));
     }
 
     @Bean

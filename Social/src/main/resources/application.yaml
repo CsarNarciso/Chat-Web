@@ -4,7 +4,6 @@ spring:
     name: social-service
   #Hibernate JPA
   jpa:
-    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
     show-sql: true
     properties:
       hibernate:
@@ -36,7 +35,5 @@ spring:
 #Eureka client
 eureka:
   client:
-    registerWithEureka: true
-    fetchRegistry: true
     serviceUrl:
       defaultZone: http://discovery:8761/eureka

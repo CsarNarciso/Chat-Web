@@ -14,7 +14,6 @@ spring:
     name: user-service
   #Hibernate JPA
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
     properties:
       hibernate:
@@ -42,8 +41,6 @@ spring:
 #Eureka client
 eureka:
   client:
-    registerWithEureka: true
-    fetchRegistry: true
     serviceUrl:
       defaultZone: http://discovery:8761/eureka
 #Services

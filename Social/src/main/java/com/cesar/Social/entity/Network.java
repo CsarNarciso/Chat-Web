@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.io.Serializable;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name="networks")
@@ -15,5 +16,5 @@ public class Network implements Serializable {
     @Column(name="user_id")
     private Long userId;
     @Column(name="conversation_ids")
-    private List<Long> conversationIds;
+    private List<UUID> conversationIds;
 }

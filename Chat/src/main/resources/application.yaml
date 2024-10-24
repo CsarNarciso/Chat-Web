@@ -2,6 +2,12 @@
 spring:
   application:
     name: chat-service
+  #Hibernate JPA
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
   #Config client
   cloud:
     config:
@@ -29,8 +35,6 @@ spring:
 #Eureka client
 eureka:
   client:
-    registerWithEureka: true
-    fetchRegistry: true
     serviceUrl:
       defaultZone: http://discovery:8761/eureka
 #Services

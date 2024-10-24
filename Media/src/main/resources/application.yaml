@@ -26,7 +26,5 @@ spring:
 #Eureka client
 eureka:
   client:
-    registerWithEureka: true
-    fetchRegistry: true
     serviceUrl:
       defaultZone: http://discovery:8761/eureka

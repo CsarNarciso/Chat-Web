@@ -27,10 +27,7 @@ public class PresenceService {
         //If presence already exists (either online or not)...
         if(redisTemplate.opsForValue().get(userPresenceKey)!=null){
 
-            //Reconnect - CHECK THIS
-            //IN REDIS, THIS IS NOT REPLACING, WE NEED TO USE HASHES...
-            //OR FIRST INVALIDATE, THEN SET AGAIN
-            //THEN, CHECK HOW WE CAN RETRIEVE ALL CACHES IN A DTO OBJECT
+            //Reconnect
             redisTemplate.opsForValue().set(userPresenceKey, presence);
         }
         else {
@@ -40,7 +37,6 @@ public class PresenceService {
         }
 
         //Event Publisher - User Online
-        //Data for: presence data for Social Service
         kafkaTemplate.send("PresenceUpdated", presence);
     }
 
@@ -59,7 +55,6 @@ public class PresenceService {
         redisTemplate.opsForValue().set(userPresenceKey, presence);
 
         //Event Publisher - User Offline
-        //Data for: presence data for Social Service
         kafkaTemplate.send("PresenceUpdated", presence);
     }
 
@@ -78,7 +73,6 @@ public class PresenceService {
             redisTemplate.delete(userPresenceKey);
 
             //Event Publisher - Presence Forgotten
-            //Data for: user id for Social Service
             kafkaTemplate.send("PresenceForgotten", userId);
         }
     }
