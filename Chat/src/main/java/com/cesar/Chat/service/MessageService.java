@@ -4,6 +4,7 @@ import com.cesar.Chat.dto.*;
 import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.entity.Message;
 import com.cesar.Chat.repository.MessageRepository;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
@@ -13,9 +14,11 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.*;
 
-@EnableCaching
+
 @Service
+@EnableCaching
 public class MessageService {
+
 
 
     public void send(MessageForSendDTO message){
@@ -296,8 +299,12 @@ public class MessageService {
 
 
 
-    @Autowired
-    private MessageRepository repo;
+
+    public MessageService(MessageRepository repo) {
+        this.repo = repo;
+    }
+
+    private final MessageRepository repo;
     @Autowired
     private ConversationService conversationService;
     @Autowired

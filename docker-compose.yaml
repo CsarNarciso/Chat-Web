@@ -7,28 +7,12 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USERNAME: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    networks:
-      - project-net
     volumes:
       - postgres-vol:/data/postgres
-    healthcheck:
-      test: [ "CMD", "pg_isready", "-d", "db", "-U", "postgres" ]
-      start_period: 20s
-      interval: 10s
-      timeout: 5s
-      retries: 5
   redis:
     image: redis
     ports:
       - "6379:6379"
-    networks:
-      - project-net
-    healthcheck:
-      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
-      start_period: 20s
-      interval: 10s
-      timeout: 5s
-      retries: 5
   zookeeper:
     image: confluentinc/cp-zookeeper
     ports:
@@ -38,7 +22,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
       ZOOKEEPER_SYNC_LIMIT: 2
     networks:
-      - project-net
+      - kafka-net
   kafka:
     image: confluentinc/cp-kafka
     ports:
@@ -52,14 +36,8 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
     networks:
-      - project-net
-    healthcheck:
-      test: [ "CMD", "test: kafka-topics.sh --list --bootstrap-server localhost:9092 || exit 1" ]
-      start_period: 120s
-      interval: 60s
-      timeout: 10s
-      retries: 5
+      - kafka-net
 volumes:
   postgres-vol:
 networks:
-  project-net:
+  kafka-net:

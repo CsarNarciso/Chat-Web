@@ -3,6 +3,7 @@ package com.cesar.Chat.service;
 import com.cesar.Chat.dto.*;
 import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.repository.ConversationRepository;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
@@ -16,8 +17,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@EnableCaching
 @Service
+@EnableCaching
 public class ConversationService {
 
 
@@ -276,12 +277,17 @@ public class ConversationService {
                 .toList();
     }
 
-    @Autowired
-    private ConversationRepository repo;
-    @Autowired
-    private PresenceService presenceService;
+
+
+    public ConversationService(ConversationRepository repo) {
+        this.repo = repo;
+    }
+
+    private final ConversationRepository repo;
     @Autowired
     private MessageService messageService;
+    @Autowired
+    private PresenceService presenceService;
     @Autowired
     private UserService userService;
     @Autowired

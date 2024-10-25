@@ -2,8 +2,17 @@
 spring:
   application:
     name: chat-service
+  #PostgreSQL Datasource
+  datasource:
+    url: jdbc:postgresql://localhost:5432/db
+    username: postgres
+    password: letmein
+    driver-class-name: org.postgresql.Driver
   #Hibernate JPA
   jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
     properties:
       hibernate:
@@ -19,7 +28,7 @@ spring:
     import: optional:configserver:lb://${spring.cloud.config.uri}
   #Kafka Config
   kafka:
-    bootstrap-servers: kafka
+    bootstrap-servers: http://localhost:9094
     properties:
       spring:
         json:
@@ -32,16 +41,20 @@ spring:
       group-id: ${spring.application.name}
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+#Redis
+redis:
+  hostname: localhost
+  port: 6379
 #Eureka client
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://discovery:8761/eureka
+      defaultZone: http://localhost:8761/eureka
 #Services
 services:
   user:
-    url: user-service
+    name: user-service
     path: /users
   presence:
-    url: presence-service
+    name: presence-service
     path: /presences

@@ -1,5 +1,6 @@
 package com.cesar.User.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
@@ -13,12 +14,15 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfiguration {
 
+    @Value("${redis.hostname}")
+    private String REDIS_HOSTNAME;
+    @Value("${redis.port}")
+    private int REDIS_PORT;
+
     @Bean
     public JedisConnectionFactory connectionFactory(){
         return new JedisConnectionFactory(
-                new RedisStandaloneConfiguration(
-                        "redis",
-                        6379));
+                new RedisStandaloneConfiguration(REDIS_HOSTNAME, REDIS_PORT));
     }
 
     @Bean

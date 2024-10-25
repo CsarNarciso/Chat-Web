@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class Controller {
 
     @PostMapping
-    public ResponseEntity<?> uploadProfileImage(@RequestParam MultipartFile imageMetadata, @RequestParam String oldPath){
+    public ResponseEntity<?> upload(@RequestParam MultipartFile imageMetadata, @RequestParam String oldPath){
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .contentType(MediaType.APPLICATION_JSON)

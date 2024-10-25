@@ -9,18 +9,26 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class MediaService {
 
+
+
     public String upload(MultipartFile imageMetadata, String oldPath) {
-        return imageMetadata.isEmpty() ? DEFAULT_IMAGE_PATH : feing.upload(imageMetadata, oldPath);
+        return imageMetadata.isEmpty() ? DEFAULT_IMAGE_PATH : feign.upload(imageMetadata, oldPath);
     }
 
     public void delete(String path){
         if(!path.equals(DEFAULT_IMAGE_PATH)){
-            feing.delete(path);
+            feign.delete(path);
         }
     }
 
+
+
     @Autowired
-    private MediaFeign feing;
+    public MediaService(MediaFeign feign) {
+        this.feign = feign;
+    }
+
     @Value("${media.defaultImage.path}")
     private String DEFAULT_IMAGE_PATH;
+    private final MediaFeign feign;
 }

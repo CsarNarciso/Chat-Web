@@ -12,8 +12,17 @@ media:
 spring:
   application:
     name: user-service
+  #PostgreSQL Datasource
+  datasource:
+    url: jdbc:postgresql://localhost:5432/db
+    username: postgres
+    password: letmein
+    driver-class-name: org.postgresql.Driver
   #Hibernate JPA
   jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
     properties:
       hibernate:
@@ -24,25 +33,29 @@ spring:
       uri: configuration-service
       discovery:
         enabled: true
-        serviceId: ${spring.cloud.config.uir}
+        serviceId: configuration-service
   config:
-    import: optional:configserver:lb://${spring.cloud.config.uir}
+    import: optional:configserver:lb://configuration-service
   #Kafka Config
   kafka:
-    bootstrap-servers: kafka
-    properties:
-      spring:
-        json:
-          trusted:
-            packages: *
+    bootstrap-servers: localhost:9094
     producer:
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+#Redis
+redis:
+  hostname: localhost
+  port: 6379
 #Eureka client
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://discovery:8761/eureka
+      defaultZone: http://localhost:8761/eureka
 #Services
 services:
   media:

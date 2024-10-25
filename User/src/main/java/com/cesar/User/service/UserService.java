@@ -3,6 +3,7 @@ package com.cesar.User.service;
 import com.cesar.User.dto.*;
 import com.cesar.User.entity.User;
 import com.cesar.User.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
@@ -18,6 +19,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @EnableCaching
+@RequiredArgsConstructor
 @Service
 public class UserService {
 
@@ -53,7 +55,6 @@ public class UserService {
         redisTemplate.opsForValue().set(userKey, user);
 
         //Event Publisher - User updated
-        //Data for: UserDTO{username for Social service}
         kafkaTemplate.send("UserUpdated", dto);
 
         return dto;
@@ -74,7 +75,6 @@ public class UserService {
         redisTemplate.opsForValue().set(userKey, user);
 
         //Event Publisher - User Updated
-        //Data: UserDTO{new image url for Social service}
         kafkaTemplate.send("UserUpdated", mapToDTO(user));
 
         return user.getProfileImageUrl();
@@ -100,7 +100,6 @@ public class UserService {
         }
 
         //Event Publisher - User Deleted
-        //Data: userId for Chat and Social services
         kafkaTemplate.send("UserDeleted", id);
 
         return mapToDTO(user);
@@ -184,7 +183,7 @@ public class UserService {
     }
 
 
-    @Autowired
+
     private UserRepository repo;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;

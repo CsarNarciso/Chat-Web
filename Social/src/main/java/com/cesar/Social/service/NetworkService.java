@@ -13,9 +13,11 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import java.util.*;
 
-@EnableCaching
+
 @Service
+@EnableCaching
 public class NetworkService {
+
 
     public NetworkDTO getByUserId(Long userId){
 
@@ -87,8 +89,12 @@ public class NetworkService {
         return String.format("%s", userId);
     }
 
-    @Autowired
-    private NetworkRepository repo;
+
+    public NetworkService(NetworkRepository repo) {
+        this.repo = repo;
+    }
+
+    private final NetworkRepository repo;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
     @Autowired

@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.UUID;
 
-@Repository
 public interface ConversationRepository extends JpaRepository<Conversation, UUID> {
 
     Conversation findByParticipantIds(List<Long> participantIds);

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.UUID;
 
-@Repository
 public interface MessageRepository extends JpaRepository<Message, UUID> {
 
     @Query("SELECT m.conversation_id AS conversationId, COUNT(*) AS count FROM Message m " +
