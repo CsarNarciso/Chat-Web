@@ -1,6 +1,6 @@
 # Microservices Based Real Time Messaging Application using Spring Boot WebSockets and SockJS.
 
-![Architecture Diagram](https://github.com/CsarNarciso/Assets/blob/main/Chat%20Web%20Architecture%20Diagram.png)
+![Architecture Design](https://github.com/CsarNarciso/Assets/blob/main/chat-architecture-desing.png)
 
 
 ## Application features.
@@ -15,6 +15,8 @@
 - Users can update their profile image or name. Each change is showed to everyone else in real time.
 - Text messages sending functionality.
 - Delete or see actual conversations data (as how many messages without read user has).
+
+![Architecture Diagram](https://github.com/CsarNarciso/Assets/blob/main/Chat%20Web%20Architecture%20Diagram.png)
 
 ## Table of Contents
 * [Technologies](#technologies)
