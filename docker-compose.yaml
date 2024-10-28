@@ -1,18 +1,4 @@
 services:
-  postgres:
-    image: postgres
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - postgres-vol:/data/postgres
-  redis:
-    image: redis
-    ports:
-      - "6379:6379"
   zookeeper:
     image: confluentinc/cp-zookeeper
     ports:
@@ -22,11 +8,11 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
       ZOOKEEPER_SYNC_LIMIT: 2
     networks:
-      - kafka-net
+      - chat-web-net
   kafka:
     image: confluentinc/cp-kafka
     ports:
-      - 9094:9094
+      - "9094:9094"
     depends_on:
       - zookeeper
     environment:
@@ -36,8 +22,6 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
     networks:
-      - kafka-net
-volumes:
-  postgres-vol:
+      - chat-web-net
 networks:
-  kafka-net:
+  chat-web-net:
