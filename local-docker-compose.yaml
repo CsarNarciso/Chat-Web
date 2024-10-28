@@ -1,0 +1,53 @@
+services:
+# User Service Configuration
+  user-db:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: user-db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: letmein
+      PGDATA: /data/postgres 
+    volumes:
+      - user-db-vol:/postgres/data
+  user-redis:
+    image: redis
+    ports:
+      - "6379"
+# Social Service Configuration
+  social-db:
+    image: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: social-db
+      MYSQL_USER: root 
+      MYSQL_PASSWORD: letmein 
+    volumes:
+      - social-db-vol:/var/lib/mysql
+  user-redis:
+    image: redis
+    ports:
+      - "6380"
+# Presence Service Configuration
+  presence-redis:
+    image: redis
+    ports:
+      - "6381"
+# Chat Service Configuration
+  chat-db:
+    image: cassandra
+    ports:
+      - "9042:9042"
+    volumes:
+      - chat-db-vol:/var/lib/cassandra
+  chat-redis:
+    image: redis
+    ports:
+      - "6382:6382"
+
+volumes:
+  user-db-vol:
+  social-db-vol:
+  chat-db-vol:
