@@ -3,7 +3,6 @@ package com.cesar.Chat.service;
 import com.cesar.Chat.dto.*;
 import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.repository.ConversationRepository;
-import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
@@ -234,7 +233,7 @@ public class ConversationService {
     }
 
     public Conversation getById(UUID id){
-        return repo.getReferenceById(id);
+        return repo.findById(id).orElse(null);
     }
 
     private Conversation getByParticipantsIds(List<Long> participantsIds){

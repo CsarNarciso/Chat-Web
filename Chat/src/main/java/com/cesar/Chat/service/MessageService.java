@@ -4,7 +4,6 @@ import com.cesar.Chat.dto.*;
 import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.entity.Message;
 import com.cesar.Chat.repository.MessageRepository;
-import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
