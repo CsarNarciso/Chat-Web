@@ -4,12 +4,7 @@ services:
     ports:
       - "8004:8004"
     environment:
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      SPRING_DATASOURCE_DRIVER_CLASS_NAME: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO}
-      SPRING_JPA_DATABASE_PLATFORM: ${SPRING_JPA_DATABASE_PLATFORM}
+      SPRING_PROFILES_ACTIVE: docker
     depends_on:
       discovery:
         condition: service_healthy
@@ -17,15 +12,45 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      postgres:
+      social-db:
         condition: service_healthy
-      redis:
+      social-redis:
         condition: service_healthy
     networks:
-      - project-net
+      - chat-web-net
     healthcheck:
       test: ["CMD", "curl", "--fail", "--silent", "localhost:8004/actuator/health"]
       start_period: 20s
       interval: 10s
       timeout: 5s
       retries: 5
+  social-db:
+    image: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: social-db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: letmein
+    volumes:
+      - social-db-vol:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      start_period: 20s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  social-redis:
+    image: redis
+    ports:
+      - "6380"
+    networks:
+      - chat-web-net
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      start_period: 20s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  social-db-vol:

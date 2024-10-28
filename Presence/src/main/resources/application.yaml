@@ -8,9 +8,9 @@ spring:
       uri: configuration-service
       discovery:
         enabled: true
-        serviceId: ${spring.cloud.config.uri}
+        serviceId: configuration-service
   config:
-    import: optional:configserver:lb://${spring.cloud.config.uri}
+    import: optional:configserver:lb://configuration-service
   #Kafka Config
   kafka:
     bootstrap-servers: http://localhost:9094

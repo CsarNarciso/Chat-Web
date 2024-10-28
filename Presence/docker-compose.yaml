@@ -3,17 +3,33 @@ services:
     build: Presence/.
     ports:
       - "8003:8003"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
     depends_on:
       discovery:
         condition: service_healthy
       configuration:
         condition: service_healthy
-      redis:
+      kafka:
+        condition: service_healthy
+      presence-redis:
         condition: service_healthy
     networks:
-      - project-net
+      - chat-web-net
     healthcheck:
       test: ["CMD", "curl", "--fail", "--silent", "localhost:8003/actuator/health"]
+      start_period: 20s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  presence-redis:
+    image: redis
+    ports:
+      - "6381"
+    networks:
+      - chat-web-net
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
       start_period: 20s
       interval: 10s
       timeout: 5s

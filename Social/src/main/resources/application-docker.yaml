@@ -1,16 +1,22 @@
 #Application
 spring:
   application:
-    name: chat-service
-  #Cassandra DB
-  data:
-    cassandra:
-      keyspace-name: chat
-      contact-points: localhost
-      port: 9042
-      localDatacenter: datacenter1
-      schemaAction: CREATE_IF_NOT_EXISTS
-      createKeyspace: true
+    name: social-service
+  #MySQL Datasource
+  datasource:
+    url: jdbc:mysql://mysql/social-db
+    username: root
+    password: letmein
+    driver-class-name: com.mysql.jdbc.Driver
+  #Hibernate JPA
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
   #Config client
   cloud:
     config:
@@ -22,7 +28,7 @@ spring:
     import: optional:configserver:lb://configuration-service
   #Kafka Config
   kafka:
-    bootstrap-servers: http://localhost:9094
+    bootstrap-servers: http://kafka:9092
     properties:
       spring:
         json:
@@ -37,18 +43,10 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
 #Redis
 redis:
-  hostname: localhost
-  port: 6382
+  hostname: http://social-redis
+  port: 6380
 #Eureka client
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka
-#Services
-services:
-  user:
-    name: user-service
-    path: /users
-  presence:
-    name: presence-service
-    path: /presences
+      defaultZone: http://discovery:8761/eureka

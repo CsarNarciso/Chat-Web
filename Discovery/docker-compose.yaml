@@ -4,7 +4,7 @@ services:
     ports:
       - "8761:8761"
     networks:
-      - project-net
+      - chat-web-net
     healthcheck:
       test: [ "CMD", "curl", "--fail", "--silent", "localhost:8761/actuator/health" ]
       start_period: 120s

@@ -1,4 +1,28 @@
 services:
+
+# Kafka Service Configuration
+  zookeeper:
+    image: confluentinc/cp-zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_SYNC_LIMIT: 2
+  kafka:
+    image: confluentinc/cp-kafka
+    ports:
+      - "9094:9094"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,OUTSIDE://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,OUTSIDE://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+
 # User Service Configuration
   user-db:
     image: postgres
@@ -6,7 +30,7 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_DB: user-db
-      POSTGRES_USER: postgres
+      POSTGRES_USERNAME: postgres
       POSTGRES_PASSWORD: letmein
       PGDATA: /data/postgres 
     volumes:
@@ -15,6 +39,8 @@ services:
     image: redis
     ports:
       - "6379"
+
+
 # Social Service Configuration
   social-db:
     image: mysql
@@ -26,15 +52,19 @@ services:
       MYSQL_PASSWORD: letmein 
     volumes:
       - social-db-vol:/var/lib/mysql
-  user-redis:
+  social-redis:
     image: redis
     ports:
       - "6380"
+
+
 # Presence Service Configuration
   presence-redis:
     image: redis
     ports:
       - "6381"
+
+
 # Chat Service Configuration
   chat-db:
     image: cassandra
