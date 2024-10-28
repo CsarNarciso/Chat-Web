@@ -1,6 +1,6 @@
 FROM ubuntu:latest
 RUN apt-get install -y curl
-FROM openjdk:22
+FROM openjdk:21
 WORKDIR /app
 ARG JAR_FILE=./target/*.jar
 COPY ${JAR_FILE} chat.jar

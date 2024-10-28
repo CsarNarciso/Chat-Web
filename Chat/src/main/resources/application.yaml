@@ -2,30 +2,24 @@
 spring:
   application:
     name: chat-service
-  #PostgreSQL Datasource
-  datasource:
-    url: jdbc:postgresql://localhost:5432/db
-    username: postgres
-    password: letmein
-    driver-class-name: org.postgresql.Driver
-  #Hibernate JPA
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
+  #Cassandra DB
+  data:
+    cassandra:
+      keyspace-name: chat
+      contact-points: 127.0.0.1
+      port: 9042
+      local-datacenter: datacenter1
+      schema-action: CREATE_IF_NOT_EXISTS
+      create-keyspace: true
   #Config client
   cloud:
     config:
       uri: configuration-service
       discovery:
         enabled: true
-        serviceId: ${spring.cloud.config.uri}
+        serviceId: configuration-service
   config:
-    import: optional:configserver:lb://${spring.cloud.config.uri}
+    import: optional:configserver:lb://configuration-service
   #Kafka Config
   kafka:
     bootstrap-servers: http://localhost:9094
@@ -44,7 +38,7 @@ spring:
 #Redis
 redis:
   hostname: localhost
-  port: 6379
+  port: 6382
 #Eureka client
 eureka:
   client:
