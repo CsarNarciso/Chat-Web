@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 @Service
 public class PresenceService {
 
+
     public void connect(Long userId) {
 
         String userPresenceKey = generateUserPresenceKey(userId);
@@ -112,8 +113,14 @@ public class PresenceService {
         return String.format("%s", id);
     }
 
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-    @Autowired
-    private KafkaTemplate<String, Object> kafkaTemplate;
+
+
+
+    public PresenceService(RedisTemplate<String, Object> redisTemplate, KafkaTemplate<String, Object> kafkaTemplate) {
+        this.redisTemplate = redisTemplate;
+        this.kafkaTemplate = kafkaTemplate;
+    }
+
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 }

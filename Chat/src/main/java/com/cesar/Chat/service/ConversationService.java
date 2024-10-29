@@ -278,23 +278,25 @@ public class ConversationService {
 
 
 
-    public ConversationService(ConversationRepository repo) {
+
+
+    public ConversationService(ConversationRepository repo, MessageService messageService, PresenceService presenceService, UserService userService, RedisTemplate<String, Object> redisTemplate, KafkaTemplate<String, Object> kafkaTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
         this.repo = repo;
+        this.messageService = messageService;
+        this.presenceService = presenceService;
+        this.userService = userService;
+        this.redisTemplate = redisTemplate;
+        this.kafkaTemplate = kafkaTemplate;
+        this.webSocketTemplate = webSocketTemplate;
+        this.mapper = mapper;
     }
 
     private final ConversationRepository repo;
-    @Autowired
-    private MessageService messageService;
-    @Autowired
-    private PresenceService presenceService;
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-    @Autowired
-    private KafkaTemplate<String, Object> kafkaTemplate;
-    @Autowired
-    private SimpMessagingTemplate webSocketTemplate;
-    @Autowired
-    private ModelMapper mapper;
+    private final MessageService messageService;
+    private final PresenceService presenceService;
+    private final UserService userService;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final SimpMessagingTemplate webSocketTemplate;
+    private final ModelMapper mapper;
 }

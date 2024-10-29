@@ -3,7 +3,6 @@ package com.cesar.User.service;
 import com.cesar.User.dto.*;
 import com.cesar.User.entity.User;
 import com.cesar.User.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
@@ -19,9 +18,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @EnableCaching
-@RequiredArgsConstructor
 @Service
 public class UserService {
+
 
     public UserDTO create(CreateRequestDTO createRequest, MultipartFile imageMetadata){
 
@@ -184,13 +183,17 @@ public class UserService {
 
 
 
-    private UserRepository repo;
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-    @Autowired
-    private KafkaTemplate<String, Object> kafkaTemplate;
-    @Autowired
-    private MediaService mediaService;
-    @Autowired
-    private ModelMapper mapper;
+    public UserService(UserRepository repo, RedisTemplate<String, Object> redisTemplate, KafkaTemplate<String, Object> kafkaTemplate, MediaService mediaService, ModelMapper mapper) {
+        this.repo = repo;
+        this.redisTemplate = redisTemplate;
+        this.kafkaTemplate = kafkaTemplate;
+        this.mediaService = mediaService;
+        this.mapper = mapper;
+    }
+
+    private final UserRepository repo;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final MediaService mediaService;
+    private final ModelMapper mapper;
 }

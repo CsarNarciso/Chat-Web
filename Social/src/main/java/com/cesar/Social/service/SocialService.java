@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class SocialService {
 
+
     @KafkaListener(topics = "PresenceUpdated", groupId = "${spring.kafka.consumer.group-id}")
     public void onPresenceUpdated(UserPresenceDTO presence){
         notifyInvolvedOnesOnUserNetwork(presence.getId(), presence);
@@ -45,8 +46,13 @@ public class SocialService {
             });
     }
 
-    @Autowired
-    private SimpMessagingTemplate websocketTemplate;
-    @Autowired
-    private NetworkService relationshipService;
+
+
+    public SocialService(SimpMessagingTemplate websocketTemplate, NetworkService relationshipService) {
+        this.websocketTemplate = websocketTemplate;
+        this.relationshipService = relationshipService;
+    }
+
+    private final SimpMessagingTemplate websocketTemplate;
+    private final NetworkService relationshipService;
 }

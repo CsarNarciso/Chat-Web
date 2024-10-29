@@ -90,13 +90,15 @@ public class NetworkService {
     }
 
 
-    public NetworkService(NetworkRepository repo) {
+
+
+    public NetworkService(NetworkRepository repo, RedisTemplate<String, Object> redisTemplate, ModelMapper mapper) {
         this.repo = repo;
+        this.redisTemplate = redisTemplate;
+        this.mapper = mapper;
     }
 
     private final NetworkRepository repo;
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-    @Autowired
-    private ModelMapper mapper;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final ModelMapper mapper;
 }
