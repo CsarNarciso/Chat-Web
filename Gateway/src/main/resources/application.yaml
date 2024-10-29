@@ -2,18 +2,19 @@
 spring:
   application:
     name: gateway-service
-  config:
-    import: optional:configserver:configuration-service/
-
+  #Config client
   cloud:
     config:
+      uri: configuration-service
       discovery:
         enabled: true
         serviceId: configuration-service
+  config:
+    import: optional:configserver:lb://configuration-service
 #Eureka client
 eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://localhost:8761/eureka

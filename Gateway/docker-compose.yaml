@@ -3,6 +3,8 @@ services:
     build: Gateway/.
     ports:
       - "8000:8000"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
     depends_on:
       discovery:
         condition: service_healthy

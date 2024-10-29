@@ -3,6 +3,8 @@ services:
     build: Configuration/.
     ports:
       - "8888:8888"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
     depends_on:
       discovery:
         condition: service_healthy

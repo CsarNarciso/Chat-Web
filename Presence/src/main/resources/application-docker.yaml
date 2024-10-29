@@ -13,7 +13,7 @@ spring:
     import: optional:configserver:lb://configuration-service
   #Kafka Config
   kafka:
-    bootstrap-servers: http://kafka:9092
+    bootstrap-servers: kafka:9092
     properties:
       spring.json.trusted.packages: *
     producer:
@@ -30,5 +30,5 @@ eureka:
       defaultZone: http://discovery:8761/eureka
 #Redis
 redis:
-  hostname: http://presence-redis
+  hostname: presence-redis
   port: 6381

@@ -4,7 +4,7 @@ spring:
     name: social-service
   #MySQL Datasource
   datasource:
-    url: jdbc:mysql://mysql/social-db
+    url: jdbc:mysql://social-db:3306/social-db
     username: root
     password: letmein
     driver-class-name: com.mysql.jdbc.Driver
@@ -28,7 +28,7 @@ spring:
     import: optional:configserver:lb://configuration-service
   #Kafka Config
   kafka:
-    bootstrap-servers: http://kafka:9092
+    bootstrap-servers: kafka:9092
     properties:
       spring:
         json:
@@ -43,7 +43,7 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
 #Redis
 redis:
-  hostname: http://social-redis
+  hostname: social-redis
   port: 6380
 #Eureka client
 eureka:

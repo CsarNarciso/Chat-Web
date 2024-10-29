@@ -1,0 +1,24 @@
+#Server
+server:
+  port: 8888
+#Application
+spring:
+  application:
+    name: configuration-service
+  #Config Server
+  cloud:
+    config:
+      server:
+        prefix: /config
+        git:
+          uri: https://github.com/CsarNarciso/Chat-Web
+          defaultLabel: main
+          search-paths:
+            - Configuration/configs
+#Eureka Client
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    serviceUrl:
+      defaultZone: http://discovery:8761/eureka
