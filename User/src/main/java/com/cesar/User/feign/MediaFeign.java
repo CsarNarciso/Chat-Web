@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-@FeignClient(name="${services.media.url}", path="${services.media.path}")
+@FeignClient(name="${services.media.name}", path="${services.media.path}")
 public interface MediaFeign {
     @PostMapping
     String upload(@RequestParam MultipartFile imageMetadata, @RequestParam String oldPath);

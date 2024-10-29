@@ -12,6 +12,7 @@ public class ChatApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(ChatApplication.class, args);
 	}
+
 	@Bean
 	ModelMapper modelMapper(){
 		return new ModelMapper();
