@@ -12,9 +12,9 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      chat-db:
+      postgres:
         condition: service_healthy
-      chat-redis:
+      redis:
         condition: service_healthy
     networks:
       - chat-web-net
@@ -24,31 +24,3 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-  chat-db:
-    image: cassandra
-    ports:
-      - "9042:9042"
-    networks:
-      - chat-web-net
-    volumes:
-      - chat-db-vol:/var/lib/cassandra
-    healthcheck:
-      test: ["CMD-SHELL", "[ $$(nodetool statusgossip) = running ]"]
-      start_period: 20s
-      interval: 10s
-      timeout: 5s
-      retries: 5
-  chat-redis:
-    image: redis
-    ports:
-      - "6382:6382"
-    networks:
-      - chat-web-net
-    healthcheck:
-      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
-      start_period: 20s
-      interval: 10s
-      timeout: 5s
-      retries: 5
-volumes:
-  chat-db-vol:

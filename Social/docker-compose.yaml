@@ -12,9 +12,9 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      social-db:
+      postgres:
         condition: service_healthy
-      social-redis:
+      redis:
         condition: service_healthy
     networks:
       - chat-web-net
@@ -24,33 +24,3 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-  social-db:
-    image: mysql
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_DATABASE: social-db
-      MYSQL_USER: root
-      MYSQL_PASSWORD: letmein
-    volumes:
-      - social-db-vol:/var/lib/mysql
-    healthcheck:
-      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
-      start_period: 20s
-      interval: 10s
-      timeout: 5s
-      retries: 5
-  social-redis:
-    image: redis
-    ports:
-      - "6380"
-    networks:
-      - chat-web-net
-    healthcheck:
-      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
-      start_period: 20s
-      interval: 10s
-      timeout: 5s
-      retries: 5
-volumes:
-  social-db-vol:

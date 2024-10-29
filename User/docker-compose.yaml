@@ -12,9 +12,9 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      user-db:
+      postgres:
         condition: service_healthy
-      user-redis:
+      redis:
         condition: service_healthy
     networks:
       - chat-web-net
@@ -24,32 +24,3 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-  user-db:
-    image: postgres
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: user-db
-      POSTGRES_USERNAME: postgres
-      POSTGRES_PASSWORD: letmein
-      PGDATA: /data/postgres
-    volumes:
-      - user-db-vol:/postgres/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready", "-d", "user-db" ]
-      start_period: 20s
-      interval: 10s
-      timeout: 5s
-      retries: 5
-  user-redis:
-    image: redis
-    ports:
-      - "6379"
-    healthcheck:
-      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
-      start_period: 20s
-      interval: 10s
-      timeout: 5s
-      retries: 5
-volumes:
-  user-db-vol:
