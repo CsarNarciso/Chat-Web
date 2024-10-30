@@ -1,8 +1,10 @@
+#Server
 server:
   port: 8000
 spring:
   application:
     name: gateway-service
+  #Enable discovery on Gateway
   cloud:
     gateway:
       discovery:
