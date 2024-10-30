@@ -4,7 +4,7 @@ spring:
     name: chat-service
   #PostgreSQL Datasource
   datasource:
-    url: jdbc:postgresql://localhost:5432/user-db
+    url: jdbc:postgresql://postgres:5432/db
     username: postgres
     password: letmein
     driver-class-name: org.postgresql.Driver
@@ -43,7 +43,7 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
 #Redis
 redis:
-  hostname: chat-redis
+  hostname: redis
   port: 6382
 #Eureka client
 eureka:

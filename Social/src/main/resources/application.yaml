@@ -2,17 +2,17 @@
 spring:
   application:
     name: social-service
-  #MySQL Datasource
+  #PostgreSQL Datasource
   datasource:
-    url: jdbc:mysql://localhost:3306/social-db
-    username: root
+    url: jdbc:postgresql://localhost:5432/db
+    username: postgres
     password: letmein
-    driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name: org.postgresql.Driver
   #Hibernate JPA
   jpa:
     hibernate:
       ddl-auto: create-drop
-    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
     properties:
       hibernate:
@@ -28,7 +28,7 @@ spring:
     import: optional:configserver:lb://configuration-service
   #Kafka Config
   kafka:
-    bootstrap-servers: http://localhost:9094
+    bootstrap-servers: localhost:9094
     properties:
       spring:
         json:
@@ -44,7 +44,7 @@ spring:
 #Redis
 redis:
   hostname: localhost
-  port: 6380
+  port: 6379
 #Eureka client
 eureka:
   client:

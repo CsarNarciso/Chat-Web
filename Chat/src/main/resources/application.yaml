@@ -4,7 +4,7 @@ spring:
     name: chat-service
   #PostgreSQL Datasource
   datasource:
-    url: jdbc:postgresql://localhost:5432/user-db
+    url: jdbc:postgresql://localhost:5432/db
     username: postgres
     password: letmein
     driver-class-name: org.postgresql.Driver
@@ -28,7 +28,7 @@ spring:
     import: optional:configserver:lb://configuration-service
   #Kafka Config
   kafka:
-    bootstrap-servers: http://localhost:9094
+    bootstrap-servers: localhost:9094
     properties:
       spring:
         json:
@@ -44,7 +44,7 @@ spring:
 #Redis
 redis:
   hostname: localhost
-  port: 6382
+  port: 6379
 #Eureka client
 eureka:
   client:

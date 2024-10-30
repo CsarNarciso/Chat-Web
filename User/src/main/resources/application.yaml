@@ -14,7 +14,7 @@ spring:
     name: user-service
   #PostgreSQL Datasource
   datasource:
-    url: jdbc:postgresql://localhost:5432/user-db
+    url: jdbc:postgresql://localhost:5432/db
     username: postgres
     password: letmein
     driver-class-name: org.postgresql.Driver

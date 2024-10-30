@@ -14,7 +14,7 @@ spring:
     name: user-service
   #PostgreSQL Datasource
   datasource:
-    url: jdbc:postgresql://user-db:5432/user-db
+    url: jdbc:postgresql://postgres:5432/db
     username: postgres
     password: letmein
     driver-class-name: org.postgresql.Driver
@@ -49,7 +49,7 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 #Redis
 redis:
-  hostname: user-redis
+  hostname: redis
   port: 6379
 #Eureka client
 eureka:

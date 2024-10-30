@@ -13,7 +13,7 @@ spring:
     import: optional:configserver:lb://configuration-service
   #Kafka Config
   kafka:
-    bootstrap-servers: http://localhost:9094
+    bootstrap-servers: localhost:9094
     properties:
       spring.json.trusted.packages: *
     producer:
