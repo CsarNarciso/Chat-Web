@@ -38,7 +38,7 @@ spring:
     import: optional:configserver:lb://configuration-service
   #Kafka Config
   kafka:
-    bootstrap-servers: localhost:9094
+    bootstrap-servers: localhost:9092
     producer:
       properties:
         spring:
