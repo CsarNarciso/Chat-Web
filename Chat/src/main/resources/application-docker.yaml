@@ -2,15 +2,21 @@
 spring:
   application:
     name: chat-service
-  #Cassandra DB
-  data:
-    cassandra:
-      keyspace-name: chat
-      contact-points: chat-db
-      port: 9042
-      localDatacenter: datacenter1
-      schemaAction: CREATE_IF_NOT_EXISTS
-      createKeyspace: true
+  #PostgreSQL Datasource
+  datasource:
+    url: jdbc:postgresql://localhost:5432/user-db
+    username: postgres
+    password: letmein
+    driver-class-name: org.postgresql.Driver
+  #Hibernate JPA
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
   #Config client
   cloud:
     config:

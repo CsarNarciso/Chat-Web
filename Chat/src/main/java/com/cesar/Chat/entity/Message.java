@@ -1,24 +1,24 @@
 package com.cesar.Chat.entity;
 
+import jakarta.persistence.*;
 import lombok.Data;
-import org.springframework.data.cassandra.core.mapping.Column;
-import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
-import org.springframework.data.cassandra.core.mapping.Table;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-@Table("messages")
+@Entity
+@Table(name="messages")
 public class Message implements Serializable {
-    @PrimaryKeyColumn(ordinal = 0)
+    @Id
     private UUID id;
-    @PrimaryKeyColumn(name = "conversation_id", ordinal = 1)
+    @Column(name="conversation_id")
     private UUID conversationId;
-    @PrimaryKeyColumn(name = "sender_id", ordinal = 2)
+    @Column(name = "sender_id")
     private Long senderId;
     private String content;
-    @Column("sent_at")
+    @Column(name="sent_at")
+    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime sentAt;
     private boolean read;
 }

@@ -1,9 +1,10 @@
 package com.cesar.Chat.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.*;
-import org.springframework.data.cassandra.core.mapping.Column;
-import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
-import org.springframework.data.cassandra.core.mapping.Table;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,14 +14,15 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @Builder
-@Table("conversations")
+@Entity
+@Table(name="conversations")
 public class Conversation implements Serializable {
-    @PrimaryKeyColumn(ordinal = 0)
+    @Id
     private UUID id;
-    @PrimaryKeyColumn(name = "participant_ids", ordinal = 1)
+    @Column(name = "participant_ids")
     private List<Long> participantIds;
-    @Column("recreate_for")
+    @Column(name="recreate_for")
     private List<Long> recreateFor;
-    @Column("created_at")
+    @Column(name="created_at")
     private LocalDateTime createdAt;
 }

@@ -19,7 +19,6 @@ import java.util.*;
 public class MessageService {
 
 
-
     public void send(MessageForSendDTO message){
 
         Conversation conversation = conversationService.getById(message.getConversationId());
@@ -76,7 +75,7 @@ public class MessageService {
                 .toList();
 
         //If not in Cache
-        if (conversationMessages==null || conversationMessages.isEmpty()){
+        if (conversationMessages.isEmpty()){
             //, then from DB
             List<Message> dbMessages = repo.findAllByConversationId(conversationId);
             //And store in Cache
@@ -299,17 +298,17 @@ public class MessageService {
 
 
 
-    public MessageService(MessageRepository repo) {
+    public MessageService(MessageRepository repo, ConversationService conversationService, RedisTemplate<String, Object> redisTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
         this.repo = repo;
+        this.conversationService = conversationService;
+        this.redisTemplate = redisTemplate;
+        this.webSocketTemplate = webSocketTemplate;
+        this.mapper = mapper;
     }
 
     private final MessageRepository repo;
-    @Autowired
-    private ConversationService conversationService;
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-    @Autowired
-    private SimpMessagingTemplate webSocketTemplate;
-    @Autowired
-    private ModelMapper mapper;
+    private final ConversationService conversationService;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final SimpMessagingTemplate webSocketTemplate;
+    private final ModelMapper mapper;
 }
