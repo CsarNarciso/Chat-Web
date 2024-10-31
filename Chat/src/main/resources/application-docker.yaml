@@ -29,15 +29,20 @@ spring:
   #Kafka Config
   kafka:
     bootstrap-servers: kafka:9092
-    properties:
-      spring:
-        json:
-          trusted:
-            packages: *
     producer:
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     consumer:
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
       group-id: ${spring.application.name}
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer

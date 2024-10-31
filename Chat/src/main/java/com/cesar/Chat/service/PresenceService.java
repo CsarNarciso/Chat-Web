@@ -32,11 +32,12 @@ public class PresenceService {
 
 
 
-    public PresenceService(PresenceFeign feign) {
+
+    public PresenceService(PresenceFeign feign, ModelMapper mapper) {
         this.feign = feign;
+        this.mapper = mapper;
     }
 
     private final PresenceFeign feign;
-    @Autowired
-    private ModelMapper mapper;
+    private final ModelMapper mapper;
 }

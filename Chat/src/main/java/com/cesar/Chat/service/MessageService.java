@@ -3,10 +3,11 @@ package com.cesar.Chat.service;
 import com.cesar.Chat.dto.*;
 import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.entity.Message;
+import com.cesar.Chat.entity.Participant;
 import com.cesar.Chat.repository.MessageRepository;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,11 @@ public class MessageService {
             UUID conversationId = conversation.getId();
 
             //and user belongs to
-            if(conversation.getParticipantIds().contains(senderId)){
+            if(conversation.getParticipants()
+                    .stream()
+                    .map(Participant::getId)
+                    .toList()
+                    .contains(senderId)){
 
                 Message entity = mapper.map(message, Message.class);
                 entity.setRead(false);
@@ -296,9 +301,7 @@ public class MessageService {
     }
 
 
-
-
-    public MessageService(MessageRepository repo, ConversationService conversationService, RedisTemplate<String, Object> redisTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
+    public MessageService(MessageRepository repo, @Lazy ConversationService conversationService, RedisTemplate<String, Object> redisTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
         this.repo = repo;
         this.conversationService = conversationService;
         this.redisTemplate = redisTemplate;

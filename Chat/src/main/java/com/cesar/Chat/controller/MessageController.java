@@ -13,17 +13,21 @@ import java.util.UUID;
 @RequestMapping("/messages")
 public class MessageController {
 
+    public MessageController(MessageService service) {
+        this.service = service;
+    }
+
     @PostMapping
     public void onSend(@RequestBody MessageForSendDTO message){
         service.send(message);
     }
 
     @GetMapping("/{conversationId}")
-    public ResponseEntity<?> onLoad(@PathVariable UUID conversationId) {
+    public ResponseEntity<?> onLoad(@PathVariable String conversationId) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(service.loadConversationMessages(conversationId));
+                .body(service.loadConversationMessages(UUID.fromString(conversationId)));
     }
 
     @PutMapping("/clean.unread/{conversationId}/{userId}")
@@ -34,6 +38,5 @@ public class MessageController {
                 .body(service.cleanConversationUnreadMessages(conversationId, userId));
     }
 
-    @Autowired
-    private MessageService service;
+    private final MessageService service;
 }

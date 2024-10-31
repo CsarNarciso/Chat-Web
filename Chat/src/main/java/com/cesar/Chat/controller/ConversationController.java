@@ -13,6 +13,10 @@ import java.util.UUID;
 @RequestMapping("/conversations")
 public class ConversationController {
 
+    public ConversationController(ConversationService service) {
+        this.service = service;
+    }
+
     @PostMapping
     public void onFirstInteraction(@RequestBody MessageForInitDTO initMessage){
         service.create(null, initMessage);
@@ -34,6 +38,5 @@ public class ConversationController {
                 .body(service.delete(conversationId, userId));
     }
 
-    @Autowired
-    private ConversationService service;
+    private final ConversationService service;
 }

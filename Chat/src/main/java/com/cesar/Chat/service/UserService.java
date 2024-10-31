@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 public class UserService {
 
 
+
     public void injectConversationsParticipantsDetails(List<ConversationDTO> conversations, List<Long> participantsIds){
 
         //Fetch details
@@ -36,11 +37,12 @@ public class UserService {
 
 
 
-    public UserService(UserFeign feign) {
+
+    public UserService(UserFeign feign, ModelMapper mapper) {
         this.feign = feign;
+        this.mapper = mapper;
     }
 
     private final UserFeign feign;
-    @Autowired
-    private ModelMapper mapper;
+    private final ModelMapper mapper;
 }

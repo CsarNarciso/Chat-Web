@@ -2,9 +2,9 @@ package com.cesar.Chat.service;
 
 import com.cesar.Chat.dto.*;
 import com.cesar.Chat.entity.Conversation;
+import com.cesar.Chat.entity.Participant;
 import com.cesar.Chat.repository.ConversationRepository;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -36,19 +36,32 @@ public class ConversationService {
                             message.getRecipientId())
                     .toList();
 
+            //And create participants references
+            List<Participant> participants = new ArrayList<>();
+            usersIds
+                    .forEach(id ->{
+                        participants.add(
+                                Participant
+                                        .builder()
+                                        .id(id)
+                                        .build());
+                    });
+
             //Look for an existent conversation between both users
-            Conversation existentConversation = getByParticipantsIds(usersIds);
+            Conversation existentConversation = getByParticipants(participants);
 
             //If don't exists
             if(existentConversation==null){
 
                 //----CREATE----
+
+
                 savedEntity = repo.save(
                         Conversation
                                 .builder()
                                 .id(UUID.randomUUID())
                                 .createdAt(LocalDateTime.now())
-                                .participantIds(usersIds)
+                                .participants(participants)
                                 .build());
                 conversation = mapper.map(savedEntity, ConversationDTO.class);
                 createFor = usersIds;
@@ -114,7 +127,10 @@ public class ConversationService {
         if(conversation!=null){
 
             //Get conversation participants Ids
-            List<Long> participantsIds = conversation.getParticipantIds();
+            List<Long> participantsIds = conversation.getParticipants()
+                    .stream()
+                    .map(Participant::getId)
+                    .toList();
 
             //Add userId to conversation recreateFor list
             List<Long> recreateFor = conversation.getRecreateFor();
@@ -182,8 +198,9 @@ public class ConversationService {
         for (int i = 0; i < conversations.size(); i++){
 
             //Get and set recipient reference (conversation face for sender)
-            Long recipientId = conversations.get(i).getParticipantIds()
+            Long recipientId = conversations.get(i).getParticipants()
                     .stream()
+                    .map(Participant::getId)
                     .takeWhile(id -> !id.equals(participantId))
                     .findFirst().orElse(null);
             recipientIds.add(recipientId);
@@ -236,8 +253,8 @@ public class ConversationService {
         return repo.getReferenceById(id);
     }
 
-    private Conversation getByParticipantsIds(List<Long> participantsIds){
-        return repo.findByParticipantIds(participantsIds);
+    private Conversation getByParticipants(List<Participant> participants){
+        return repo.findByParticipants(participants);
     }
 
 
