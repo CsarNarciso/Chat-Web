@@ -6,7 +6,6 @@ import com.cesar.Social.dto.NetworkDTO;
 import com.cesar.Social.entity.Network;
 import com.cesar.Social.repository.NetworkRepository;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;

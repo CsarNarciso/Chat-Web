@@ -1,7 +1,6 @@
 package com.cesar.Social.service;
 
 import com.cesar.Social.dto.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
