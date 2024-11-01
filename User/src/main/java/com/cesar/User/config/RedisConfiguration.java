@@ -10,9 +10,8 @@ import org.springframework.data.redis.repository.configuration.EnableRedisReposi
 import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
-@EnableRedisRepositories
 @Configuration
-public class RedisConfiguration {
+publi class RedisConfiguration {
 
     @Value("${redis.hostname}")
     private String REDIS_HOSTNAME;
@@ -21,8 +20,9 @@ public class RedisConfiguration {
 
     @Bean
     public JedisConnectionFactory connectionFactory(){
-        return new JedisConnectionFactory(
-                new RedisStandaloneConfiguration(REDIS_HOSTNAME, REDIS_PORT));
+        RedisStandaloneConfiguration redisStandaloneConfiguration =
+                new RedisStandaloneConfiguration(REDIS_HOSTNAME, REDIS_PORT);
+        return new JedisConnectionFactory(redisStandaloneConfiguration);
     }
 
     @Bean
