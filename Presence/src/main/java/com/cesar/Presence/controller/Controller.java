@@ -1,7 +1,6 @@
 package com.cesar.Presence.controller;
 
 import com.cesar.Presence.service.PresenceService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +37,13 @@ public class Controller {
                 .body(presenceService.getPresences(userIds));
     }
 
-    @Autowired
-    private PresenceService presenceService;
+
+
+
+    public Controller(PresenceService presenceService){
+    	this.presenceService = presenceService;
+    }
+
+    private final PresenceService presenceService;
     ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 }
