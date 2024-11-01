@@ -4,7 +4,6 @@ import com.cesar.User.dto.*;
 import com.cesar.User.entity.User;
 import com.cesar.User.repository.UserRepository;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
