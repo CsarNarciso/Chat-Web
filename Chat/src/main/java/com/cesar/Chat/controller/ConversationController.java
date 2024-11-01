@@ -2,7 +2,6 @@ package com.cesar.Chat.controller;
 
 import com.cesar.Chat.dto.MessageForInitDTO;
 import com.cesar.Chat.service.ConversationService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +12,6 @@ import java.util.UUID;
 @RequestMapping("/conversations")
 public class ConversationController {
 
-    public ConversationController(ConversationService service) {
-        this.service = service;
-    }
 
     @PostMapping
     public void onFirstInteraction(@RequestBody MessageForInitDTO initMessage){
@@ -36,6 +32,12 @@ public class ConversationController {
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(service.delete(conversationId, userId));
+    }
+
+
+
+    public ConversationController(ConversationService service){
+    	this.service = service;
     }
 
     private final ConversationService service;

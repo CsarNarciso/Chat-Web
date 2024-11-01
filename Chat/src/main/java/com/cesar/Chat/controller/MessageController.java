@@ -2,7 +2,6 @@ package com.cesar.Chat.controller;
 
 import com.cesar.Chat.dto.MessageForSendDTO;
 import com.cesar.Chat.service.MessageService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +12,6 @@ import java.util.UUID;
 @RequestMapping("/messages")
 public class MessageController {
 
-    public MessageController(MessageService service) {
-        this.service = service;
-    }
 
     @PostMapping
     public void onSend(@RequestBody MessageForSendDTO message){
@@ -36,6 +32,12 @@ public class MessageController {
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(service.cleanConversationUnreadMessages(conversationId, userId));
+    }
+
+
+
+    public MessageController(MessageService service) {
+        this.service = service;
     }
 
     private final MessageService service;
