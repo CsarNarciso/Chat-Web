@@ -1,7 +1,6 @@
 package com.cesar.Presence.service;
 
 import com.cesar.Presence.dto.UserPresenceDTO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
