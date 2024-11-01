@@ -20,12 +20,7 @@ spring:
   #Config client
   cloud:
     config:
-      uri: configuration-service
-      discovery:
-        enabled: true
-        serviceId: configuration-service
-  config:
-    import: optional:configserver:lb://configuration-service
+      enabled: false
   #Kafka Config
   kafka:
     bootstrap-servers: localhost:9092
@@ -53,8 +48,7 @@ redis:
 #Eureka client
 eureka:
   client:
-    serviceUrl:
-      defaultZone: http://localhost:8761/eureka
+    enabled: false
 #Services
 services:
   user:
