@@ -3,7 +3,6 @@ package com.cesar.User.controller;
 import com.cesar.User.dto.CreateRequestDTO;
 import com.cesar.User.dto.UpdateRequestDTO;
 import com.cesar.User.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -67,6 +66,12 @@ public class Controller {
                 .body(service.delete(id));
     }
 
-    @Autowired
-    private UserService service;
+
+
+
+    public Controller(UserService service){
+    	this.service = service;
+    }
+
+    private final UserService service;
 }
