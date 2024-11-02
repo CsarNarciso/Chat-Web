@@ -5,7 +5,7 @@ import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.entity.Participant;
 import com.cesar.Chat.repository.ConversationRepository;
 import org.modelmapper.ModelMapper;
-import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-@EnableCaching
 public class ConversationService {
 
 
@@ -231,7 +230,7 @@ public class ConversationService {
         //Try to fetch from Cache
         String userConversationsKey = generateUserConversationsKey(userId);
 
-        List<Conversation> conversations = Objects.requireNonNull(redisTemplate.opsForList()
+        List<Conversation> conversations = Objects.requireNonNull(redisListTemplate
                         .range(userConversationsKey, 0, -1))
                 .stream()
                 .map(c -> (Conversation) c)
@@ -242,9 +241,12 @@ public class ConversationService {
 
             //Then get from DB
             conversations = repo.findByParticipantId(userId);
+            Collection<Conversation> cc = conversations;
 
             //And store in Cache
-            redisTemplate.opsForList().rightPushAll(userConversationsKey, conversations);
+            if(!cc.isEmpty()){
+                redisListTemplate.rightPushAll(userConversationsKey, cc);
+            }
         }
         return conversations;
     }
@@ -297,12 +299,13 @@ public class ConversationService {
 
 
 
-    public ConversationService(ConversationRepository repo, MessageService messageService, PresenceService presenceService, UserService userService, RedisTemplate<String, Object> redisTemplate, KafkaTemplate<String, Object> kafkaTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
+    public ConversationService(ConversationRepository repo, MessageService messageService, PresenceService presenceService, UserService userService, RedisTemplate<String, Object> redisTemplate, RedisTemplate<String, Conversation> conversationRedisTemplate, KafkaTemplate<String, Object> kafkaTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
         this.repo = repo;
         this.messageService = messageService;
         this.presenceService = presenceService;
         this.userService = userService;
         this.redisTemplate = redisTemplate;
+        this.redisListTemplate = conversationRedisTemplate.opsForList();
         this.kafkaTemplate = kafkaTemplate;
         this.webSocketTemplate = webSocketTemplate;
         this.mapper = mapper;
@@ -313,6 +316,7 @@ public class ConversationService {
     private final PresenceService presenceService;
     private final UserService userService;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ListOperations<String, Conversation> redisListTemplate;
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final SimpMessagingTemplate webSocketTemplate;
     private final ModelMapper mapper;
