@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 
-@FeignClient(name="${services.presence.name}", path="${services.presence.path}")
+@FeignClient(name="${services.presence.name}", url="${services.presence.url}", path="${services.presence.path}")
 public interface PresenceFeign {
     @GetMapping
     List<UserPresenceDTO> getByUserIds(@RequestBody List<Long> userIds);
