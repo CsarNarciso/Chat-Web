@@ -3,7 +3,7 @@ spring:
     name: chat-service
   #H2 Datasource
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:mem:db
     username: me
     password: letmein
     driver-class-name: org.h2.Driver
