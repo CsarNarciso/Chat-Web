@@ -1,6 +1,9 @@
+server:
+  port: 8002
 spring:
   application:
     name: chat-service
+
   #H2 Datasource
   datasource:
     url: jdbc:h2:mem:db
@@ -11,11 +14,16 @@ spring:
     hibernate:
       ddl-auto: create-drop
     database-platform: org.hibernate.dialect.H2Dialect
-  #Config client
+  #Circuit Breaker
   cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+    #Config client
     config:
       enabled: false
-  #Kafka Config
+
+  #Kafka
   kafka:
     bootstrap-servers: localhost:9092
     producer:
@@ -35,19 +43,26 @@ spring:
       group-id: ${spring.application.name}
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
 #Redis
 redis:
   hostname: localhost
   port: 6379
+
 #Eureka client
 eureka:
   client:
     enabled: false
-#Services
+
+#Feign Services
 services:
   user:
     name: user-service
+    url: http://localhost:8001
     path: /users
   presence:
     name: presence-service
+    url: localhost:8003
     path: /presences
+
+
