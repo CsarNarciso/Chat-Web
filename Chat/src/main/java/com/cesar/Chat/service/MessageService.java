@@ -55,7 +55,7 @@ public class MessageService {
 
                 //Increment Unread Message in Cache
                 String unreadKey = generateUnreadKey(senderId);
-                redisTemplate.opsForHash().increment(unreadKey, conversationId, 1);
+                globalRedisTemplate.opsForHash().increment(unreadKey, conversationId, 1);
 
                 //If conversation needs to be recreated for someone
                 if(!conversation.getRecreateFor().isEmpty()){
@@ -101,7 +101,7 @@ public class MessageService {
         //In DB
         repo.cleanConversationUnreadMessages(participantId, conversationId);
         //In Cache
-        redisTemplate.opsForHash().put(key, conversationId, 0);
+        globalRedisTemplate.opsForHash().put(key, conversationId, 0);
         return conversationId;
     }
 
@@ -133,7 +133,7 @@ public class MessageService {
 
         //Unread Messages
         String unreadKey = generateUnreadKey(userId);
-        redisTemplate.delete(unreadKey);
+        globalRedisTemplate.delete(unreadKey);
     }
 
 
@@ -156,7 +156,7 @@ public class MessageService {
 
         //And delete in Cache
         String unreadKey = generateUnreadKey(participantId);
-        redisTemplate.opsForHash().delete(unreadKey, conversationId);
+        globalRedisTemplate.opsForHash().delete(unreadKey, conversationId);
     }
 
 
@@ -198,8 +198,8 @@ public class MessageService {
 
                     String conversationMessagesKey = generateMessagesKey(id);
 
-                    LastMessageDTO lastMessage = (LastMessageDTO) redisTemplate.opsForList().rightPop(
-                            conversationMessagesKey);
+                    LastMessageDTO lastMessage = mapper.map(redisTemplate.opsForList().rightPop(
+                            conversationMessagesKey), LastMessageDTO.class);
 
                     if(lastMessage!=null){
                         lastMessages.put(id, lastMessage);
@@ -248,11 +248,10 @@ public class MessageService {
         Set<Object> hashes = new HashSet<>(conversationIds);
 
         Map<UUID, Integer> unreadMessages = new HashMap<>();
-        List<UUID> missingCacheCountsConversationIds = new ArrayList<>();
+        List<UUID> missingCacheCountsConversationIds = new ArrayList<>(conversationIds);
 
         //Fetch Conversation unread messages counts from Cache
-        List<Object> counts = redisTemplate.opsForHash().multiGet(key, hashes);
-        missingCacheCountsConversationIds.addAll(conversationIds);
+        List<Object> counts = globalRedisTemplate.opsForHash().multiGet(key, hashes);
 
         if(!counts.isEmpty()){
 
@@ -286,7 +285,7 @@ public class MessageService {
                     });
 
             //And store in Cache
-            redisTemplate.opsForHash().putAll(key, cacheableCounts);
+            globalRedisTemplate.opsForHash().putAll(key, cacheableCounts);
         }
         return unreadMessages;
     }
@@ -301,17 +300,19 @@ public class MessageService {
     }
 
 
-    public MessageService(MessageRepository repo, @Lazy ConversationService conversationService, RedisTemplate<String, Object> redisTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
+    public MessageService(MessageRepository repo, @Lazy ConversationService conversationService, RedisTemplate<String, Message> redisTemplate, RedisTemplate<String, Object> globalRedisTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
         this.repo = repo;
         this.conversationService = conversationService;
         this.redisTemplate = redisTemplate;
+        this.globalRedisTemplate = globalRedisTemplate;
         this.webSocketTemplate = webSocketTemplate;
         this.mapper = mapper;
     }
 
     private final MessageRepository repo;
     private final ConversationService conversationService;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Message> redisTemplate;
+    private final RedisTemplate<String, Object> globalRedisTemplate;
     private final SimpMessagingTemplate webSocketTemplate;
     private final ModelMapper mapper;
 }

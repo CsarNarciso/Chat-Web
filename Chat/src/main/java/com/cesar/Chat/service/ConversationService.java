@@ -241,11 +241,10 @@ public class ConversationService {
 
             //Then get from DB
             conversations = repo.findByParticipantId(userId);
-            Collection<Conversation> cc = conversations;
 
             //And store in Cache
-            if(!cc.isEmpty()){
-                redisListTemplate.rightPushAll(userConversationsKey, cc);
+            if(!conversations.isEmpty()){
+                redisListTemplate.rightPushAll(userConversationsKey, conversations);
             }
         }
         return conversations;
@@ -299,13 +298,13 @@ public class ConversationService {
 
 
 
-    public ConversationService(ConversationRepository repo, MessageService messageService, PresenceService presenceService, UserService userService, RedisTemplate<String, Object> redisTemplate, RedisTemplate<String, Conversation> conversationRedisTemplate, KafkaTemplate<String, Object> kafkaTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
+    public ConversationService(ConversationRepository repo, MessageService messageService, PresenceService presenceService, UserService userService, RedisTemplate<String, Conversation> redisTemplate, KafkaTemplate<String, Object> kafkaTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
         this.repo = repo;
         this.messageService = messageService;
         this.presenceService = presenceService;
         this.userService = userService;
         this.redisTemplate = redisTemplate;
-        this.redisListTemplate = conversationRedisTemplate.opsForList();
+        this.redisListTemplate = redisTemplate.opsForList();
         this.kafkaTemplate = kafkaTemplate;
         this.webSocketTemplate = webSocketTemplate;
         this.mapper = mapper;
@@ -315,7 +314,7 @@ public class ConversationService {
     private final MessageService messageService;
     private final PresenceService presenceService;
     private final UserService userService;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Conversation> redisTemplate;
     private final ListOperations<String, Conversation> redisListTemplate;
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final SimpMessagingTemplate webSocketTemplate;
