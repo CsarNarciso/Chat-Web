@@ -21,17 +21,6 @@ services:
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
     restart: always
 
-  # Postgres
-  postgres:
-    image: postgres
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: db
-      POSTGRES_USERNAME: postgres
-      POSTGRES_PASSWORD: letmein
-    restart: always
-
   #Redis
   redis:
     image: redis
