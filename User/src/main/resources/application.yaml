@@ -1,32 +1,33 @@
-#Application
+#Server
+server:
+  port: 8001
+  url: http://localhost:${server.port}
+  
 spring:
   application:
     name: user-service
-  #PostgreSQL Datasource
+
+  #H2 Datasource
   datasource:
-    url: jdbc:postgresql://localhost:5432/db
-    username: postgres
+    url: jdbc:h2:mem:db
+    username: me
     password: letmein
-    driver-class-name: org.postgresql.Driver
-  #Hibernate JPA
+    driver-class-name: org.h2.Driver
   jpa:
     hibernate:
       ddl-auto: create-drop
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-  #Config client
+    database-platform: org.hibernate.dialect.H2Dialect
+  
+  #Circuit Breaker
   cloud:
-    config:
-      uri: configuration-service
-      discovery:
+    openfeign:
+      circuitbreaker:
         enabled: true
-        serviceId: configuration-service
-  config:
-    import: optional:configserver:lb://configuration-service
-  #Kafka Config
+    #Config client
+    config:
+      enabled: false
+
+  #Kafka
   kafka:
     bootstrap-servers: localhost:9092
     producer:
@@ -37,26 +38,27 @@ spring:
               packages: "*"
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
 #Redis
 redis:
   hostname: localhost
   port: 6379
+
 #Eureka client
 eureka:
   client:
-    serviceUrl:
-      defaultZone: http://localhost:8761/eureka
-#Services
+    enabled: false
+
+#Feign Services
 services:
   media:
     name: media-service
+    url: http://localhost:8005
     path: /media
-#Server
-server:
-  url: http://localhost:${server.port}
+
+#Media
 project:
   path: ${user.dir}/Chat-Web/User
-#Media
 media:
   defaultImage:
     name: DefaultProfileImage.png

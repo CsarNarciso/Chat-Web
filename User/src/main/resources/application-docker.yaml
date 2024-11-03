@@ -16,9 +16,13 @@ spring:
     show-sql: true
     properties:
       hibernate:
-        format_sql: true
-  #Config client
+        format_sql: 
+  #Circuit Breaker
   cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+    #Config client
     config:
       uri: configuration-service
       discovery:
