@@ -6,7 +6,6 @@ import com.cesar.Chat.entity.Message;
 import com.cesar.Chat.entity.Participant;
 import com.cesar.Chat.repository.MessageRepository;
 import org.modelmapper.ModelMapper;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -16,7 +15,6 @@ import java.util.*;
 
 
 @Service
-@EnableCaching
 public class MessageService {
 
 
@@ -75,10 +73,7 @@ public class MessageService {
 
         //Fetch conversation messages from Cache
         List<Message> conversationMessages = Objects.requireNonNull(
-                redisTemplate.opsForList().range(key, 0, -1))
-                .stream()
-                .map(m -> (Message) m)
-                .toList();
+                redisTemplate.opsForList().range(key, 0, -1));
 
         //If not in Cache
         if (conversationMessages.isEmpty()){
@@ -124,7 +119,6 @@ public class MessageService {
                     List<Message> messages = Objects.requireNonNull(
                             redisTemplate.opsForList().range(messageKey, 0, -1))
                             .stream()
-                            .map(m -> (Message) m)
                             .dropWhile(m -> m.getSenderId().equals(userId))
                             .toList();
 

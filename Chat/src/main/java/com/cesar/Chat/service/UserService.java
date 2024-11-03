@@ -4,7 +4,6 @@ import com.cesar.Chat.dto.ConversationDTO;
 import com.cesar.Chat.dto.UserDTO;
 import com.cesar.Chat.feign.UserFeign;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;

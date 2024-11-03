@@ -231,10 +231,7 @@ public class ConversationService {
         String userConversationsKey = generateUserConversationsKey(userId);
 
         List<Conversation> conversations = Objects.requireNonNull(redisListTemplate
-                        .range(userConversationsKey, 0, -1))
-                .stream()
-                .map(c -> (Conversation) c)
-                .toList();
+                        .range(userConversationsKey, 0, -1));
 
         //Check for missing cache
         if(conversations.isEmpty()){
