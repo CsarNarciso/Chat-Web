@@ -1,16 +1,15 @@
-#Application
+#Server
+server:
+  port: 8003
 spring:
   application:
     name: presence-service
+  
   #Config client
   cloud:
     config:
-      uri: configuration-service
-      discovery:
-        enabled: true
-        serviceId: configuration-service
-  config:
-    import: optional:configserver:lb://configuration-service
+      enabled: false
+      
   #Kafka Config
   kafka:
     bootstrap-servers: localhost:9092
@@ -31,12 +30,13 @@ spring:
       group-id: ${spring.application.name}
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-#Eureka client
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://localhost:8761/eureka
+
 #Redis
 redis:
   hostname: localhost
   port: 6379
+
+#Eureka client
+eureka:
+  client:
+    enabled: false

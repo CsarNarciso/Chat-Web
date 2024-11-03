@@ -1,7 +1,6 @@
 package com.cesar.Presence.service;
 
 import com.cesar.Presence.dto.UserPresenceDTO;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -10,7 +9,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@EnableCaching
 @Service
 public class PresenceService {
 
@@ -62,7 +60,7 @@ public class PresenceService {
     public void removeOffline(Long userId){
 
         String userPresenceKey = generateUserPresenceKey(userId);
-        UserPresenceDTO presence = (UserPresenceDTO) redisTemplate.opsForValue().get(userPresenceKey);
+        UserPresenceDTO presence = redisTemplate.opsForValue().get(userPresenceKey);
 
         //If still Offline...
         if (presence.getStatus().equals("OFFLINE")) {
@@ -87,10 +85,7 @@ public class PresenceService {
                 .collect(Collectors.toSet());
 
         return Objects.requireNonNull(
-                redisTemplate.opsForValue().multiGet(userPresenceKeys))
-                .stream()
-                .map(p -> (UserPresenceDTO) p)
-                .toList();
+                redisTemplate.opsForValue().multiGet(userPresenceKeys));
     }
 
 
@@ -115,11 +110,11 @@ public class PresenceService {
 
 
 
-    public PresenceService(RedisTemplate<String, Object> redisTemplate, KafkaTemplate<String, Object> kafkaTemplate) {
+    public PresenceService(RedisTemplate<String, UserPresenceDTO> redisTemplate, KafkaTemplate<String, Object> kafkaTemplate) {
         this.redisTemplate = redisTemplate;
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, UserPresenceDTO> redisTemplate;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 }
