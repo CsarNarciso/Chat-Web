@@ -4,7 +4,6 @@ import com.cesar.User.dto.*;
 import com.cesar.User.entity.User;
 import com.cesar.User.repository.UserRepository;
 import org.modelmapper.ModelMapper;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -16,7 +15,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@EnableCaching
 @Service
 public class UserService {
 
@@ -182,7 +180,7 @@ public class UserService {
 
 
 
-    public UserService(UserRepository repo, RedisTemplate<String, Object> redisTemplate, KafkaTemplate<String, Object> kafkaTemplate, MediaService mediaService, ModelMapper mapper) {
+    public UserService(UserRepository repo, RedisTemplate<String, User> redisTemplate, KafkaTemplate<String, Object> kafkaTemplate, MediaService mediaService, ModelMapper mapper) {
         this.repo = repo;
         this.redisTemplate = redisTemplate;
         this.kafkaTemplate = kafkaTemplate;
@@ -191,7 +189,7 @@ public class UserService {
     }
 
     private final UserRepository repo;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, User> redisTemplate;
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final MediaService mediaService;
     private final ModelMapper mapper;

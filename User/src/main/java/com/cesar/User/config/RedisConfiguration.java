@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -23,15 +23,14 @@ publi class RedisConfiguration {
                 new RedisStandaloneConfiguration(REDIS_HOSTNAME, REDIS_PORT);
         return new JedisConnectionFactory(redisStandaloneConfiguration);
     }
-
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate(){
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
+	
+	@Bean
+    public RedisTemplate<String, User> userRedisTemplate(){
+        RedisTemplate<String, User> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory());
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
-        template.setHashKeySerializer(new JdkSerializationRedisSerializer());
-        template.setValueSerializer(new JdkSerializationRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         template.setEnableTransactionSupport(true);
         template.afterPropertiesSet();
         return template;
