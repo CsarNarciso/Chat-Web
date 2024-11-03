@@ -106,7 +106,7 @@ public class UserService {
 
         //Try to fetch from Cache
         String userKey = generateUserKey(id);
-        User user = (User) redisTemplate.opsForValue().get(userKey);
+        User user = redisTemplate.opsForValue().get(userKey);
 
         //If not in Cache
         if(user==null){
@@ -129,10 +129,7 @@ public class UserService {
                 .map(this::generateUserKey)
                 .collect(Collectors.toSet());
 
-        List<User> users = Objects.requireNonNull(redisTemplate.opsForValue().multiGet(userKeys))
-                .stream()
-                .map(u -> (User) u)
-                .toList();
+        List<User> users = Objects.requireNonNull(redisTemplate.opsForValue().multiGet(userKeys));
 
         //If missing cache
         List<Long> missingCacheIds = users
