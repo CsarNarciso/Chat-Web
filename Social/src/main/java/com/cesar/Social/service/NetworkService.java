@@ -6,7 +6,6 @@ import com.cesar.Social.dto.NetworkDTO;
 import com.cesar.Social.entity.Network;
 import com.cesar.Social.repository.NetworkRepository;
 import org.modelmapper.ModelMapper;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
@@ -14,7 +13,6 @@ import java.util.*;
 
 
 @Service
-@EnableCaching
 public class NetworkService {
 
 
@@ -22,7 +20,7 @@ public class NetworkService {
 
         //Try to fetch from Cache
         String networkKey = generateUserNetworkKey(userId);
-        Network network = (Network) redisTemplate.opsForValue().get(networkKey);
+        Network network = redisTemplate.opsForValue().get(networkKey);
 
         //If not in Cache
         if(network==null){
@@ -91,13 +89,13 @@ public class NetworkService {
 
 
 
-    public NetworkService(NetworkRepository repo, RedisTemplate<String, Object> redisTemplate, ModelMapper mapper) {
+    public NetworkService(NetworkRepository repo, RedisTemplate<String, Network> redisTemplate, ModelMapper mapper) {
         this.repo = repo;
         this.redisTemplate = redisTemplate;
         this.mapper = mapper;
     }
 
     private final NetworkRepository repo;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Network> redisTemplate;
     private final ModelMapper mapper;
 }

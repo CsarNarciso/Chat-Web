@@ -6,16 +6,17 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import com.cesar.Social.entity.Network;
 
 @Configuration
-public class RedisConfiguration {
+publi class RedisConfiguration {
 
     @Value("${redis.hostname}")
     private String REDIS_HOSTNAME;
     @Value("${redis.port}")
-    private Integer REDIS_PORT;
+    private int REDIS_PORT;
 
     @Bean
     public JedisConnectionFactory connectionFactory(){
@@ -23,15 +24,14 @@ public class RedisConfiguration {
                 new RedisStandaloneConfiguration(REDIS_HOSTNAME, REDIS_PORT);
         return new JedisConnectionFactory(redisStandaloneConfiguration);
     }
-
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate(){
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
+	
+	@Bean
+    public RedisTemplate<String, Network> networkRedisTemplate(){
+        RedisTemplate<String, Network> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory());
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
-        template.setHashKeySerializer(new JdkSerializationRedisSerializer());
-        template.setValueSerializer(new JdkSerializationRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         template.setEnableTransactionSupport(true);
         template.afterPropertiesSet();
         return template;
