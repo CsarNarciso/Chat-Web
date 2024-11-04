@@ -11,7 +11,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import com.cesar.Social.entity.Network;
 
 @Configuration
-publi class RedisConfiguration {
+public class RedisConfiguration {
 
     @Value("${redis.hostname}")
     private String REDIS_HOSTNAME;
