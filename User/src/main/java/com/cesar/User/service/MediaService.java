@@ -10,7 +10,24 @@ public class MediaService {
 
 
     public String upload(MultipartFile imageMetadata, String oldPath) {
-        return imageMetadata.isEmpty() ? DEFAULT_IMAGE_PATH : feign.upload(imageMetadata, oldPath);
+
+        String newImageUrl;
+
+        //If image provided,
+        if(!imageMetadata.isEmpty()){
+            //And user has already a profile image
+            newImageUrl = (oldPath!=null)
+                    ? feign.upload(imageMetadata, oldPath)  //Update
+                    : DEFAULT_IMAGE_PATH; //First time image upload
+        }
+        //If not,
+        else{
+            //And user has no profile image yet
+            newImageUrl = (oldPath==null)
+                    ? DEFAULT_IMAGE_PATH //First time image upload
+                    : null; //No old path provided on update request
+        }
+        return newImageUrl;
     }
 
     public void delete(String path){

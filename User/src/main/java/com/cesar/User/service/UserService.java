@@ -47,7 +47,6 @@ public class UserService {
 
         //Update in Cache
         String userKey = generateUserKey(updateRequest.getId());
-        redisTemplate.delete(userKey);
         redisTemplate.opsForValue().set(userKey, user);
 
         //Event Publisher - User updated
@@ -59,21 +58,28 @@ public class UserService {
 
     public String updateProfileImage(Long id, MultipartFile imageMetadata, String oldPath){
 
-        //Update in DB
-        User user = repo.save(User.builder()
-                .id(id)
-                .profileImageUrl(mediaService.upload(imageMetadata, oldPath))
-                .build());
+        String newImageUrl = mediaService.upload(imageMetadata, oldPath);
 
-        //Update in Cache
-        String userKey = generateUserKey(id);
-        redisTemplate.delete(userKey);
-        redisTemplate.opsForValue().set(userKey, user);
+        //If either new image is not empty (bad arguments request),
+        // or media service request was performed successful (no fallback)
+        if(newImageUrl!=null && !newImageUrl.equals(oldPath)){
 
-        //Event Publisher - User Updated
-        kafkaTemplate.send("UserUpdated", mapToDTO(user));
+            //Update in DB
+            User user = repo.save(User.builder()
+                    .id(id)
+                    .profileImageUrl(newImageUrl)
+                    .build());
 
-        return user.getProfileImageUrl();
+            //Update in Cache
+            String userKey = generateUserKey(id);
+            redisTemplate.opsForValue().set(userKey, user);
+
+            //Event Publisher - User Updated
+            kafkaTemplate.send("UserUpdated", mapToDTO(user));
+
+            return user.getProfileImageUrl();
+        }
+        return null;
     }
 
 

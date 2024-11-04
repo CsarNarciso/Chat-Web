@@ -8,7 +8,7 @@ public class MediaFallback implements MediaFeign {
 
     @Override
     public String upload(MultipartFile imageMetadata, String oldPath){
-        return null;
+        return oldPath;
     }
 
     @Override
