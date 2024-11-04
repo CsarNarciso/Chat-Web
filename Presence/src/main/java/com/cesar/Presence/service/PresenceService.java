@@ -15,27 +15,24 @@ public class PresenceService {
 
     public void connect(Long userId) {
 
-        String userPresenceKey = generateUserPresenceKey(userId);
-        UserPresenceDTO presence = UserPresenceDTO
+		String userPresenceKey = generateUserPresenceKey(userId);
+		UserPresenceDTO existentPresence = redisTemplate.opsForValue().get(userPresenceKey);
+		
+		//If presence already exists as Offline (reconnection)or doesn't exist yet (connection)...
+		if(existentPresence != null && existentPresence.getStatus().equals("OFFLINE")){
+			
+			//Perform connection action
+			UserPresenceDTO presence = UserPresenceDTO
                 .builder()
                 .id(userId)
                 .status("ONLINE")
                 .build();
-
-        //If presence already exists (either online or not)...
-        if(redisTemplate.opsForValue().get(userPresenceKey)!=null){
-
-            //Reconnect
-            redisTemplate.opsForValue().set(userPresenceKey, presence);
-        }
-        else {
-
-            //Connect
-            redisTemplate.opsForValue().set(userPresenceKey, presence);
-        }
-
-        //Event Publisher - User Online
-        kafkaTemplate.send("PresenceUpdated", presence);
+			
+			redisTemplate.opsForValue().set(userPresenceKey, presence);
+			
+			//Event Publisher - User Online
+			kafkaTemplate.send("PresenceUpdated", presence);
+		}
     }
 
 

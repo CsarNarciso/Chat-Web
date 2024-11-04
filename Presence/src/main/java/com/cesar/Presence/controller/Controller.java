@@ -24,8 +24,8 @@ public class Controller {
         presenceService.disconnect(userId);
         //Wait for reconnection...,
         scheduler.schedule(() -> {
-            //Handle if user remains disconnected...
-            presenceService.removeOffline(userId);
+            //And if user remains disconnected
+            presenceService.removeOffline(userId); //Forget it
         }, 5, TimeUnit.SECONDS);
     }
 
