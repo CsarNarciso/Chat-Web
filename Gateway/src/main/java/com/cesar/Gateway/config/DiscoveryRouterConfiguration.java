@@ -1,12 +1,14 @@
 package com.cesar.Gateway.config;
 
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
-@EnableDiscoveryClient
-public class RouterConfiguration {
+@Configuration
+@Profile("docker")
+public class DiscoveryRouterConfiguration {
 
     @Bean
     RouteLocator routeLocator(RouteLocatorBuilder builder){
