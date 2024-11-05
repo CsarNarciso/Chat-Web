@@ -1,0 +1,71 @@
+#No Docker, Discovery, Config server
+
+#Application
+server:
+  port: 8002
+spring:
+  application:
+    name: chat-service
+
+  #H2 Datasource
+  datasource:
+    url: jdbc:h2:mem:db
+    username: me
+    password: letmein
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+  #Circuit Breaker
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+    #Config client
+    config:
+      enabled: false
+
+  #Kafka
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+      group-id: ${spring.application.name}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+#Redis
+redis:
+  hostname: localhost
+  port: 6379
+
+#Eureka client
+eureka:
+  client:
+    enabled: false
+
+#Feign Services
+services:
+  user:
+    name: user-service
+    url: localhost:8001
+    path: /users
+  presence:
+    name: presence-service
+    url: localhost:8003
+    path: /presences
+
+
