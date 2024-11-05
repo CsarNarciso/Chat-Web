@@ -12,6 +12,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.Objects;
 
 
 @Service
@@ -72,8 +73,11 @@ public class MessageService {
         String key = generateMessagesKey(conversationId);
 
         //Fetch conversation messages from Cache
-        List<Message> conversationMessages = Objects.requireNonNull(
-                redisTemplate.opsForList().range(key, 0, -1));
+        List<Message> conversationMessages = 
+				redisTemplate.opsForList().range(key, 0, -1)
+					.stream()
+					.filter(Objects::nonNull)
+					.toList();
 
         //If not in Cache
         if (conversationMessages.isEmpty()){
@@ -116,9 +120,9 @@ public class MessageService {
                     String messageKey = generateMessagesKey(conversationId);
 
                     //Get actual conversation messages list from Cache to filter out user messages
-                    List<Message> messages = Objects.requireNonNull(
-                            redisTemplate.opsForList().range(messageKey, 0, -1))
-                            .stream()
+                    List<Message> messages = redisTemplate.opsForList().range(messageKey, 0, -1)
+							.stream()
+							.filter(Objects::nonNull)
                             .dropWhile(m -> m.getSenderId().equals(userId))
                             .toList();
 

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Service
 public class PresenceService {
@@ -81,8 +82,10 @@ public class PresenceService {
                 .map(this::generateUserPresenceKey)
                 .collect(Collectors.toSet());
 
-        return Objects.requireNonNull(
-                redisTemplate.opsForValue().multiGet(userPresenceKeys));
+        return redisTemplate.opsForValue().multiGet(userPresenceKeys)
+					.stream()
+					.filter(Objects::nonNull)
+					.toList();
     }
 
 

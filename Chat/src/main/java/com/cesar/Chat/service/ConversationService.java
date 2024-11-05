@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.Objects;
 
 @Service
 public class ConversationService {
@@ -230,8 +231,10 @@ public class ConversationService {
         //Try to fetch from Cache
         String userConversationsKey = generateUserConversationsKey(userId);
 
-        List<Conversation> conversations = Objects.requireNonNull(redisListTemplate
-                        .range(userConversationsKey, 0, -1));
+        List<Conversation> conversations = redisListTemplate.range(userConversationsKey, 0, -1)
+								.stream()
+								.filter(Objects::nonNull)
+								.toList();
 
         //Check for missing cache
         if(conversations.isEmpty()){
@@ -290,7 +293,6 @@ public class ConversationService {
                 .map(Conversation::getId)
                 .toList();
     }
-
 
 
 
