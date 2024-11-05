@@ -1,7 +1,10 @@
+#Docker, Eureka, Config Server
+
 #Application
 spring:
   application:
     name: gateway-service
+  
   #Config client
   cloud:
     config:
@@ -11,6 +14,7 @@ spring:
         serviceId: configuration-service
   config:
     import: optional:configserver:lb://configuration-service
+
 #Eureka client
 eureka:
   client:

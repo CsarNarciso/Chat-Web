@@ -1,0 +1,22 @@
+#Eureka, Config Server
+
+#Application
+spring:
+  application:
+    name: gateway-service
+  
+  #Config client
+  cloud:
+    config:
+      uri: configuration-service
+      discovery:
+        enabled: true
+        serviceId: configuration-service
+  config:
+    import: optional:configserver:lb://configuration-service
+
+#Eureka client
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka

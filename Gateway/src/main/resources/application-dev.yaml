@@ -1,0 +1,18 @@
+#No Docker, Eureka, Config Server
+
+#Application
+server:
+  port: 8000
+spring:
+  application:
+    name: gateway-service
+    
+  #Config client
+  cloud:
+    config:
+      enabled: false  
+      
+#Eureka client
+eureka:
+  client:
+    enabled: false

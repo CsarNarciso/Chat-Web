@@ -1,34 +1,18 @@
-#No Docker, Discovery, Config server, Postgres
+#No Docker, Eureka, Config Server
 
 #Application
 server:
-  port: 8002
+  port: 8003
 spring:
   application:
-    name: chat-service
-
-  #H2 Datasource
-  datasource:
-    url: jdbc:h2:mem:db
-    username: me
-    password: letmein
-    driver-class-name: org.h2.Driver
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    database-platform: org.hibernate.dialect.H2Dialect
-    
-  #Circuit Breaker
+    name: presence-service
+  
+  #Config client
   cloud:
-    openfeign:
-      circuitbreaker:
-        enabled: true
-        
-    #Config client
     config:
       enabled: false
-
-  #Kafka
+      
+  #Kafka Config
   kafka:
     bootstrap-servers: localhost:9092
     producer:
@@ -53,15 +37,6 @@ spring:
 redis:
   hostname: localhost
   port: 6379
-
-#Feign Services
-services:
-  user:
-    url: localhost:8001
-    path: /users
-  presence:
-    url: localhost:8003
-    path: /presences
 
 #Eureka client
 eureka:

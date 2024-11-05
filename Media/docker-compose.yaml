@@ -4,7 +4,7 @@ services:
     ports:
       - "8005:8005"
     environment:
-      SPRING_PROFILES_ACTIVE: docker
+      SPRING_PROFILES_ACTIVE: prod
     depends_on:
       discovery:
         condition: service_healthy

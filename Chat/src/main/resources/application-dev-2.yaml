@@ -1,4 +1,4 @@
-#Discovery, Config server
+#Discovery, Config server, Postgres
 
 #Application
 spring:
@@ -62,12 +62,6 @@ redis:
   hostname: localhost
   port: 6379
   
-#Eureka client
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://discovery:8761/eureka
-      
 #Services
 services:
   user:
@@ -76,3 +70,9 @@ services:
   presence:
     name: presence-service
     path: /presences
+  
+#Eureka client
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka

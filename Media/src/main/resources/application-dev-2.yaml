@@ -1,0 +1,36 @@
+#Eureka, Config Server
+
+#Application
+spring:
+  application:
+    name: media-service
+    
+  #Config client
+  cloud:
+    config:
+      uri: configuration-service
+      discovery:
+        enabled: true
+        serviceId: configuration-service
+  config:
+    import: optional:configserver:lb://configuration-service
+
+#Server
+server:
+  url: http://localhost:${server.port}
+project:
+  path: ${user.dir}/Chat-Web/Media
+  
+#Media
+resources:
+  path: src/main/resources
+media:
+  path: ${resources.path}/media
+  absolutePath: ${project.path}/${media.path}
+  url: ${server.url}/${media.path}
+  
+#Eureka client
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka

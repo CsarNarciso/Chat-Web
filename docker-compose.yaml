@@ -35,7 +35,7 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: db
+      POSTGRES_DB: chat-web-db
       POSTGRES_USERNAME: postgres
       POSTGRES_PASSWORD: letmein
     networks:

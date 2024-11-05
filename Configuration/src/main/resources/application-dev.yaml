@@ -1,10 +1,12 @@
-#Server
+#Eureka, No Docker
+
+#Application
 server:
   port: 8888
-#Application
 spring:
   application:
     name: configuration-service
+  
   #Config Server
   cloud:
     config:
@@ -15,8 +17,9 @@ spring:
           defaultLabel: main
           search-paths:
             - Configuration/configs
+
 #Eureka Client
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://discovery:8761/eureka
+      defaultZone: http://localhost:8761/eureka

@@ -1,33 +1,12 @@
-#Docker, Discovery, Config server
+#Docker, Eureka, Config Server
 
 #Application
 spring:
   application:
-    name: chat-service
+    name: presence-service
     
-  #PostgreSQL Datasource
-  datasource:
-    url: jdbc:postgresql://postgres:5432/db
-    username: postgres
-    password: letmein
-    driver-class-name: org.postgresql.Driver
-  #Hibernate JPA
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-    
-  #Circuit Breaker    
-  cloud:
-    openfeign:
-      circuitbreaker:
-        enabled: true
-        
   #Config client
+  cloud:
     config:
       uri: configuration-service
       discovery:
@@ -35,7 +14,7 @@ spring:
         serviceId: configuration-service
   config:
     import: optional:configserver:lb://configuration-service
-    
+  
   #Kafka Config
   kafka:
     bootstrap-servers: kafka:9092
@@ -56,23 +35,14 @@ spring:
       group-id: ${spring.application.name}
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      
-#Redis
-redis:
-  hostname: redis
-  port: 6379
-  
-#Services
-services:
-  user:
-    name: user-service
-    path: /users
-  presence:
-    name: presence-service
-    path: /presences
-  
+
 #Eureka client
 eureka:
   client:
     serviceUrl:
       defaultZone: http://discovery:8761/eureka
+
+#Redis
+redis:
+  hostname: redis
+  port: 6379

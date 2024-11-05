@@ -1,0 +1,25 @@
+#Docker, Eureka
+
+#Application
+server:
+  port: 8888
+spring:
+  application:
+    name: configuration-service
+  
+  #Config Server
+  cloud:
+    config:
+      server:
+        prefix: /config
+        git:
+          uri: https://github.com/CsarNarciso/Chat-Web
+          defaultLabel: main
+          search-paths:
+            - Configuration/configs
+
+#Eureka Client
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://discovery:8761/eureka

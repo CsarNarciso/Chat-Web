@@ -1,14 +1,3 @@
-#Server
-server:
-  port: 8761
-#Application
 spring:
-  application:
-    name: discovery-service
-#Eureka Server
-eureka:
-  instance:
-    hostname: localhost
-  client:
-    registerWithEureka: false
-    fetchRegistry: false
+  profiles:
+    active: prod
