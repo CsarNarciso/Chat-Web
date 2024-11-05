@@ -14,13 +14,12 @@ import java.util.List;
 @RequestMapping("/users")
 public class Controller {
 
-    @PostMapping
-    public ResponseEntity<?> create(@RequestBody CreateRequestDTO createRequest,
-                                    @RequestParam MultipartFile imageMetadata){
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> create(@ModelAttribute CreateRequestDTO createRequest){
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(service.create(createRequest, imageMetadata));
+                .body(service.create(createRequest));
     }
 
     @GetMapping("/{id}")

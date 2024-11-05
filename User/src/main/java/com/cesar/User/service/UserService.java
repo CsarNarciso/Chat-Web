@@ -19,12 +19,12 @@ import java.util.stream.Collectors;
 public class UserService {
 
 
-    public UserDTO create(CreateRequestDTO createRequest, MultipartFile imageMetadata){
+    public UserDTO create(CreateRequestDTO createRequest){
 
         User user = mapper.map(createRequest, User.class);
 
         //Upload profile image, and store URL in user entity
-        String profileImageURL = mediaService.upload(imageMetadata, null);
+        String profileImageURL = mediaService.upload(createRequest.getImageMetadata(), null);
         user.setProfileImageUrl(profileImageURL);
 
         //Store in DB
@@ -135,8 +135,11 @@ public class UserService {
                 .map(this::generateUserKey)
                 .collect(Collectors.toSet());
 
-        List<User> users = Objects.requireNonNull(redisTemplate.opsForValue().multiGet(userKeys));
-
+        List<User> users = redisTemplate.opsForValue().multiGet(userKeys)
+        		.stream()
+        		.filter(Objects::nonNull)
+        		.toList();
+        
         //If missing cache
         List<Long> missingCacheIds = users
                 .stream()
