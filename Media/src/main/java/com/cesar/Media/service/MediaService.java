@@ -48,7 +48,7 @@ public class MediaService {
         }
     }
 
-    @Value("${media.absolutePath}")
+    @Value("${media.path}")
     private String mediaPath;
     @Value("${media.url}")
     private String mediaBaseUrl;
