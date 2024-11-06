@@ -11,8 +11,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/media")
 public class Controller {
 
-    @PostMapping
-    public ResponseEntity<?> upload(@RequestParam MultipartFile imageMetadata, @RequestParam String oldPath){
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> upload(@RequestPart MultipartFile imageMetadata, @RequestParam(required = false) String oldPath){
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .contentType(MediaType.APPLICATION_JSON)

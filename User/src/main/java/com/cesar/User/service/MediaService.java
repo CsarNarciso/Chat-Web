@@ -12,26 +12,33 @@ public class MediaService {
     public String upload(MultipartFile imageMetadata, String oldPath) {
 
         String newImageUrl;
-
+        
         //If image provided,
         if(!imageMetadata.isEmpty()){
-            //And user has already a profile image
-            newImageUrl = (oldPath!=null)
-                    ? feign.upload(imageMetadata, oldPath)  //Update
-                    : DEFAULT_IMAGE_PATH; //First time image upload
+        	
+        	//Try to upload
+        	String uploadedImageUrl = feign.upload(imageMetadata, oldPath);
+        	
+        	//And if user has already an image
+        	newImageUrl = (oldPath!=null) 
+        			? uploadedImageUrl //Update
+        			//Or, if server response is successful
+        			: (uploadedImageUrl != oldPath) 
+        					? uploadedImageUrl //First time custom image upload
+        					: DEFAULT_IMAGE_URL; //Default image
         }
         //If not,
         else{
             //And user has no profile image yet
             newImageUrl = (oldPath==null)
-                    ? DEFAULT_IMAGE_PATH //First time image upload
-                    : null; //No old path provided on update request
+                    ? DEFAULT_IMAGE_URL //First time default image upload
+                    : null; //Update bad request error. No old path provided
         }
         return newImageUrl;
     }
 
     public void delete(String path){
-        if(!path.equals(DEFAULT_IMAGE_PATH)){
+        if(!path.equals(DEFAULT_IMAGE_URL)){
             feign.delete(path);
         }
     }
@@ -43,6 +50,6 @@ public class MediaService {
     }
     private final MediaFeign feign;
 
-    @Value("${media.defaultImage.path}")
-    private String DEFAULT_IMAGE_PATH;
+    @Value("${defaultImage.url}")
+    private String DEFAULT_IMAGE_URL;
 }

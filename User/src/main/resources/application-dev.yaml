@@ -1,10 +1,8 @@
 #No Docker, Eureka, Config Server, Postgres
 
-#Server
+#Application
 server:
   port: 8001
-  url: http://localhost:${server.port}
-  
 spring:
   application:
     name: user-service
@@ -25,6 +23,7 @@ spring:
     openfeign:
       circuitbreaker:
         enabled: true
+
     #Config client
     config:
       enabled: false
@@ -54,13 +53,10 @@ eureka:
 #Feign Services
 services:
   media:
-    url: http://localhost:8005
+    name: media-service
+    url: http://localhost:8003
     path: /media
 
 #Media
-project:
-  path: ${user.dir}/Chat-Web/User
-media:
-  defaultImage:
-    name: DefaultProfileImage.png
-    path: src/main/resources/static/${media.defaultImage.name}
+defaultImage:
+  url: http://localhost:${server.port}/DefaultProfileImage.png
