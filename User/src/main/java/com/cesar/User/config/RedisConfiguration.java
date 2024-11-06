@@ -8,6 +8,8 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+
+import com.cesar.User.dto.UserDTO;
 import com.cesar.User.entity.User;
 
 @Configuration
@@ -26,8 +28,8 @@ public class RedisConfiguration {
     }
 	
 	@Bean
-    public RedisTemplate<String, User> userRedisTemplate(){
-        RedisTemplate<String, User> template = new RedisTemplate<>();
+    public RedisTemplate<String, UserDTO> userRedisTemplate(){
+        RedisTemplate<String, UserDTO> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory());
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());

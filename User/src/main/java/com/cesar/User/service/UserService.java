@@ -21,30 +21,31 @@ public class UserService {
 
     public UserDTO create(CreateRequestDTO createRequest){
 
-        User user = mapper.map(createRequest, User.class);
+        User entity = mapper.map(createRequest, User.class);
 
         //Upload profile image, and store URL in user entity
         String profileImageURL = mediaService.upload(createRequest.getImageMetadata(), null);
-        user.setProfileImageUrl(profileImageURL);
+        entity.setProfileImageUrl(profileImageURL);
 
         //Store in DB
-        user = repo.save(user);
+        entity = repo.save(entity);
+        UserDTO user = mapToDTO(entity);
 
         //Store in Cache
         String userKey = generateUserKey(user.getId());
         redisTemplate.opsForValue().set(userKey, user);
 
-        return mapToDTO(user);
+        return user;
     }
     
      
     public UserDTO getById(Long id){
 
-    	User user = new User();
+    	UserDTO user = new UserDTO();
         
     	//Try to fetch from Cache
         String userKey = generateUserKey(id);
-        User cacheUser = redisTemplate.opsForValue().get(userKey);
+        UserDTO cacheUser = redisTemplate.opsForValue().get(userKey);
         
         //If not missing Cache
         if(cacheUser!=null){
@@ -52,15 +53,16 @@ public class UserService {
         }
         else {
         	 //Then from DB
-            user = repo.findById(id).orElse(null);
+            User entity = repo.findById(id).orElse(null);
             
             //And store in Cache
-            if(user==null) {            	
+            if(entity==null) {            	
             	return null;
             }
+            user = mapToDTO(entity);
             redisTemplate.opsForValue().set(userKey, user);
         }
-        return mapToDTO(user);
+        return user;
     }
 
 
@@ -72,7 +74,7 @@ public class UserService {
                 .map(this::generateUserKey)
                 .collect(Collectors.toSet());
 
-        List<User> users = redisTemplate.opsForValue().multiGet(userKeys)
+        List<UserDTO> users = redisTemplate.opsForValue().multiGet(userKeys)
         		.stream()
         		.filter(Objects::nonNull)
         		.toList();
@@ -81,24 +83,25 @@ public class UserService {
         List<Long> missingCacheIds = users
                 .stream()
                 .filter(u -> !ids.contains(u.getId()))
-                .map(User::getId)
+                .map(UserDTO::getId)
                 .toList();
 
         if(!missingCacheIds.isEmpty()){
 
             //Get from DB
             List<User> missingUsers = repo.findAllById(missingCacheIds);
-            users.addAll(missingUsers);
+            users.addAll(mapToDTOS(missingUsers));
 
             //And store in Cache
-            Map<String, User> missingUserKeys = missingUsers
+            Map<String, UserDTO> missingUserKeys = missingUsers
                     .stream()
+                    .map( u -> mapper.map(u,  UserDTO.class) )
                     .collect(Collectors.toMap(
                             u -> generateUserKey(u.getId()),
                             Function.identity()));
             redisTemplate.opsForValue().multiSet(missingUserKeys);
         }
-        return mapToDTOS(users);
+        return users;
     }
 
 
@@ -106,17 +109,17 @@ public class UserService {
     public UserDTO updateDetails(UpdateRequestDTO updateRequest){
 
         //Update in DB
-        User user = repo.save(mapper.map(updateRequest, User.class));
-        UserDTO dto = mapToDTO(user);
+        User entity = repo.save(mapper.map(updateRequest, User.class));
+        UserDTO user = mapToDTO(entity);
 
         //Update in Cache
         String userKey = generateUserKey(updateRequest.getId());
         redisTemplate.opsForValue().set(userKey, user);
 
         //Event Publisher - User updated
-        kafkaTemplate.send("UserUpdated", dto);
+        kafkaTemplate.send("UserUpdated", user);
 
-        return dto;
+        return user;
     }
 
 
@@ -129,19 +132,21 @@ public class UserService {
         if(newImageUrl!=null && !newImageUrl.equals(oldPath)){
 
             //Update in DB
-            User user = repo.save(User.builder()
+            User entity = repo.save(User.builder()
                     .id(id)
                     .profileImageUrl(newImageUrl)
                     .build());
+            
+            UserDTO user = mapToDTO(entity);
 
             //Update in Cache
             String userKey = generateUserKey(id);
             redisTemplate.opsForValue().set(userKey, user);
 
             //Event Publisher - User Updated
-            kafkaTemplate.send("UserUpdated", mapToDTO(user));
+            kafkaTemplate.send("UserUpdated", user);
 
-            return user.getProfileImageUrl();
+            return entity.getProfileImageUrl();
         }
         return null;
     }
@@ -195,7 +200,7 @@ public class UserService {
 
 
 
-    public UserService(UserRepository repo, RedisTemplate<String, User> redisTemplate, KafkaTemplate<String, Object> kafkaTemplate, MediaService mediaService, ModelMapper mapper) {
+    public UserService(UserRepository repo, RedisTemplate<String, UserDTO> redisTemplate, KafkaTemplate<String, Object> kafkaTemplate, MediaService mediaService, ModelMapper mapper) {
         this.repo = repo;
         this.redisTemplate = redisTemplate;
         this.kafkaTemplate = kafkaTemplate;
@@ -204,7 +209,7 @@ public class UserService {
     }
 
     private final UserRepository repo;
-    private final RedisTemplate<String, User> redisTemplate;
+    private final RedisTemplate<String, UserDTO> redisTemplate;
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final MediaService mediaService;
     private final ModelMapper mapper;
