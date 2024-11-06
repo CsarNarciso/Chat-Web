@@ -28,21 +28,26 @@ public class Controller {
     	
         UserDTO user = service.getById(id);
         
-        if(user!=null) {
-        	return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(user);
-        }
-    	return ResponseEntity.noContent().build();
+        return user!=null
+        		? ResponseEntity
+        				.status(HttpStatus.OK)
+        				.contentType(MediaType.APPLICATION_JSON)
+        				.body(user)
+        		: ResponseEntity.noContent().build();
     }
     
     @GetMapping
     public ResponseEntity<?> getByIds(@RequestBody List<Long> ids){
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(service.getByIds(ids));
+        
+    	List<UserDTO> users = service.getByIds(ids);
+    	
+    	return !users.isEmpty()
+    			
+    			? ResponseEntity
+    					.status(HttpStatus.OK)
+    					.contentType(MediaType.APPLICATION_JSON)
+    					.body(users) 
+                : ResponseEntity.noContent().build();
     }
 
     @PutMapping

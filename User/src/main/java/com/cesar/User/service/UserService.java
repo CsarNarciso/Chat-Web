@@ -90,16 +90,20 @@ public class UserService {
 
             //Get from DB
             List<User> missingUsers = repo.findAllById(missingCacheIds);
-            users.addAll(mapToDTOS(missingUsers));
-
-            //And store in Cache
-            Map<String, UserDTO> missingUserKeys = missingUsers
-                    .stream()
-                    .map( u -> mapper.map(u,  UserDTO.class) )
-                    .collect(Collectors.toMap(
-                            u -> generateUserKey(u.getId()),
-                            Function.identity()));
-            redisTemplate.opsForValue().multiSet(missingUserKeys);
+            
+            if(!missingUsers.isEmpty()) {
+            	
+            	users.addAll(mapToDTOS(missingUsers));
+            	
+            	//And store in Cache
+                Map<String, UserDTO> missingUserKeys = missingUsers
+                        .stream()
+                        .map( u -> mapper.map(u,  UserDTO.class) )
+                        .collect(Collectors.toMap(
+                                u -> generateUserKey(u.getId()),
+                                Function.identity()));
+                redisTemplate.opsForValue().multiSet(missingUserKeys);
+            }
         }
         return users;
     }
