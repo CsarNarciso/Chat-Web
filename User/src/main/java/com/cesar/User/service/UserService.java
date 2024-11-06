@@ -1,19 +1,27 @@
 package com.cesar.User.service;
 
-import com.cesar.User.dto.*;
-import com.cesar.User.entity.User;
-import com.cesar.User.repository.UserRepository;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.web.multipart.MultipartFile;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+
+import com.cesar.User.dto.CreateRequestDTO;
+import com.cesar.User.dto.UpdateRequestDTO;
+import com.cesar.User.dto.UserDTO;
+import com.cesar.User.entity.User;
+import com.cesar.User.repository.UserRepository;
 
 @Service
 public class UserService {
@@ -74,17 +82,21 @@ public class UserService {
                 .map(this::generateUserKey)
                 .collect(Collectors.toSet());
 
-        List<UserDTO> users = redisTemplate.opsForValue().multiGet(userKeys)
+        List<UserDTO> users = new ArrayList<>(redisTemplate.opsForValue().multiGet(userKeys)
         		.stream()
         		.filter(Objects::nonNull)
-        		.toList();
+        		.toList());
         
         //If missing cache
-        List<Long> missingCacheIds = users
-                .stream()
-                .filter(u -> !ids.contains(u.getId()))
+        List<Long> cacheUserIds = users
+        		.stream()
                 .map(UserDTO::getId)
                 .toList();
+        
+        List<Long> missingCacheIds = ids
+        		.stream()
+        		.filter(id -> !cacheUserIds.contains(id))
+        		.toList();        
 
         if(!missingCacheIds.isEmpty()){
 
@@ -109,23 +121,66 @@ public class UserService {
     }
 
 
+    public UserDTO updateDetails(Long id, UpdateRequestDTO updateRequest){
+    	
+    	//If user exists...
+    	User existentEntity = repo.findById(id).orElse(null); 
+    	
+    	if(existentEntity!=null) {
+    		
+    		boolean updatePerformed = false;
+    		User entityForUpdate = mapper.map(existentEntity, User.class);
+    		
+    		//For each allowed update request field
+			for (Field updateRequestField : UpdateRequestDTO.class.getDeclaredFields()) {
+				
+				//Make private request DTO field accessible
+				updateRequestField.setAccessible(true);
+				
+				//If it's present on request (either null or not)
+				Optional<?> updateRequestFieldValue = Optional.empty();
+				
+				try {
+					updateRequestFieldValue = (Optional<?>) updateRequestField.get(updateRequest);
+				} catch (IllegalArgumentException | IllegalAccessException e) {e.printStackTrace();}
+				
+				if(updateRequestFieldValue.isPresent()) {
+					
+					//Get field (map) from DTO to Entity
+					Field entityField = ReflectionUtils.findField(User.class, updateRequestField.getName());
+								
+					//And set (update) on entity
+					try {
+						
+						entityField.setAccessible(true);
+						entityField.set(entityForUpdate, updateRequestFieldValue.get());
+						updatePerformed = true;
+						
+					} catch (IllegalArgumentException | IllegalAccessException e) {e.printStackTrace();}
+				}
+			}
+			UserDTO user = mapToDTO(existentEntity);
+			
+			//If at least a field update was made
+			if(updatePerformed) {
+				
+				//Update in DB
+				user = mapToDTO(repo.save(entityForUpdate));
+				
+		        //Update in Cache
+		        String userKey = generateUserKey(user.getId());
+		        redisTemplate.opsForValue().set(userKey, user);
 
-    public UserDTO updateDetails(UpdateRequestDTO updateRequest){
-
-        //Update in DB
-        User entity = repo.save(mapper.map(updateRequest, User.class));
-        UserDTO user = mapToDTO(entity);
-
-        //Update in Cache
-        String userKey = generateUserKey(updateRequest.getId());
-        redisTemplate.opsForValue().set(userKey, user);
-
-        //Event Publisher - User updated
-        kafkaTemplate.send("UserUpdated", user);
-
-        return user;
+		        //Event Publisher - User updated
+		        kafkaTemplate.send("UserUpdated", user);
+			}
+			return user;
+    	}
+    	return null;
     }
-
+    
+		
+		
 
     public String updateProfileImage(Long id, MultipartFile imageMetadata, String oldPath){
 

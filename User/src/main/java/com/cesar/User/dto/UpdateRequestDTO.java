@@ -1,10 +1,10 @@
 package com.cesar.User.dto;
 
+import java.util.Optional;
 import lombok.Data;
 
 @Data
 public class UpdateRequestDTO {
-    private Long id;
-    private String username;
-    private String email;
+    private Optional<String> username = Optional.empty();
+    private Optional<String> email = Optional.empty();
 }

@@ -1,21 +1,33 @@
 package com.cesar.User.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.cesar.User.dto.CreateRequestDTO;
 import com.cesar.User.dto.UpdateRequestDTO;
 import com.cesar.User.dto.UserDTO;
 import com.cesar.User.service.UserService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import java.util.List;
 
 @RestController
 @RequestMapping("/users")
 public class Controller {
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> create(@ModelAttribute CreateRequestDTO createRequest){
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -23,7 +35,7 @@ public class Controller {
                 .body(service.create(createRequest));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getById(@PathVariable Long id){
     	
         UserDTO user = service.getById(id);
@@ -33,10 +45,11 @@ public class Controller {
         				.status(HttpStatus.OK)
         				.contentType(MediaType.APPLICATION_JSON)
         				.body(user)
+        				
         		: ResponseEntity.noContent().build();
     }
     
-    @GetMapping
+    @GetMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getByIds(@RequestBody List<Long> ids){
         
     	List<UserDTO> users = service.getByIds(ids);
@@ -47,15 +60,23 @@ public class Controller {
     					.status(HttpStatus.OK)
     					.contentType(MediaType.APPLICATION_JSON)
     					.body(users) 
+    					
                 : ResponseEntity.noContent().build();
     }
 
-    @PutMapping
-    public ResponseEntity<?> updateDetails(@RequestBody UpdateRequestDTO updatedDetails){
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(service.updateDetails(updatedDetails));
+    @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> updateDetails(@PathVariable Long id, @RequestBody UpdateRequestDTO updateRequestFields){
+        
+    	UserDTO user = service.updateDetails(id, updateRequestFields);
+    	
+    	return user != null 
+    			
+    			? ResponseEntity
+    					.status(HttpStatus.OK)
+    					.contentType(MediaType.APPLICATION_JSON)
+    					.body(user)
+    					
+    			: ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}")
