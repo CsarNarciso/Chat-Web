@@ -19,10 +19,7 @@ public class DiscoveryRouterConfiguration {
                         .path("/users/**")
                         .uri("lb://user-service"))
                 .route( r -> r
-                        .path("/conversations/**")
-                        .uri("lb://chat-service"))
-                .route( r -> r
-                        .path("/messages/**")
+                        .path("/conversations/**", "/messages/**")
                         .uri("lb://chat-service"))
                 .build();
     }

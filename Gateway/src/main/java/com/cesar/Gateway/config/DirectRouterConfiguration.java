@@ -19,10 +19,7 @@ public class DirectRouterConfiguration {
                         .path("/users/**")
                         .uri("http://localhost:8001"))
                 .route( r -> r
-                        .path("/conversations/**","")
-                        .uri("http://localhost:8002"))
-                .route( r -> r
-                        .path("/messages/**")
+                        .path("/conversations/**","/messages/**")
                         .uri("http://localhost:8002"))
                 .build();
     }
