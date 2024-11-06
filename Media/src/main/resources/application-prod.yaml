@@ -15,19 +15,11 @@ spring:
   config:
     import: optional:configserver:lb://configuration-service
     
-#Server
-server:
-  url: http://localhost:${server.port}
-project:
-  path: ${user.dir}/Chat-Web/Media
-  
 #Media
-resources:
-  path: src/main/resources
 media:
-  path: ${resources.path}/media
-  absolutePath: ${project.path}/${media.path}
-  url: ${server.url}/${media.path}
+  dirName: media
+  path: ${user.dir}/${media.dirName}
+  url: http://localhost:${server.port}/${media.dirName}
 
 #Eureka client
 eureka:
