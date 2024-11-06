@@ -36,6 +36,70 @@ public class UserService {
 
         return mapToDTO(user);
     }
+    
+     
+    public UserDTO getById(Long id){
+
+    	User user = new User();
+        
+    	//Try to fetch from Cache
+        String userKey = generateUserKey(id);
+        User cacheUser = redisTemplate.opsForValue().get(userKey);
+        
+        //If not missing Cache
+        if(cacheUser!=null){
+            user = cacheUser;
+        }
+        else {
+        	 //Then from DB
+            user = repo.findById(id).orElse(null);
+            
+            //And store in Cache
+            if(user==null) {            	
+            	return null;
+            }
+            redisTemplate.opsForValue().set(userKey, user);
+        }
+        return mapToDTO(user);
+    }
+
+
+    public List<UserDTO> getByIds(List<Long> ids){
+
+        //Try to fetch from Cache
+        Set<String> userKeys = ids
+                .stream()
+                .map(this::generateUserKey)
+                .collect(Collectors.toSet());
+
+        List<User> users = redisTemplate.opsForValue().multiGet(userKeys)
+        		.stream()
+        		.filter(Objects::nonNull)
+        		.toList();
+        
+        //If missing cache
+        List<Long> missingCacheIds = users
+                .stream()
+                .filter(u -> !ids.contains(u.getId()))
+                .map(User::getId)
+                .toList();
+
+        if(!missingCacheIds.isEmpty()){
+
+            //Get from DB
+            List<User> missingUsers = repo.findAllById(missingCacheIds);
+            users.addAll(missingUsers);
+
+            //And store in Cache
+            Map<String, User> missingUserKeys = missingUsers
+                    .stream()
+                    .collect(Collectors.toMap(
+                            u -> generateUserKey(u.getId()),
+                            Function.identity()));
+            redisTemplate.opsForValue().multiSet(missingUserKeys);
+        }
+        return mapToDTOS(users);
+    }
 
 
 
@@ -108,62 +172,7 @@ public class UserService {
     }
 
 
-    public UserDTO getById(Long id){
-
-        //Try to fetch from Cache
-        String userKey = generateUserKey(id);
-        User user = redisTemplate.opsForValue().get(userKey);
-
-        //If not in Cache
-        if(user==null){
-
-            //Then from DB
-            user = repo.getReferenceById(id);
-
-            //And store in Cache
-            redisTemplate.opsForValue().set(userKey,user);
-        }
-        return mapToDTO(user);
-    }
-
-
-    public List<UserDTO> getByIds(List<Long> ids){
-
-        //Try to fetch from Cache
-        Set<String> userKeys = ids
-                .stream()
-                .map(this::generateUserKey)
-                .collect(Collectors.toSet());
-
-        List<User> users = redisTemplate.opsForValue().multiGet(userKeys)
-        		.stream()
-        		.filter(Objects::nonNull)
-        		.toList();
-        
-        //If missing cache
-        List<Long> missingCacheIds = users
-                .stream()
-                .filter(u -> !ids.contains(u.getId()))
-                .map(User::getId)
-                .toList();
-
-        if(!missingCacheIds.isEmpty()){
-
-            //Get from DB
-            List<User> missingUsers = repo.findAllById(missingCacheIds);
-            users.addAll(missingUsers);
-
-            //And store in Cache
-            Map<String, User> missingUserKeys = missingUsers
-                    .stream()
-                    .collect(Collectors.toMap(
-                            u -> generateUserKey(u.getId()),
-                            Function.identity()));
-            redisTemplate.opsForValue().multiSet(missingUserKeys);
-        }
-        return mapToDTOS(users);
-    }
-
+    
 
 
 
@@ -181,7 +190,7 @@ public class UserService {
     }
 
     private String generateUserKey(Long id){
-        return String.format("%s", id);
+        return String.format("user:%s", id);
     }
 
 

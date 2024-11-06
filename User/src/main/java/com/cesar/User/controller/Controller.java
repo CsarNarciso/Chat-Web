@@ -2,6 +2,7 @@ package com.cesar.User.controller;
 
 import com.cesar.User.dto.CreateRequestDTO;
 import com.cesar.User.dto.UpdateRequestDTO;
+import com.cesar.User.dto.UserDTO;
 import com.cesar.User.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,10 +25,24 @@ public class Controller {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable Long id){
+    	
+        UserDTO user = service.getById(id);
+        
+        if(user!=null) {
+        	return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(user);
+        }
+    	return ResponseEntity.noContent().build();
+    }
+    
+    @GetMapping
+    public ResponseEntity<?> getByIds(@RequestBody List<Long> ids){
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(service.getById(id));
+                .body(service.getByIds(ids));
     }
 
     @PutMapping
@@ -47,14 +62,6 @@ public class Controller {
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(service.updateProfileImage(id, imageMetadata, oldPath));
-    }
-
-    @GetMapping
-    public ResponseEntity<?> getByIds(@RequestBody List<Long> ids){
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(service.getByIds(ids));
     }
 
     @DeleteMapping("/{id}")
