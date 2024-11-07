@@ -213,7 +213,7 @@ public class UserService {
 
     public UserDTO delete(Long id){
 
-        User user = repo.getReferenceById(id);
+        User user = repo.findById(id).orElse(null);
 
         //If exists...
         if(user!=null){
@@ -222,7 +222,7 @@ public class UserService {
             mediaService.delete(user.getProfileImageUrl());
 
             //Delete in DB
-            repo.deleteById(id);
+            repo.delete(user);
 
             //And invalidate in Cache
             String userKey = generateUserKey(id);
