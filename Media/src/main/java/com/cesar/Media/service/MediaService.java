@@ -13,28 +13,31 @@ import java.util.UUID;
 public class MediaService {
 
     public String upload(MultipartFile imageMetadata, String oldPath) {
-
-        if(!imageMetadata.isEmpty()){
-
+        
+    	if(!imageMetadata.isEmpty()){
+        	
             //Get extension
             String extension = imageMetadata.getContentType();
             extension = extension.equals("image/jpeg") ? ".jpg" :
                     extension.equals("image/png") ? ".png" : null;
 
             if(extension!=null) {
-
+            	
                 //Perform action in server
                 String finalName = UUID.randomUUID() + extension;
                 File file = new File(mediaPath + "\\" + finalName);
                 try {
-                    if(oldPath!=null){
-                        Files.deleteIfExists(Path.of(oldPath));
+                	
+                    if(oldPath!=null && !oldPath.isEmpty()){
+                    	
+                        Files.deleteIfExists(Path.of( mediaPath + "\\" + oldPath.replace(mediaBaseUrl, "")));
                     }
                     imageMetadata.transferTo(file);
+                    
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                	throw new RuntimeException(e);
                 }
-                return mediaBaseUrl + "/" + finalName;
+                return String.format("%s/%s", mediaBaseUrl, finalName);
             }
         }
         return null;
