@@ -11,15 +11,14 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/media")
 public class Controller {
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> upload(@RequestPart MultipartFile imageMetadata, @RequestParam(required = false) String oldPath){
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .contentType(MediaType.APPLICATION_JSON)
                 .body(profileService.upload(imageMetadata, oldPath));
     }
 
-    @DeleteMapping()
+    @DeleteMapping
     public void delete(@RequestParam String path) {
         profileService.delete(path);
     }

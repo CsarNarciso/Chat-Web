@@ -1,7 +1,6 @@
 package com.cesar.User.controller;
 
 import java.util.List;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.cesar.User.dto.CreateRequestDTO;
 import com.cesar.User.dto.UpdateRequestDTO;
 import com.cesar.User.dto.UserDTO;
@@ -31,7 +29,6 @@ public class Controller {
     public ResponseEntity<?> create(@ModelAttribute CreateRequestDTO createRequest){
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .contentType(MediaType.APPLICATION_JSON)
                 .body(service.create(createRequest));
     }
 
@@ -43,7 +40,6 @@ public class Controller {
         return user!=null
         		? ResponseEntity
         				.status(HttpStatus.OK)
-        				.contentType(MediaType.APPLICATION_JSON)
         				.body(user)
         				
         		: ResponseEntity.noContent().build();
@@ -58,7 +54,6 @@ public class Controller {
     			
     			? ResponseEntity
     					.status(HttpStatus.OK)
-    					.contentType(MediaType.APPLICATION_JSON)
     					.body(users) 
     					
                 : ResponseEntity.noContent().build();
@@ -73,28 +68,25 @@ public class Controller {
     			
     			? ResponseEntity
     					.status(HttpStatus.OK)
-    					.contentType(MediaType.APPLICATION_JSON)
     					.body(user)
     					
     			: ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateProfileImage(
             @PathVariable Long id,
             @RequestParam MultipartFile imageMetadata,
             @RequestParam String oldPath){
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
                 .body(service.updateProfileImage(id, imageMetadata, oldPath));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> delete(@PathVariable Long id){
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
-                .contentType(MediaType.APPLICATION_JSON)
                 .body(service.delete(id));
     }
 

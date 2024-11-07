@@ -18,19 +18,17 @@ public class MessageController {
         service.send(message);
     }
 
-    @GetMapping("/{conversationId}")
+    @GetMapping(value = "/{conversationId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> onLoad(@PathVariable String conversationId) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
                 .body(service.loadConversationMessages(UUID.fromString(conversationId)));
     }
 
-    @PutMapping("/clean.unread/{conversationId}/{userId}")
+    @PutMapping(value = "/clean.unread/{conversationId}/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> onCleanUnread(@PathVariable UUID conversationId, @PathVariable Long userId){
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
                 .body(service.cleanConversationUnreadMessages(conversationId, userId));
     }
 

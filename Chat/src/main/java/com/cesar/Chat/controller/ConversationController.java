@@ -18,19 +18,17 @@ public class ConversationController {
         service.create(null, initMessage);
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping(value = "/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> onLoad(@PathVariable Long userId){
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
                 .body(service.load(userId));
     }
 
-    @DeleteMapping("/{conversationId}/{userId}")
+    @DeleteMapping(value = "/{conversationId}/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> onDelete(@PathVariable UUID conversationId, @PathVariable Long userId){
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
                 .body(service.delete(conversationId, userId));
     }
 
