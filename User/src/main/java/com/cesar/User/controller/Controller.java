@@ -77,7 +77,7 @@ public class Controller {
     public ResponseEntity<?> updateProfileImage(
             @PathVariable Long id,
             @RequestParam MultipartFile imageMetadata,
-            @RequestParam String oldPath){
+            @RequestParam(required = true) String oldPath){
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(service.updateProfileImage(id, imageMetadata, oldPath));
