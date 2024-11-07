@@ -83,7 +83,7 @@ public class Controller {
                 .body(service.updateProfileImage(id, imageMetadata, oldPath));
     }
 
-    @DeleteMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> delete(@PathVariable Long id){
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)

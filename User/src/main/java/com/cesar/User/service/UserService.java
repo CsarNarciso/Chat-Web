@@ -223,7 +223,7 @@ public class UserService {
         //If exists...
         if(user!=null){
 
-            //Remove Profile Image from Media Server
+        	//Remove Profile Image from Media Server
             mediaService.delete(user.getProfileImageUrl());
 
             //Delete in DB
@@ -232,12 +232,13 @@ public class UserService {
             //And invalidate in Cache
             String userKey = generateUserKey(id);
             redisTemplate.delete(userKey);
+            
+            //Event Publisher - User Deleted
+            kafkaTemplate.send("UserDeleted", id);
+
+            return mapToDTO(user);
         }
-
-        //Event Publisher - User Deleted
-        kafkaTemplate.send("UserDeleted", id);
-
-        return mapToDTO(user);
+        return null;
     }
 
 
