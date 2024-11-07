@@ -25,6 +25,11 @@ import com.cesar.User.service.UserService;
 @RequestMapping("/users")
 public class Controller {
 
+	
+	
+	
+	
+	
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> create(@ModelAttribute CreateRequestDTO createRequest){
         return ResponseEntity
@@ -32,7 +37,12 @@ public class Controller {
                 .body(service.create(createRequest));
     }
 
-    @GetMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    
+    
+    
+    
+    
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getById(@PathVariable Long id){
     	
         UserDTO user = service.getById(id);
@@ -44,6 +54,11 @@ public class Controller {
         				
         		: ResponseEntity.noContent().build();
     }
+    
+    
+    
+    
+    
     
     @GetMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getByIds(@RequestBody List<Long> ids){
@@ -59,6 +74,10 @@ public class Controller {
                 : ResponseEntity.noContent().build();
     }
 
+    
+    
+    
+    
     @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateDetails(@PathVariable Long id, @RequestBody UpdateRequestDTO updateRequestFields){
         
@@ -72,17 +91,31 @@ public class Controller {
     					
     			: ResponseEntity.noContent().build();
     }
+    
+    
+    
+    
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateProfileImage(
             @PathVariable Long id,
             @RequestParam MultipartFile imageMetadata,
             @RequestParam(required = true) String oldPath){
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(service.updateProfileImage(id, imageMetadata, oldPath));
+    	
+    	String newProfileImageUrl = service.updateProfileImage(id, imageMetadata, oldPath);
+    	
+    	return newProfileImageUrl!=null
+    			
+    			? ResponseEntity
+    					.status(HttpStatus.OK)
+    					.body(newProfileImageUrl)
+    			
+    			: ResponseEntity.noContent().build();
     }
 
+    
+    
+    
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> delete(@PathVariable Long id){
         return ResponseEntity
@@ -92,6 +125,7 @@ public class Controller {
 
 
 
+    
 
     public Controller(UserService service){
     	this.service = service;
