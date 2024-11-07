@@ -57,9 +57,11 @@ redis:
 #Feign Services
 services:
   user:
+    name: user-service
     url: localhost:8001
     path: /users
   presence:
+    name: presence-service
     url: localhost:8003
     path: /presences
 
