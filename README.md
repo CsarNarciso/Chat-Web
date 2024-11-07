@@ -1,14 +1,10 @@
-# Microservices Based Real Time Messaging Application using Spring Boot WebSockets and SockJS.
+# Microservices Based Real Time Messaging Application using Spring Boot and WebSockets.
 
 ![Architecture Design](https://github.com/CsarNarciso/Assets/blob/main/chat-architecture-desing.png)
 
-
 ## Application features.
 
-- Docker compose for microservices deployment managment.
-- User login and registration.
-- Authentication required to access chat pages/functionalities.
-- User data (messages, conversations, and profile images) stored in database.
+- Docker compose integration for production environment.
 - User useful data (id and name) storaged in session, not in model, for application performance, by reduicng database calls when    client refresh page or reconnect.
 - When users login, can see online users in real time.
 - When a user discconnect, server remembers it until passed 1 minute. If user doesn't reconnect, it is forgot, and online users     list is updated to everyone in chat (this in real time).
@@ -29,29 +25,36 @@
 * [Contact me](#contact-me)
 
 ## Technologies
-1. Java 22
+1. Java 21
 2. Docker Compose
-3. PostgreSQL, MySQL
-4. Spring Boot:
+3. PostgreSQL, MySQL, CassandraDB
+4. Redis (Jedis extension)
+5. Kafka (Kraft mode)
+6. Spring:
    + REST
+   + Actuator
    + WebSockets
-   + JPA
+   + Data JPA
    + Hibernate
-6. Spring Security
-7. SockJS
-8. Maven 3.0+
+8. Spring Cloud:
+   + Eureka Server
+   + Config Server
+   + FeignClient
+   + Resilience4j Circuit Braker
+10. SockJS
+11. Maven 3.0+
    
 ## Getting Started
 
 ### Prerequisites
-To use this project, you must have the following installed:
+Optionally, to use this project, you need the following thecnologies installed on your machine:
 1. Git
 2. Docker Compose
 
 ### Running the Application
 Follow these steps to set up the project locally:
 
-1. **Clone the repository**
+1. **Clone the repository (or download directly)**
     ```bash 
     git clone https://github.com/CsarNarciso/Chat-Web.git 
     ```
@@ -60,6 +63,13 @@ Follow these steps to set up the project locally:
    cd Chat-Web/
    ```
 3. **Build and start the microservices**
+
+   Note! Take in mind that with docker integration during start up, project will be build in production mode (prod profile), wich means the following:
+     - Each one of these microservices (User, Chat, Social) will use a different docker container DB instance.
+     - Each one of the internal microservices will use a Redis docker container instance.
+     - A Kafka (in Kraft mode) container will be created for all internal microservices.
+     - It will result in a total of 16 containers running on your machine, so, performance will slow down in a huge significantly way.
+       
    ```bash
    docker-compose up -d
    ```
@@ -67,18 +77,18 @@ Follow these steps to set up the project locally:
    ```bash
    docker logs microservice-container-name
    ```
-4. Now, you should see the following output, wich indicates everything was built correct
+5. Now, you should see the following output, wich indicates everything was built correct
    ![Project set up successfully](readme-images/project-set-up-successfully)
 
-5. Also, you can check the created images with:
+6. Also, you can check the created images with:
    ```bash
    docker images
    ```
-6. To check the running containers:
+7. To check the running containers:
    ```bash
    docker ps
    ```
-7. For networks and volumes used by the project, use:
+8. For networks and volumes used by the project, use:
    ```bash
    docker network ls
    docker volume ls
