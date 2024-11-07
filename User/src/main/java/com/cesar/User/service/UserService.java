@@ -184,29 +184,34 @@ public class UserService {
 
     public String updateProfileImage(Long id, MultipartFile imageMetadata, String oldPath){
 
-        String newImageUrl = mediaService.upload(imageMetadata, oldPath);
-
-        //If either new image is not empty (bad arguments request),
-        // or media service request was performed successful (no fallback)
-        if(newImageUrl!=null && !newImageUrl.equals(oldPath)){
-
-            //Update in DB
-            User entity = repo.save(User.builder()
-                    .id(id)
-                    .profileImageUrl(newImageUrl)
-                    .build());
+    	User entity = repo.findById(id).orElse(null);
+    	
+    	//If user exists
+    	if(entity!=null) {
+    		
+    		//If either new image is not empty (no bad arguments request),
+            // or media service request was performed successful (no fallback)
+        	String newImageUrl = mediaService.upload(imageMetadata, oldPath);
             
-            UserDTO user = mapToDTO(entity);
+        	if(newImageUrl!=null && !newImageUrl.equals(oldPath)){
 
-            //Update in Cache
-            String userKey = generateUserKey(id);
-            redisTemplate.opsForValue().set(userKey, user);
+                //Update in DB
+        		entity.setProfileImageUrl(newImageUrl);
+                entity = repo.save(entity);
+                
+                UserDTO user = mapToDTO(entity);
 
-            //Event Publisher - User Updated
-            kafkaTemplate.send("UserUpdated", user);
+                //Update in Cache
+                String userKey = generateUserKey(id);
+                redisTemplate.opsForValue().set(userKey, user);
 
-            return entity.getProfileImageUrl();
-        }
+                //Event Publisher - User Updated
+                kafkaTemplate.send("UserUpdated", user);
+
+                return entity.getProfileImageUrl();
+            }
+        	return oldPath;
+    	}
         return null;
     }
 
