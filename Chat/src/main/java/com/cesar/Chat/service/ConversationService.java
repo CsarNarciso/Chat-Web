@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.Objects;
 
 @Service
 public class ConversationService {
@@ -29,42 +28,47 @@ public class ConversationService {
         //If request is not for recreation
         if(conversation==null){
 
-            //Get message participants IDs
-            List<Long> usersIds = Stream
+            //Get message participant IDs
+            List<Long> userIds = Stream
                     .of(
                             message.getSenderId(),
                             message.getRecipientId())
                     .toList();
 
-            //And create participants references
-            List<Participant> participants = new ArrayList<>();
-            usersIds
-                    .forEach(id ->{
-                        participants.add(
-                                Participant
-                                        .builder()
-                                        .id(id)
-                                        .build());
-                    });
+            //And try to fetch participants from DB
+//            List<Participant> participants = participantService
+//            		new ArrayList<>();
+//            userIds
+//                    .forEach(id ->{
+//                        participants.add(
+//                                Participant
+//                                        .builder()
+//                                        .id(id)
+//                                        .build());
+//                    });
 
             //Look for an existent conversation between both users
-            Conversation existentConversation = getByParticipants(participants);
+            Conversation existentConversation = getByUserIds(userIds, userIds.size());
 
             //If don't exists
             if(existentConversation==null){
 
                 //----CREATE----
 
-
+            	//Conversation (no participants yet)
                 savedEntity = repo.save(
                         Conversation
                                 .builder()
                                 .id(UUID.randomUUID())
                                 .createdAt(LocalDateTime.now())
-                                .participants(participants)
+                                .participants(new ArrayList<>())
                                 .build());
+                
+                //Then, participants
+                participantService.createAll(userIds, savedEntity);
+                
                 conversation = mapper.map(savedEntity, ConversationDTO.class);
-                createFor = usersIds;
+                createFor = userIds;
             }
             else{
 
@@ -126,10 +130,10 @@ public class ConversationService {
         //If exists...
         if(conversation!=null){
 
-            //Get conversation participants Ids
+            //Get conversation participant IDs
             List<Long> participantsIds = conversation.getParticipants()
                     .stream()
-                    .map(Participant::getId)
+                    .map(Participant::getUserId)
                     .toList();
 
             //Add userId to conversation recreateFor list
@@ -200,7 +204,7 @@ public class ConversationService {
             //Get and set recipient reference (conversation face for sender)
             Long recipientId = conversations.get(i).getParticipants()
                     .stream()
-                    .map(Participant::getId)
+                    .map(Participant::getUserId)
                     .takeWhile(id -> !id.equals(participantId))
                     .findFirst().orElse(null);
             recipientIds.add(recipientId);
@@ -240,7 +244,7 @@ public class ConversationService {
         if(conversations.isEmpty()){
 
             //Then get from DB
-            conversations = repo.findByParticipantId(userId);
+            conversations = repo.findByUserId(userId);
 
             //And store in Cache
             if(!conversations.isEmpty()){
@@ -254,8 +258,8 @@ public class ConversationService {
         return repo.getReferenceById(id);
     }
 
-    private Conversation getByParticipants(List<Participant> participants){
-        return repo.findByParticipants(participants);
+    private Conversation getByUserIds(List<Long> userIds, int userCount){
+        return repo.findByUserIds(userIds, userCount);
     }
 
 
@@ -297,9 +301,10 @@ public class ConversationService {
 
 
 
-    public ConversationService(ConversationRepository repo, MessageService messageService, PresenceService presenceService, UserService userService, RedisTemplate<String, Conversation> redisTemplate, KafkaTemplate<String, Object> kafkaTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
+    public ConversationService(ConversationRepository repo, ParticipantService participantService, MessageService messageService, PresenceService presenceService, UserService userService, RedisTemplate<String, Conversation> redisTemplate, KafkaTemplate<String, Object> kafkaTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
         this.repo = repo;
         this.messageService = messageService;
+        this.participantService = participantService;
         this.presenceService = presenceService;
         this.userService = userService;
         this.redisTemplate = redisTemplate;
@@ -310,6 +315,7 @@ public class ConversationService {
     }
 
     private final ConversationRepository repo;
+    private final ParticipantService participantService;
     private final MessageService messageService;
     private final PresenceService presenceService;
     private final UserService userService;

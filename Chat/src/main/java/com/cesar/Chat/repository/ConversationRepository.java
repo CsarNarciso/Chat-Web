@@ -14,12 +14,13 @@ public interface ConversationRepository extends JpaRepository<Conversation, UUID
 
 	@Query("SELECT c FROM Conversation c "
 			+ "JOIN c.participants p "
-			+ "WHERE p IN :participants "
-			+ "GROUP BY c")
-	Conversation findByParticipants(@Param("participants") List<Participant> participants);
+			+ "WHERE p IN :userIds "
+			+ "GROUP BY c.id "
+			+ "HAVING COUNT(p.id) = :userCount")
+	Conversation findByUserIds(@Param("userIds") List<Long> userIds, @Param("userCount") int userCount);
 
     @Query("SELECT c FROM Conversation c " +
             "JOIN c.participants p " +
-            "WHERE p.id = :participantId ")
-    List<Conversation> findByParticipantId(@Param("participantId") Long participantId);
+            "WHERE p.id = :userId ")
+    List<Conversation> findByUserId(@Param("userId") Long userId);
 }

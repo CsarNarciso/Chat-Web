@@ -32,7 +32,7 @@ public class MessageService {
             //and user belongs to
             if(conversation.getParticipants()
                     .stream()
-                    .map(Participant::getId)
+                    .map(Participant::getUserId)
                     .toList()
                     .contains(senderId)){
 
