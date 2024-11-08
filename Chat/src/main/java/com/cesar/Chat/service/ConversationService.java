@@ -35,18 +35,6 @@ public class ConversationService {
                             message.getRecipientId())
                     .toList();
 
-            //And try to fetch participants from DB
-//            List<Participant> participants = participantService
-//            		new ArrayList<>();
-//            userIds
-//                    .forEach(id ->{
-//                        participants.add(
-//                                Participant
-//                                        .builder()
-//                                        .id(id)
-//                                        .build());
-//                    });
-
             //Look for an existent conversation between both users
             Conversation existentConversation = getByUserIds(userIds, userIds.size());
 
