@@ -22,11 +22,20 @@ public class PresenceService {
                         .stream()
                         .collect(Collectors.toMap(UserPresenceDTO::getId, Function.identity()));
 
-        //Match statuses with participants
-        conversations
-                .forEach(c -> {
-                    mapper.map(c.getRecipient(), statuses.get(c.getRecipient().getUserId()));
-                });
+        //If data was fetched
+        if(!statuses.isEmpty()) {
+        
+        	//Match statuses with participants
+        	conversations
+                	.forEach(c -> {
+                		
+                		UserPresenceDTO recipientStatus = statuses.get(c.getRecipient().getUserId());
+                		
+                		if(recipientStatus!=null) {
+                			mapper.map(c.getRecipient(), recipientStatus);
+                		}
+                	});
+        }
     }
 
 

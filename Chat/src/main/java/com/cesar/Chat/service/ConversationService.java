@@ -53,7 +53,7 @@ public class ConversationService {
                                 .build());
                 
                 //Then, participants
-                participantService.createAll(userIds, savedEntity);
+                savedEntity.setParticipants(participantService.createAll(userIds, savedEntity));
                 
                 conversation = mapper.map(savedEntity, ConversationDTO.class);
                 createFor = userIds;
@@ -193,8 +193,9 @@ public class ConversationService {
             Long recipientId = conversations.get(i).getParticipants()
                     .stream()
                     .map(Participant::getUserId)
-                    .takeWhile(id -> !id.equals(participantId))
+                    .filter(id -> !id.equals(participantId))
                     .findFirst().orElse(null);
+            
             recipientIds.add(recipientId);
 
             conversationDTOS.get(i).setRecipient(

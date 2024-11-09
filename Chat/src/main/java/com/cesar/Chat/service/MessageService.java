@@ -171,15 +171,21 @@ public class MessageService {
         Map<UUID, Integer> unreadMessages =
                 getUnreadMessages(senderId, conversationIds);
 
-        //Match data with conversations
-        conversations
-                .forEach(conversation -> {
-
-                    UUID conversationId = conversation.getId();
-
-                    conversation.setUnreadMessagesCount(unreadMessages.get(conversationId));
-                    conversation.setLastMessage(lastMessages.get(conversationId));
-                });
+        //If data exists
+        if(!lastMessages.isEmpty() || !unreadMessages.isEmpty()) {
+        	
+        	//Match data with conversations
+        	conversations
+        	.forEach(conversation -> {
+        		
+        		UUID conversationId = conversation.getId();
+        		
+        		Integer unreadMessagesCount = unreadMessages.get(conversationId);
+        		
+        		conversation.setUnreadMessagesCount( unreadMessagesCount != null ? unreadMessagesCount : 0 );
+        		conversation.setLastMessage(lastMessages.get(conversationId));
+        	});
+        }
     }
 
 

@@ -23,13 +23,23 @@ public class UserService {
                         .stream()
                         .collect(Collectors.toMap(UserDTO::getId, Function.identity()));
 
-        //Match details with participants
-        conversations
-                .forEach(c -> {
-                    mapper.map(c.getRecipient(), details.get(c.getRecipient().getUserId()));
-                });
+        //If data was fetched
+        if(!details.isEmpty()) {
+        	
+        	//Match details with participants
+        	conversations
+        		.forEach(c -> {
+        			
+        			UserDTO recipientDetails = details.get(c.getRecipient().getUserId());
+        			
+        			if(recipientDetails!=null) {
+        				mapper.map(c.getRecipient(), recipientDetails);
+        			}
+        		});
+        }
     }
 
+    
     private List<UserDTO> getDetails(List<Long> ids){
         return feign.getDetails(ids);
     }
