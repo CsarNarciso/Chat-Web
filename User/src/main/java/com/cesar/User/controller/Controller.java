@@ -1,6 +1,7 @@
 package com.cesar.User.controller;
 
 import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,10 +27,6 @@ import com.cesar.User.service.UserService;
 public class Controller {
 
 	
-	
-	
-	
-	
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> create(@ModelAttribute CreateRequestDTO createRequest){
         return ResponseEntity
@@ -37,10 +34,6 @@ public class Controller {
                 .body(service.create(createRequest));
     }
 
-    
-    
-    
-    
     
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getById(@PathVariable Long id){
@@ -52,12 +45,8 @@ public class Controller {
         				.status(HttpStatus.OK)
         				.body(user)
         				
-        		: ResponseEntity.noContent().build();
+        		: ResponseEntity.notFound().build();
     }
-    
-    
-    
-    
     
     
     @GetMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -71,12 +60,9 @@ public class Controller {
     					.status(HttpStatus.OK)
     					.body(users) 
     					
-                : ResponseEntity.noContent().build();
+                : ResponseEntity.notFound().build();
     }
 
-    
-    
-    
     
     @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateDetails(@PathVariable Long id, @RequestBody UpdateRequestDTO updateRequestFields){
@@ -89,11 +75,8 @@ public class Controller {
     					.status(HttpStatus.OK)
     					.body(user)
     					
-    			: ResponseEntity.noContent().build();
+    			: ResponseEntity.notFound().build();
     }
-    
-    
-    
     
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -110,17 +93,16 @@ public class Controller {
     					.status(HttpStatus.OK)
     					.body(newProfileImageUrl)
     			
-    			: ResponseEntity.noContent().build();
+    			: ResponseEntity.notFound().build();
     }
-
-    
     
     
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> delete(@PathVariable Long id){
-        return ResponseEntity
-                .status(HttpStatus.NO_CONTENT)
-                .body(service.delete(id));
+    	
+    	return service.delete(id) != null 
+    			? ResponseEntity.noContent().build() 
+    			: ResponseEntity.notFound().build();
     }
 
 
