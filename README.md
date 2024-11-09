@@ -1,7 +1,7 @@
 # Microservices Based Real Time Messaging Application using Spring Boot and WebSockets.
 
 ![Architecture Design](https://github.com/CsarNarciso/Assets/blob/main/chat-architecture-desing.png)
-
+https://drive.google.com/file/d/1V3u7YTs40QCPeiNQBHlbjsy3eRtgeP_G/view?usp=sharing
 ## Application features.
 
 - Docker compose integration for production environment.
@@ -20,8 +20,6 @@
   + [Prerequisites](#prerequisites)
   + [Running the application](#running-the-application)
   + [Using the application](#using-the-application)
-* [How to build this project](#how-to-build-this-project)
-* [Tests](#tests)
 * [Contact me](#contact-me)
 
 ## Technologies
@@ -114,13 +112,6 @@ This because if you are not authenticated, the application will automatically re
  ```bash
  docker-compose down
  ```
-
-## How to Build this Project
-
-## Tests
-
-## Why I migrated the project?
-I found that the whole system had major problems due to lack of scalability, also, code was not easy to read/maintain following this way because I plan to add more features later.
 
 ## Contact Me
 * [LinkedIn](https://www.linkedin.com/in/cesar-pozol-narciso-b48727180/)
