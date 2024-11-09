@@ -24,9 +24,8 @@
    
 ## Running the Application
 
-#### What is full and ready for use until the moment
+#### Avaliable services at the moment
 
-![Actual Architecture Design](https://github.com/CsarNarciso/Assets/blob/main/Actual%20Chat%20Web%20System%20Design.png)
 
 * Internal microservices:
   + User
@@ -38,19 +37,21 @@
 * Dependencies
   + Global PostgreSQL DB
   + Global Redis Instance
-  + Apache Kafka and Zookeeper servers
+  + Apache Kafka Server
+
+![Actual Architecture Design](https://github.com/CsarNarciso/Assets/blob/main/Actual%20Chat%20Web%20System%20Design.png)
 
 
 #### Prerequsistes
 
 To use this project, you can either install the following thecnologies locally on your machine:
 
-1. Kafka Server
-2. Redis Server
+1. A kafka Server
+2. And a Redis Server
    
 Or use docker compose to run the compose file located in the project root directory (wich will create Kafka and Redis containers for you)
 
-Take in mind that, either using a docker environment or a local one, the application is configured to use default redis (6379) and kafka (9492) ports. In case you are using the provided compose file, the default ports are already configured, in case not, you need to make sure the two servers are using the specified ports.
+Note: either using a docker environment or a local one, the application is configured to use default redis (6379) and kafka (9492) ports. In case you are using the provided compose file, the default ports are already configured, in case not, you need to make sure the two servers are using the specified ports.
 
 #### Set up the project:
 
@@ -62,7 +63,7 @@ Take in mind that, either using a docker environment or a local one, the applica
    ```bash
    cd Chat-Web/
    ```
-3. **Run [avaliable](#what-is-full-and-ready-for-use-until-the-moment) services using Maven**
+3. **Run [avaliable](#avaliable-services-at-the-moment) services using Maven (project folders already have Maven Wraper integrated, so you don't need to install it)**
        
    ```bash
    cd Service-Name/
