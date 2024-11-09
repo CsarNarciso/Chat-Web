@@ -1,7 +1,7 @@
 # Microservices Based Real Time Messaging Application using Spring Boot and WebSockets.
 
-![Architecture Design](https://github.com/CsarNarciso/Assets/blob/main/chat-architecture-desing.png)
-https://drive.google.com/file/d/1V3u7YTs40QCPeiNQBHlbjsy3eRtgeP_G/view?usp=sharing
+![Final Architecture Design](https://github.com/CsarNarciso/Assets/blob/main/Final%20Chat%20Web%20System%20Design.png)
+
 ## Application features.
 
 - Docker compose integration for production environment.
@@ -12,7 +12,7 @@ https://drive.google.com/file/d/1V3u7YTs40QCPeiNQBHlbjsy3eRtgeP_G/view?usp=shari
 - Text messages sending functionality.
 - Delete or see actual conversations data (as how many messages without read user has).
 
-![Architecture Diagram](https://github.com/CsarNarciso/Assets/blob/main/Chat%20Web%20Architecture%20Diagram.png)
+![Actual Architecture Design](https://github.com/CsarNarciso/Assets/blob/main/Actual%20Chat%20Web%20System%20Design.png)
 
 ## Table of Contents
 * [Technologies](#technologies)
