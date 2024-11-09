@@ -38,7 +38,7 @@
 * Dependencies
   + Global PostgreSQL DB
   + Global Redis Instance
-  + Apache Kafka and Zookeeper servers
+  + Apache Kafka Server
 
 
 #### Prerequsistes
