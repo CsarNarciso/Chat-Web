@@ -24,7 +24,7 @@
    
 ## Running the Application
 
-#### What is full and ready for use until the moment
+#### Avaliable services at the moment
 
 
 * Internal microservices:
@@ -63,7 +63,7 @@ Note: either using a docker environment or a local one, the application is confi
    ```bash
    cd Chat-Web/
    ```
-3. **Run [avaliable](#what-is-full-and-ready-for-use-until-the-moment) services using Maven (Projects folders already have Maven Wraper, so you don't need to install it)**
+3. **Run [avaliable](#avaliable-services-at-the-moment) services using Maven (project folders already have Maven Wraper integrated, so you don't need to install it)**
        
    ```bash
    cd Service-Name/
