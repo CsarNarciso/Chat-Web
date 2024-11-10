@@ -21,27 +21,27 @@
    + Resilience4j Circuit Braker
 10. SockJS
 11. Maven 3.0+
-   
-## Running the Application
 
-#### Avaliable services at the moment
+## Avaliable Services At The Moment
 
-
-* Internal microservices:
+* Internal:
   + User  
-* External Services
+* External:
   + Media
   + Gateway
   + Configuration
   + Discovery
-* Dependencies
+* Dependencies:
   + Global PostgreSQL DB
   + Global Redis Instance
   + Apache Kafka Server
 
 ![Actual Architecture Design](https://github.com/CsarNarciso/Assets/blob/main/Actual%20Chat%20Web%20System%20Design.png)
 
+## Running The Application
+
 #### About Profiles
+
 This application right now can work with the following Spring Profiles:
 
 1. Dev (Local development):
@@ -66,19 +66,35 @@ Choose 'prod' profile for full project production environment setup. This will l
 
 #### Prerequsistes
 
-To use this project, you must have the following installed:
+In case your are going to use 'prod' profile, then you will need Docker Compose installed on your machine. Then, just jump directly to the [next section](#setup) to start with the setup. 
 
-1. A kafka Server
+If you don't, either install locally the following:
+
+1. A Kafka Server
 2. A Redis Server
-3. (Depending on profile) A PostgreSQL DB
-   
-You can either install them locally, or use docker compose to run the compose file located in the project root directory (wich will create Kafka, Postgres and Redis containers for you)
+3. (Only for 'dev-1' profile) A PostgreSQL DB
+
+Or use docker compose to execute the compose file for non production profiles located in the project root directory (wich will create Kafka, Postgres and Redis containers for you):
+```bash 
+   docker compose -f local-compose.yaml up -d 
+```
 
 Note: either using a docker environment or a local one, the application is configured to use default redis (6379), postgres (5432) and kafka (9492) ports. In case you are using the provided compose file, the default ports are already configured, in case not, you need to make sure the three technologies are using the specified ports.
+Both Kafka and Redis works with the default configurations.
+If you are going to use Postgres, then configure it with a new user called 'postgres' and 'letmein' as password
 
-#### Set up the project:
+#### Setup
 
-1. **Clone the repository (or download directly)**
+For 'prod' profile, simply run the following command to setup the whole project:
+```bash 
+   docker compose up -d 
+```
+Once everything is setup successfully, jump directly to the [next section](#using-the-application) to see how to use the application
+
+If you are not using 'prod' profiles, make sure to have  already completed the [previous section](#prerequisites) and have all the software required up and running.
+Then, follow the steps below:
+
+1. **Clone the repository using Git (or download directly)**
     ```bash 
     git clone https://github.com/CsarNarciso/Chat-Web.git 
     ```
@@ -86,7 +102,7 @@ Note: either using a docker environment or a local one, the application is confi
    ```bash
    cd Chat-Web/
    ```
-3. **Run [avaliable services](#avaliable-services-at-the-moment) using Maven (project folders already have Maven Wraper integrated, so you don't need to install it)**
+3. **Run [avaliable](#avaliable-services-at-the-moment) and required (based on [profiles](#about-profiles)) services using Maven (project folders already have Maven Wraper integrated, so you don't need to install it)**
        
    ```bash
    cd Service-Name/
@@ -94,3 +110,5 @@ Note: either using a docker environment or a local one, the application is confi
    ```bash
    ./mvnw spring-boot:run -Dspring-boot.run.profiles=profile-name
    ```
+
+## Using The Application
