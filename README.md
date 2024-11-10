@@ -2,6 +2,20 @@
 
 ![Final Architecture Design](https://github.com/CsarNarciso/Assets/blob/main/Final%20Chat%20Web%20System%20Design.png)
 
+## Application features
+- User registration and login.
+- Custom profile image upload and update, or default one if none is provided.
+- User details updating.
+- Search for a specific user.
+- Send message to a user to start a conversation (first time interaction).
+- Messages delivered in real time.
+- Conversations storing.
+- Delete a conversation locally (it remails for the other participant).
+- Conversation recreation on new message after a delete.
+- Users presence status tracking.
+- User data and presence updates in real time for user relationships (based on conversations)
+- User delete (along with their conversations and messages)
+
 ## Technologies
 1. Java 21
 2. Docker Compose
@@ -112,3 +126,18 @@ Then, follow the steps below:
    ```
 
 ## Using The Application
+
+Note: even Gateway is not necesary for internal microservices to work, if you want to use it, then replace specific service port for 8000 (default Gateway port) in endpoints urls.
+
+#### User Service
+
+Base url: http://localhost:8001/users
+
+| Name | Path | Method | Body | Media Type | Parameters | Path variables
+|-|-|-|-|-|-|-|
+| create | none | POST | String username, String email, String password, MultipartFile imageMetadata | form-data | none | none |
+| getById | /id | GET | none | application-json | none | Long id |
+| getByIds | none | GET | List< Long > ids | application-json | none | none |
+| updateDetails | /id | PATCH | String username, String email | application-json | none | Long id |
+| updateProfileImage | /id | PUT | MultipartFile imageMetadata | form-data | none | Long id |
+| delete | /id | DELETE | none | application-json | none | Long id |
