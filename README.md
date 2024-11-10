@@ -28,9 +28,9 @@
 
 
 * Internal microservices:
-  + User
-  + Media  
+  + User  
 * External Services
+  + Media
   + Gateway
   + Configuration
   + Discovery
@@ -41,17 +41,40 @@
 
 ![Actual Architecture Design](https://github.com/CsarNarciso/Assets/blob/main/Actual%20Chat%20Web%20System%20Design.png)
 
+#### About Profiles
+This application right now can work with the following Spring Profiles:
+
+1. Dev (Local development):
+   + No Docker (compose) deployment integration
+   + No Eureka (Discovery service) requirment
+   + No Config Server (configuration service) requirment
+   + H2 Database in memory instead PostgreSQL
+3. Dev-2
+   + No Docker deployment
+   + Eureka and Config Server requirment
+   + PostgreSQL integration
+5. Prod (Production)
+   + Whole project deployment using docker compose
+   + Eureka and Config Server requirment
+   + PostgreSQL integration
+
+Choose 'dev' profile for fast and light internal services testing environment. Dev profile will disable Discovery and Configuration services dependencies, so you don't have to run them to work.
+
+Choose 'dev-2' profile for fast and light internal as external services testing environment. Chosse this if you need to work with a production like environment without depend on docker compose for the full application setup (wich will lead on slow down your machine performance).
+
+Choose 'prod' profile for full project production environment setup. This will lead in a total of 11 docker containers running on your machine. 
 
 #### Prerequsistes
 
-To use this project, you can either install the following thecnologies locally on your machine:
+To use this project, you must have the following installed:
 
 1. A kafka Server
-2. And a Redis Server
+2. A Redis Server
+3. (Depending on profile) A PostgreSQL DB
    
-Or use docker compose to run the compose file located in the project root directory (wich will create Kafka and Redis containers for you)
+You can either install them locally, or use docker compose to run the compose file located in the project root directory (wich will create Kafka, Postgres and Redis containers for you)
 
-Note: either using a docker environment or a local one, the application is configured to use default redis (6379) and kafka (9492) ports. In case you are using the provided compose file, the default ports are already configured, in case not, you need to make sure the two servers are using the specified ports.
+Note: either using a docker environment or a local one, the application is configured to use default redis (6379), postgres (5432) and kafka (9492) ports. In case you are using the provided compose file, the default ports are already configured, in case not, you need to make sure the three technologies are using the specified ports.
 
 #### Set up the project:
 
@@ -63,11 +86,11 @@ Note: either using a docker environment or a local one, the application is confi
    ```bash
    cd Chat-Web/
    ```
-3. **Run [avaliable](#avaliable-services-at-the-moment) services using Maven (project folders already have Maven Wraper integrated, so you don't need to install it)**
+3. **Run [avaliable services](#avaliable-services-at-the-moment) using Maven (project folders already have Maven Wraper integrated, so you don't need to install it)**
        
    ```bash
    cd Service-Name/
    ```
    ```bash
-   ./mvnw spring-boot:run
+   ./mvnw spring-boot:run -Dspring-boot.run.profiles=profile-name
    ```
