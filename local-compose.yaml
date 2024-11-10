@@ -1,6 +1,6 @@
 services:
 
-  # Kafka
+  #Kafka
   kafka:
     image: bitnami/kafka
     ports:
@@ -19,6 +19,16 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
       CLUSTER_ID: 'ciWo7IWazngRchmPES6q5A=='
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+  
+  #Postgres
+  postgres:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: chat-web-db
+      POSTGRES_USERNAME: postgres
+      POSTGRES_PASSWORD: letmein
 
   #Redis
   redis:
