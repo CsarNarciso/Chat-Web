@@ -19,14 +19,14 @@ import java.util.Objects;
 public class MessageService {
 
 
-    public void send(MessageForSendDTO message){
+    public void send(MessageForSendDTO messageRequest){
 
-        Conversation conversation = conversationService.getById(message.getConversationId());
+        Conversation conversation = conversationService.getById(messageRequest.getConversationId());
 
         //If conversation exists,
         if(conversation!=null){
 
-            Long senderId = message.getSenderId();
+            Long senderId = messageRequest.getSenderId();
             UUID conversationId = conversation.getId();
 
             //and user belongs to
@@ -36,16 +36,18 @@ public class MessageService {
                     .toList()
                     .contains(senderId)){
 
-                Message entity = mapper.map(message, Message.class);
+                Message entity = mapper.map(messageRequest, Message.class);
                 entity.setRead(false);
                 entity.setSentAt(LocalDateTime.now());
 
                 //Save Message
                 entity.setId(UUID.randomUUID());
                 repo.save(entity);
+				MessageDTO message = mapper.map(entity, MessageDTO.class);
+				
                 //In Cache
                 String messagesKey = generateMessagesKey(conversationId);
-                redisTemplate.opsForList().rightPush(messagesKey, entity);
+                redisTemplate.opsForList().rightPush(messagesKey, message);
 
                 //Send
                 webSocketTemplate.convertAndSend(
@@ -59,8 +61,8 @@ public class MessageService {
                 //If conversation needs to be recreated for someone
                 if(!conversation.getRecreateFor().isEmpty()){
                     conversationService.create(
-                            mapper.map(conversation, ConversationViewDTO.class),
-                            mapper.map(message, MessageForInitDTO.class));
+                            mapper.map(conversation, ConversationDTO.class),
+                            mapper.map(messageRequest, MessageForInitDTO.class));
                 }
             }
         }
@@ -72,26 +74,26 @@ public class MessageService {
 
         String key = generateMessagesKey(conversationId);
 
-        //Fetch conversation messages from Cache
-        List<Message> conversationMessages = 
+        //Try to first fetch from Cache
+        List<MessageDTO> cacheMessages = 
 				redisTemplate.opsForList().range(key, 0, -1)
 					.stream()
 					.filter(Objects::nonNull)
 					.toList();
-
+					
         //If not in Cache
-        if (conversationMessages.isEmpty()){
+        if (cacheMessages.isEmpty()){
             //, then from DB
-            List<Message> dbMessages = repo.findAllByConversationId(conversationId);
+            cacheMessages = repo.findAllByConversationId(conversationId)
+					.stream()
+					.map(m -> mapper.map(m, MessageDTO.class))
+					.toList();
             //And store in Cache
-            redisTemplate.opsForList().rightPushAll(key, dbMessages);
-            conversationMessages = dbMessages;
+			if(!cacheMessages.isEmpty){
+				redisTemplate.opsForList().rightPushAll(key, cacheMessages);
+			}
         }
-
-        return  conversationMessages
-                .stream()
-                .map(m -> mapper.map(m, MessageDTO.class))
-                .toList();
+        return cacheMessages;
     }
 
 
@@ -120,15 +122,15 @@ public class MessageService {
                     String messageKey = generateMessagesKey(conversationId);
 
                     //Get actual conversation messages list from Cache to filter out user messages
-                    List<Message> messages = redisTemplate.opsForList().range(messageKey, 0, -1)
+                    List<MessageDTO> cacheMessages = redisTemplate.opsForList().range(messageKey, 0, -1)
 							.stream()
 							.filter(Objects::nonNull)
-                            .dropWhile(m -> m.getSenderId().equals(userId))
+                            .filter(m -> !m.getSenderId().equals(userId))
                             .toList();
 
                     //And update in Cache
                     redisTemplate.delete(messageKey);
-                    redisTemplate.opsForList().rightPushAll(messageKey, messages);
+                    redisTemplate.opsForList().rightPushAll(messageKey, cacheMessages);
                 });
 
         //Unread Messages
@@ -235,12 +237,14 @@ public class MessageService {
                         String conversationMessagesKey = generateMessagesKey(id);
                         redisTemplate.opsForList().rightPushAll(
                                 conversationMessagesKey,
-                                missingConversationMessages);
+                                missingConversationMessages
+									.stream()
+									.map(m -> mapper.map(m, MessageDTO.class)
+									.toList());
 
                         //Get last message
-                        lastMessages.put(
-                                id,
-                                mapper.map(missingConversationMessages.getLast(), LastMessageDTO.class));
+                        lastMessages.put(id, 
+							mapper.map(missingConversationMessages.getLast(), LastMessageDTO.class));
                     });
         }
         return lastMessages;
@@ -306,7 +310,7 @@ public class MessageService {
     }
 
 
-    public MessageService(MessageRepository repo, @Lazy ConversationService conversationService, RedisTemplate<String, Message> redisTemplate, RedisTemplate<String, Object> globalRedisTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
+    public MessageService(MessageRepository repo, @Lazy ConversationService conversationService, RedisTemplate<String, MessageDTO> redisTemplate, RedisTemplate<String, Object> globalRedisTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
         this.repo = repo;
         this.conversationService = conversationService;
         this.redisTemplate = redisTemplate;
@@ -317,7 +321,7 @@ public class MessageService {
 
     private final MessageRepository repo;
     private final ConversationService conversationService;
-    private final RedisTemplate<String, Message> redisTemplate;
+    private final RedisTemplate<String, MessageDTO> redisTemplate;
     private final RedisTemplate<String, Object> globalRedisTemplate;
     private final SimpMessagingTemplate webSocketTemplate;
     private final ModelMapper mapper;
