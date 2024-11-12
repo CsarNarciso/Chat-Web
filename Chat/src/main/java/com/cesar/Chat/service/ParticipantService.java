@@ -1,9 +1,12 @@
 package com.cesar.Chat.service;
 
 import java.util.List;
-import org.springframework.data.redis.core.RedisTemplate;
+import java.util.UUID;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.redis.core.ListOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import com.cesar.Chat.dto.ParticipantDTO;
 import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.entity.Participant;
 import com.cesar.Chat.repository.ParticipantRepository;
@@ -34,7 +37,13 @@ public class ParticipantService {
 								.build())
 						.toList());
 		//Store in Cache
-		redisTemplate.opsForList().rightPush(generateConversationParticipantsKey(), participants);
+		redisListTemplate.rightPushAll(
+				generateConversationParticipantsKey(conversation.getId()), 
+				participants
+						.stream()
+						.map(p -> mapper.map(p, ParticipantDTO.class))
+						.toList());
+		return participants;
 	}
 	
 	public List<Participant> getByUserIds(List<Long> userIds){
@@ -43,11 +52,21 @@ public class ParticipantService {
 	
 	
 	
-	public ParticipantService(ParticipantRepository repo, RedisTemplate<String, ParticipantDTO> redisTemplate) {
-		this.repo = repo;
-		this.redisListTemplate = redisTemplate.opsForList();
+	
+	
+	
+	private String generateConversationParticipantsKey(UUID conversationId) {
+		return String.format("conversation:%s:participants", conversationId);
 	}
 	
-	private final ParticipantRepository repo
+	
+	public ParticipantService(ParticipantRepository repo, RedisTemplate<String, ParticipantDTO> redisTemplate, ModelMapper mapper) {
+		this.repo = repo;
+		this.redisListTemplate = redisTemplate.opsForList();
+		this.mapper = mapper;
+	}
+	
+	private final ParticipantRepository repo;
     private final ListOperations<String, ParticipantDTO> redisListTemplate;
+    private final ModelMapper mapper;
 }

@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.modelmapper.ModelMapper;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -16,10 +15,11 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-
 import com.cesar.Chat.dto.ConversationCreatedDTO;
 import com.cesar.Chat.dto.ConversationDTO;
 import com.cesar.Chat.dto.ConversationDeletedDTO;
+import com.cesar.Chat.dto.ConversationRecipientDTO;
+import com.cesar.Chat.dto.ConversationViewDTO;
 import com.cesar.Chat.dto.MessageForInitDTO;
 import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.entity.Participant;
@@ -51,6 +51,7 @@ public class ConversationService {
             if(existentConversation==null){
 
                 //Create
+                createFor = userIds;
 
             	//Conversation (no participants yet)
                 savedEntity = repo.save(
@@ -60,12 +61,16 @@ public class ConversationService {
                                 .createdAt(LocalDateTime.now())
                                 .participants(new ArrayList<>())
                                 .build());
+                //Store in Cache
+                createFor
+          			.forEach(id -> {
+          				redisTemplate.opsForList().rightPush(generateUserConversationsKey(id), conversation);
+              		});
                 
-                //Then, participants
+                //And then participants
                 savedEntity.setParticipants(participantService.createAll(userIds, savedEntity));
                 
                 conversation = mapper.map(savedEntity, ConversationDTO.class);
-                createFor = userIds;
             }
             else{
 
@@ -82,36 +87,33 @@ public class ConversationService {
             }
         }
 
-        //Store conversations and participants in Cache (separately)
+        //For everyone involved in the creation/recreation
         createFor
-                .forEach(id -> {
-                    redisTemplate.opsForList().rightPush(generateUserConversationsKey(id), conversation);
+                .forEach(participantId -> {
+                	
+                	//Compose custom conversation view: recipient presence/details, last message data and unread message count
+                    ConversationViewDTO conversationView = 
+                    		composeConversationsData(Stream.of(savedEntity).toList(), message.getSenderId()).getFirst();
+                	
+                    //Send
+                    webSocketTemplate.convertAndSendToUser(
+                            participantId.toString(),
+                            "/user/reply/createConversation",
+                            conversationView);
                 });
 
-        //Compose conversation participants' user/presence details, last message data and unread message counts
-        injectConversationsDetails(Stream.of(savedEntity).toList(), message.getSenderId());
-
-
         //Event publisher - ConversationCreated
-        kafkaTemplate.send("ConversationCreated",
-                ConversationCreatedDTO.builder()
-                .id(conversation.getId())
-                .createFor(createFor)
-                .build());
-
-        //Send participants' custom conversation data
-        createFor.forEach(participantId -> {
-            webSocketTemplate.convertAndSendToUser(
-                    participantId.toString(),
-                    "/user/reply/createConversation",
-                    conversation);
-        });
+        kafkaTemplate.send("ConversationCreated", ConversationCreatedDTO
+	        		.builder()
+	                .id(conversation.getId())
+	                .createFor(createFor)
+	                .build());
     }
 
 
     public List<ConversationFaceDTO> load(Long userId){
         //Set participants' user/presence details, last message data and unread messages counts
-        return injectConversationsDetails(getByUserId(userId), userId);
+        return composeConversationsData(getByUserId(userId), userId);
     }
 
 
@@ -187,41 +189,40 @@ public class ConversationService {
     }
 
 
-    private List<ConversationFaceDTO> injectConversationsDetails(List<Conversation> conversations,
-                                                             Long participantId){
+    private List<ConversationViewDTO> composeConversationsData(List<Conversation> conversations,
+                                                             Long conversationViewOwnerId){
         List<Long> recipientIds = new ArrayList<>();
         List<UUID> conversationIds = mapToIds(conversations);
-        List<ConversationFaceDTO> conversationDTOS = mapToDTO(conversations);
+        List<ConversationViewDTO> conversationViews = mapToViewDTOs(conversations);
 
         //For each conversation
         for (int i = 0; i < conversations.size(); i++){
 
-            //Get and set recipient reference (conversation face for sender)
+            //Get recipient reference (conversation face for sender)
             Long recipientId = conversations.get(i).getParticipants()
                     .stream()
                     .map(Participant::getUserId)
-                    .filter(id -> !id.equals(participantId))
+                    .filter(id -> !id.equals(conversationViewOwnerId))
                     .findFirst().orElse(null);
-            
             recipientIds.add(recipientId);
 
-            conversationDTOS.get(i).setRecipient(
-                    ParticipantFaceDTO
+            //And compose as part of conversation view
+            conversationViews.get(i).setRecipient(
+                    ConversationRecipientDTO
                             .builder()
                             .userId(recipientId)
                             .build());
         }
-        //Set participants user details
-        userService.injectConversationsParticipantsDetails(conversationDTOS, recipientIds);
+        //Inject recipients' user details
+        userService.injectConversationsParticipantsDetails(conversationViews, recipientIds);
 
-        //Set participants presence statuses
-        presenceService.injectConversationsParticipantsStatuses(conversationDTOS, recipientIds);
+        //, presence statuses
+        presenceService.injectConversationsParticipantsStatuses(conversationViews, recipientIds);
 
-        //Set last messages data and unread messages counts
-        messageService.injectConversationsMessagesDetails(
-                conversationDTOS, conversationIds, participantId);
+        //And view owner last messages and unread message counts
+        messageService.injectConversationsMessagesDetails(conversationViews, conversationIds, conversationViewOwnerId);
 
-        return conversationDTOS;
+        return conversationViews;
     }
 
 
@@ -280,10 +281,17 @@ public class ConversationService {
         return String.format("%s:conversations", userId);
     }
 
-    private List<ConversationFaceDTO> mapToDTO(List<Conversation> conversations){
+    private List<ConversationDTO> mapToDTOs(List<Conversation> conversations){
         return conversations
                 .stream()
-                .map(c -> mapper.map(c, ConversationFaceDTO.class))
+                .map(c -> mapper.map(c, ConversationDTO.class))
+                .toList();
+    }
+    
+    private List<ConversationViewDTO> mapToViewDTOs(List<Conversation> conversations){
+        return conversations
+                .stream()
+                .map(c -> mapper.map(c, ConversationViewDTO.class))
                 .toList();
     }
 

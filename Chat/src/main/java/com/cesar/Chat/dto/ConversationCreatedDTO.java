@@ -1,9 +1,9 @@
 package com.cesar.Chat.dto;
 
-import lombok.Builder;
-import lombok.Data;
 import java.util.List;
 import java.util.UUID;
+import lombok.Builder;
+import lombok.Data;
 
 @Data
 @Builder
