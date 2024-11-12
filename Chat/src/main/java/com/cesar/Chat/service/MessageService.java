@@ -9,11 +9,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+
 import com.cesar.Chat.dto.ConversationDTO;
 import com.cesar.Chat.dto.ConversationViewDTO;
 import com.cesar.Chat.dto.LastMessageDTO;
@@ -96,10 +98,7 @@ public class MessageService {
         //If not in Cache
         if (cacheMessages.isEmpty()){
             //, then from DB
-            cacheMessages = repo.findAllByConversationId(conversationId)
-					.stream()
-					.map(m -> mapper.map(m, MessageDTO.class))
-					.toList();
+            cacheMessages = mapToDTOs(repo.findAllByConversationId(conversationId));
             //And store in Cache
 			if(!cacheMessages.isEmpty()){
 				redisTemplate.opsForList().rightPushAll(key, cacheMessages);
@@ -249,10 +248,7 @@ public class MessageService {
                         String conversationMessagesKey = generateMessagesKey(id);
                         redisTemplate.opsForList().rightPushAll(
                                 conversationMessagesKey,
-                                missingConversationMessages
-									.stream()
-									.map(m -> mapper.map(m, MessageDTO.class))
-									.toList());
+                                mapToDTOs(missingConversationMessages));
 
                         //Get last message
                         lastMessages.put(id, 
@@ -325,6 +321,7 @@ public class MessageService {
 	private List<MessageDTO> mapToDTOs(List<Message> messages){
         return messages
                 .stream()
+                .filter(Objects::nonNull)
                 .map(m -> mapper.map(m, MessageDTO.class))
                 .toList();
     }
