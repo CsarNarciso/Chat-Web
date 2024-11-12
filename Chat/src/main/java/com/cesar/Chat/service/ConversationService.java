@@ -86,7 +86,6 @@ public class ConversationService {
         createFor
                 .forEach(id -> {
                     redisTemplate.opsForList().rightPush(generateUserConversationsKey(id), conversation);
-                    redisTemplate.opsForList().rightPush(generateConversationParticipantsKey(), savedEntity.getParticipants());
                 });
 
         //Compose conversation participants' user/presence details, last message data and unread message counts
