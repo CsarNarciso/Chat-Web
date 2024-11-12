@@ -303,10 +303,10 @@ public class MessageService {
 
 
     private String generateMessagesKey(UUID conversationId){
-        return String.format("%s:messages", conversationId);
+        return String.format("conversation:%s:messages", conversationId);
     }
     private String generateUnreadKey(Long participantId){
-        return String.format("%s:unread", participantId);
+        return String.format("user:%s:conversation:unreadMessages", participantId);
     }
 
 
