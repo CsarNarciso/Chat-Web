@@ -307,8 +307,16 @@ public class MessageService {
     }
     private String generateUnreadKey(Long participantId){
         return String.format("user:%s:conversation:unreadMessages", participantId);
+    
+	
+	
+	private List<MessageDTO> mapToDTOs(List<Message> messages){
+        return messages
+                .stream()
+                .map(m -> mapper.map(m, MessageDTO.class))
+                .toList();
     }
-
+	
 
     public MessageService(MessageRepository repo, @Lazy ConversationService conversationService, RedisTemplate<String, MessageDTO> redisTemplate, RedisTemplate<String, Object> globalRedisTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
         this.repo = repo;
