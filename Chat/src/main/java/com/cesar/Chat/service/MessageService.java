@@ -1,18 +1,30 @@
 package com.cesar.Chat.service;
 
-import com.cesar.Chat.dto.*;
-import com.cesar.Chat.entity.Conversation;
-import com.cesar.Chat.entity.Message;
-import com.cesar.Chat.entity.Participant;
-import com.cesar.Chat.repository.MessageRepository;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.Objects;
+import com.cesar.Chat.dto.ConversationDTO;
+import com.cesar.Chat.dto.ConversationViewDTO;
+import com.cesar.Chat.dto.LastMessageDTO;
+import com.cesar.Chat.dto.MessageDTO;
+import com.cesar.Chat.dto.MessageForInitDTO;
+import com.cesar.Chat.dto.MessageForSendDTO;
+import com.cesar.Chat.dto.UnreadMessagesDTO;
+import com.cesar.Chat.entity.Conversation;
+import com.cesar.Chat.entity.Message;
+import com.cesar.Chat.entity.Participant;
+import com.cesar.Chat.repository.MessageRepository;
 
 
 @Service
@@ -89,7 +101,7 @@ public class MessageService {
 					.map(m -> mapper.map(m, MessageDTO.class))
 					.toList();
             //And store in Cache
-			if(!cacheMessages.isEmpty){
+			if(!cacheMessages.isEmpty()){
 				redisTemplate.opsForList().rightPushAll(key, cacheMessages);
 			}
         }
@@ -239,7 +251,7 @@ public class MessageService {
                                 conversationMessagesKey,
                                 missingConversationMessages
 									.stream()
-									.map(m -> mapper.map(m, MessageDTO.class)
+									.map(m -> mapper.map(m, MessageDTO.class))
 									.toList());
 
                         //Get last message
@@ -307,7 +319,7 @@ public class MessageService {
     }
     private String generateUnreadKey(Long participantId){
         return String.format("user:%s:conversation:unreadMessages", participantId);
-    
+    }
 	
 	
 	private List<MessageDTO> mapToDTOs(List<Message> messages){
