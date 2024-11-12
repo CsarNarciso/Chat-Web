@@ -1,19 +1,11 @@
 package com.cesar.Chat.dto;
 
-import lombok.AllArgsConstructor;
+import java.io.Serializable;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import java.time.LocalDateTime;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class ParticipantDTO {
+@Data
+public class ParticipantDTO implements Serializable {
     private Long userId;
-    private String username;
-    private String profileImageUrl;
-    private String presenceStatus;
-    private LocalDateTime lastSeen;
 }

@@ -1,6 +1,6 @@
 package com.cesar.Chat.service;
 
-import com.cesar.Chat.dto.ConversationDTO;
+import com.cesar.Chat.dto.ConversationViewDTO;
 import com.cesar.Chat.dto.UserPresenceDTO;
 import com.cesar.Chat.feign.PresenceFeign;
 import org.modelmapper.ModelMapper;
@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public class PresenceService {
 
 
-    public void injectConversationsParticipantsStatuses(List<ConversationDTO> conversations,
+    public void injectConversationsParticipantsStatuses(List<ConversationViewDTO> conversations,
                                                         List<Long> participantsIds){
         //Fetch presence statuses
         Map<Long, UserPresenceDTO> statuses =

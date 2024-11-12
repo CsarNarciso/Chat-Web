@@ -1,6 +1,6 @@
 package com.cesar.Chat.service;
 
-import com.cesar.Chat.dto.ConversationDTO;
+import com.cesar.Chat.dto.ConversationViewDTO;
 import com.cesar.Chat.dto.UserDTO;
 import com.cesar.Chat.feign.UserFeign;
 import org.modelmapper.ModelMapper;
@@ -15,7 +15,7 @@ public class UserService {
 
 
 
-    public void injectConversationsParticipantsDetails(List<ConversationDTO> conversations, List<Long> participantsIds){
+    public void injectConversationsParticipantsDetails(List<ConversationViewDTO> conversations, List<Long> participantsIds){
 
         //Fetch details
         Map<Long, UserDTO> details =

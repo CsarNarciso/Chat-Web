@@ -1,6 +1,5 @@
 package com.cesar.Chat.entity;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -23,7 +22,7 @@ import lombok.ToString;
 @Builder
 @Entity
 @Table(name="conversations")
-public class Conversation implements Serializable {
+public class Conversation{
 
     @Id
     private UUID id;

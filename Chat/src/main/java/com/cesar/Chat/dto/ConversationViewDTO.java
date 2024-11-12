@@ -1,20 +1,20 @@
 package com.cesar.Chat.dto;
 
-import lombok.Builder;
-import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ConversationDTO {
+public class ConversationViewDTO {
     private UUID id;
     private LocalDateTime createdAt;
-    private ParticipantDTO recipient;
+    private ConversationRecipientDTO recipient;
     private LastMessageDTO lastMessage;
     private Integer unreadMessagesCount;
 }

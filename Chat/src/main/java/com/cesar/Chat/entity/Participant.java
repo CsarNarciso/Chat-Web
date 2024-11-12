@@ -1,6 +1,5 @@
 package com.cesar.Chat.entity;
 
-import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -17,7 +16,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Entity
 @Table(name = "participants")
-public class Participant implements Serializable {
+public class Participant{
     
 	@Id
     @Column(name = "user_id")

@@ -1,9 +1,14 @@
 package com.cesar.Chat.service;
 
-import com.cesar.Chat.dto.*;
-import com.cesar.Chat.entity.Conversation;
-import com.cesar.Chat.entity.Participant;
-import com.cesar.Chat.repository.ConversationRepository;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -11,10 +16,14 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import com.cesar.Chat.dto.ConversationCreatedDTO;
+import com.cesar.Chat.dto.ConversationDTO;
+import com.cesar.Chat.dto.ConversationDeletedDTO;
+import com.cesar.Chat.dto.MessageForInitDTO;
+import com.cesar.Chat.entity.Conversation;
+import com.cesar.Chat.entity.Participant;
+import com.cesar.Chat.repository.ConversationRepository;
 
 @Service
 public class ConversationService {
@@ -41,7 +50,7 @@ public class ConversationService {
             //If don't exists
             if(existentConversation==null){
 
-                //----CREATE----
+                //Create
 
             	//Conversation (no participants yet)
                 savedEntity = repo.save(
@@ -60,7 +69,7 @@ public class ConversationService {
             }
             else{
 
-                //----RECREATE----
+                //Recreate
                 createFor = existentConversation.getRecreateFor();
                 existentConversation = repo.save(
                         Conversation
@@ -73,43 +82,42 @@ public class ConversationService {
             }
         }
 
-        //Store in Cache
-        Conversation finalSavedEntity = savedEntity;
+        //Store conversations and participants in Cache (separately)
         createFor
                 .forEach(id -> {
-                    redisTemplate.opsForList().rightPush(generateUserConversationsKey(id), finalSavedEntity);
+                    redisTemplate.opsForList().rightPush(generateUserConversationsKey(id), conversation);
+                    redisTemplate.opsForList().rightPush(generateConversationParticipantsKey(), savedEntity.getParticipants());
                 });
 
-        //----COMPOSE DATA----
-        //Set participants' user/presence details, last message data and unread messages counts
+        //Compose conversation participants' user/presence details, last message data and unread message counts
         injectConversationsDetails(Stream.of(savedEntity).toList(), message.getSenderId());
 
 
-        //----PUBLISH EVENT - ConversationCreated----
-        kafkaTemplate.send("ConversationCreated", ConversationCreatedDTO
-                .builder()
+        //Event publisher - ConversationCreated
+        kafkaTemplate.send("ConversationCreated",
+                ConversationCreatedDTO.builder()
                 .id(conversation.getId())
                 .createFor(createFor)
                 .build());
 
-        //----SEND CONVERSATION DATA----
-        for (Long participantId : createFor) {
+        //Send participants' custom conversation data
+        createFor.forEach(participantId -> {
             webSocketTemplate.convertAndSendToUser(
                     participantId.toString(),
                     "/user/reply/createConversation",
                     conversation);
-        }
+        });
     }
 
 
-    public List<ConversationDTO> load(Long userId){
+    public List<ConversationFaceDTO> load(Long userId){
         //Set participants' user/presence details, last message data and unread messages counts
         return injectConversationsDetails(getByUserId(userId), userId);
     }
 
 
 
-    public ConversationDTO delete(UUID conversationId, Long participantId){
+    public ConversationFaceDTO delete(UUID conversationId, Long participantId){
 
         //Look for conversation
         Conversation conversation = getById(conversationId);
@@ -176,15 +184,15 @@ public class ConversationService {
                 .permanently(permanently)
                 .build());
 
-        return mapper.map(conversation, ConversationDTO.class);
+        return mapper.map(conversation, ConversationFaceDTO.class);
     }
 
 
-    private List<ConversationDTO> injectConversationsDetails(List<Conversation> conversations,
+    private List<ConversationFaceDTO> injectConversationsDetails(List<Conversation> conversations,
                                                              Long participantId){
         List<Long> recipientIds = new ArrayList<>();
         List<UUID> conversationIds = mapToIds(conversations);
-        List<ConversationDTO> conversationDTOS = mapToDTO(conversations);
+        List<ConversationFaceDTO> conversationDTOS = mapToDTO(conversations);
 
         //For each conversation
         for (int i = 0; i < conversations.size(); i++){
@@ -199,7 +207,7 @@ public class ConversationService {
             recipientIds.add(recipientId);
 
             conversationDTOS.get(i).setRecipient(
-                    ParticipantDTO
+                    ParticipantFaceDTO
                             .builder()
                             .userId(recipientId)
                             .build());
@@ -273,10 +281,10 @@ public class ConversationService {
         return String.format("%s:conversations", userId);
     }
 
-    private List<ConversationDTO> mapToDTO(List<Conversation> conversations){
+    private List<ConversationFaceDTO> mapToDTO(List<Conversation> conversations){
         return conversations
                 .stream()
-                .map(c -> mapper.map(c, ConversationDTO.class))
+                .map(c -> mapper.map(c, ConversationFaceDTO.class))
                 .toList();
     }
 
@@ -290,7 +298,7 @@ public class ConversationService {
 
 
 
-    public ConversationService(ConversationRepository repo, ParticipantService participantService, MessageService messageService, PresenceService presenceService, UserService userService, RedisTemplate<String, Conversation> redisTemplate, KafkaTemplate<String, Object> kafkaTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
+    public ConversationService(ConversationRepository repo, ParticipantService participantService, MessageService messageService, PresenceService presenceService, UserService userService, RedisTemplate<String, ConversationDTO> redisTemplate, KafkaTemplate<String, Object> kafkaTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
         this.repo = repo;
         this.messageService = messageService;
         this.participantService = participantService;
@@ -308,8 +316,8 @@ public class ConversationService {
     private final MessageService messageService;
     private final PresenceService presenceService;
     private final UserService userService;
-    private final RedisTemplate<String, Conversation> redisTemplate;
-    private final ListOperations<String, Conversation> redisListTemplate;
+    private final RedisTemplate<String, ConversationDTO> redisTemplate;
+    private final ListOperations<String, ConversationDTO> redisListTemplate;
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final SimpMessagingTemplate webSocketTemplate;
     private final ModelMapper mapper;

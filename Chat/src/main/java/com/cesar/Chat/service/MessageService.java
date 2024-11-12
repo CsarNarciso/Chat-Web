@@ -59,7 +59,7 @@ public class MessageService {
                 //If conversation needs to be recreated for someone
                 if(!conversation.getRecreateFor().isEmpty()){
                     conversationService.create(
-                            mapper.map(conversation, ConversationDTO.class),
+                            mapper.map(conversation, ConversationViewDTO.class),
                             mapper.map(message, MessageForInitDTO.class));
                 }
             }
@@ -161,7 +161,7 @@ public class MessageService {
 
 
 
-    public void injectConversationsMessagesDetails(List<ConversationDTO> conversations,
+    public void injectConversationsMessagesDetails(List<ConversationViewDTO> conversations,
                                                    List<UUID> conversationIds,
                                                    Long senderId){
         //Fetch last messages
