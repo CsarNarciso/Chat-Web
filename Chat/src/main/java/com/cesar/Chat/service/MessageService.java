@@ -216,9 +216,9 @@ public class MessageService {
                 .forEach(id -> {
 
                     String conversationMessagesKey = generateMessagesKey(id);
-
-                    LastMessageDTO lastMessage = mapper.map(redisTemplate.opsForList().rightPop(
-                            conversationMessagesKey), LastMessageDTO.class);
+                    MessageDTO cacheMessage = redisTemplate.opsForList().rightPop(conversationMessagesKey);
+                    
+                    LastMessageDTO lastMessage = cacheMessage!=null ? mapper.map(cacheMessage, LastMessageDTO.class) : null;
 
                     if(lastMessage!=null){
                         lastMessages.put(id, lastMessage);
@@ -244,15 +244,20 @@ public class MessageService {
                                 .filter(m -> m.getConversationId().equals(id))
                                 .toList();
 
-                        //And store in Cache
-                        String conversationMessagesKey = generateMessagesKey(id);
-                        redisTemplate.opsForList().rightPushAll(
-                                conversationMessagesKey,
-                                mapToDTOs(missingConversationMessages));
+                        //And if there is something...
+                        if(!missingConversationMessages.isEmpty()) {
 
-                        //Get last message
-                        lastMessages.put(id, 
-							mapper.map(missingConversationMessages.getLast(), LastMessageDTO.class));
+                        	//Store in Cache
+                        	String conversationMessagesKey = generateMessagesKey(id);
+                        	
+                            redisTemplate.opsForList().rightPushAll(
+                                    conversationMessagesKey,
+                                    mapToDTOs(missingConversationMessages));
+                            
+                            //Get last message
+                            lastMessages.put(id, 
+    							mapper.map(missingConversationMessages.getLast(), LastMessageDTO.class));
+                        }
                     });
         }
         return lastMessages;
