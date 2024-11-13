@@ -2,6 +2,7 @@ package com.cesar.Chat.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -268,10 +269,10 @@ public class MessageService {
     private Map<UUID, Integer> getUnreadMessages(Long participantId, List<UUID> conversationIds){
 
         String key = generateUnreadKey(participantId);
-        Set<Object> hashes = new HashSet<>(conversationIds);
+        Collection<Object> hashes = new HashSet<>(conversationIds.stream().map(UUID::toString).toList());
 
         Map<UUID, Integer> unreadMessages = new HashMap<>();
-        List<UUID> missingCacheCountsConversationIds = new ArrayList<>(conversationIds);
+        List<Object> missingCacheCountsConversationIds = new ArrayList<>(conversationIds);
 
         //Fetch Conversation unread messages counts from Cache
         List<Object> counts = globalRedisTemplate.opsForHash().multiGet(key, hashes);
