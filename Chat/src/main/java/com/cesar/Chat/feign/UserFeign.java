@@ -10,8 +10,7 @@ import java.util.List;
 
 @FeignClient(name = "${services.user.name}",
         url = "${services.user.url}",
-        path = "${services.user.path}",
-        fallback = UserFeign.UserFeignFallback.class)
+        path = "${services.user.path}")
 public interface UserFeign {
 
     @GetMapping

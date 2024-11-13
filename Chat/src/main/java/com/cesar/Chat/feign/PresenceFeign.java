@@ -11,8 +11,7 @@ import java.util.List;
 @FeignClient(
         name="${services.presence.name}",
         url="${services.presence.url}",
-        path="${services.presence.path}",
-        fallback = PresenceFeign.Fallback.class)
+        path="${services.presence.path}")
 public interface PresenceFeign {
 
     @GetMapping
