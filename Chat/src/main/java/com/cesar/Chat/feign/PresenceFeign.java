@@ -1,17 +1,18 @@
 package com.cesar.Chat.feign;
 
-import com.cesar.Chat.dto.UserPresenceDTO;
+import java.util.Collections;
+import java.util.List;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import java.util.Collections;
-import java.util.List;
+import com.cesar.Chat.dto.UserPresenceDTO;
 
 @FeignClient(
         name="${services.presence.name}",
         url="${services.presence.url}",
-        path="${services.presence.path}")
+        path="${services.presence.path}",
+        fallback=PresenceFeign.Fallback.class)
 public interface PresenceFeign {
 
     @GetMapping

@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.modelmapper.ModelMapper;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -16,7 +15,6 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-
 import com.cesar.Chat.dto.ConversationCreatedDTO;
 import com.cesar.Chat.dto.ConversationDTO;
 import com.cesar.Chat.dto.ConversationDeletedDTO;
@@ -63,15 +61,15 @@ public class ConversationService {
                                 .createdAt(LocalDateTime.now())
                                 .participants(new ArrayList<>())
                                 .build());
-                //Store in Cache
-                for(Long id : createFor) {
-          				redisListTemplate.rightPush(generateUserConversationsKey(id), conversation);
-              		};
                 
                 //And then participants
                 savedEntity.setParticipants(participantService.createAll(userIds, savedEntity));
                 
+                //Store in Cache
                 conversation = mapper.map(savedEntity, ConversationDTO.class);
+                for(Long id : createFor) {
+                	redisListTemplate.rightPush(generateUserConversationsKey(id), conversation);
+              	};
             }
             else{
 
@@ -91,16 +89,16 @@ public class ConversationService {
         //For everyone involved in the creation/recreation
         for(Long participantId : createFor){
                 	
-                	//Compose custom conversation view: recipient presence/details, last message data and unread message count
-                    ConversationViewDTO conversationView = 
-                    		composeConversationsData(Stream.of(savedEntity).toList(), message.getSenderId()).getFirst();
-                	
-                    //Send
-                    webSocketTemplate.convertAndSendToUser(
-                            participantId.toString(),
-                            "/user/reply/createConversation",
-                            conversationView);
-                };
+        	//Compose custom conversation view: recipient presence/details, last message data and unread message count
+            ConversationViewDTO conversationView = 
+            		composeConversationsData(Stream.of(savedEntity).toList(), participantId).getFirst();
+        	
+            //Send
+            webSocketTemplate.convertAndSendToUser(
+                    participantId.toString(),
+                    "/user/reply/createConversation",
+                    conversationView);
+        };
 
         //Event publisher - ConversationCreated
         kafkaTemplate.send("ConversationCreated", ConversationCreatedDTO
@@ -205,6 +203,8 @@ public class ConversationService {
                     .filter(id -> !id.equals(conversationViewOwnerId))
                     .findFirst().orElse(null);
             recipientIds.add(recipientId);
+            
+            System.out.println("[[[[[[[[[[[[[[[[[[[[[[[[{" + recipientId);
 
             //And compose as part of conversation view
             conversationViews.get(i).setRecipient(
