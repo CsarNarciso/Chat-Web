@@ -2,6 +2,7 @@ package com.cesar.Chat.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -59,6 +60,7 @@ public class ConversationService {
                 Conversation newConversation = new Conversation();
                 newConversation.setId(UUID.randomUUID());
                 newConversation.setCreatedAt(LocalDateTime.now());
+                newConversation.setRecreateFor(Collections.emptyList());
                 newConversation.addParticipants(participants); 
                 
                 //Then store in DB (along with participants through bidirectional relation)
@@ -75,7 +77,7 @@ public class ConversationService {
 
                 //Recreate
                 createFor = existentConversation.getRecreateFor();
-                existentConversation.setRecreateFor(null);               
+                existentConversation.setRecreateFor(Collections.emptyList());               
                 savedEntity = repo.save(existentConversation);
                 conversation = mapper.map(savedEntity, ConversationDTO.class);
             }
