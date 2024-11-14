@@ -32,7 +32,7 @@ public class ConversationService {
     public void create(ConversationDTO conversation, MessageForInitDTO message){
 
         List<Long> createFor = new ArrayList<>();
-        Conversation savedEntity = Conversation.builder().build();
+        Conversation savedEntity = new Conversation();
 
         //If request is not for recreation
         if(conversation==null){
@@ -52,37 +52,32 @@ public class ConversationService {
 
                 //Create
                 createFor = userIds;
+                
+                //First participants references
+                List<Participant> participants = participantService.createAll(userIds);
+                
+                Conversation newConversation = new Conversation();
+                newConversation.setId(UUID.randomUUID());
+                newConversation.setCreatedAt(LocalDateTime.now());
+                newConversation.addParticipants(participants); 
+                
+                //Then store in DB (along with participants through bidirectional relation)
+                savedEntity = repo.save(newConversation);
 
-            	//Conversation (no participants yet)
-                savedEntity = repo.save(
-                        Conversation
-                                .builder()
-                                .id(UUID.randomUUID())
-                                .createdAt(LocalDateTime.now())
-                                .participants(new ArrayList<>())
-                                .build());
-                
-                //And then participants
-                savedEntity.setParticipants(participantService.createAll(userIds, savedEntity));
-                
-                //Store in Cache
+                //And Cache
                 conversation = mapper.map(savedEntity, ConversationDTO.class);
                 for(Long id : createFor) {
                 	redisListTemplate.rightPush(generateUserConversationsKey(id), conversation);
               	};
+              	participantService.cacheAll(participants, savedEntity.getId());
             }
             else{
 
                 //Recreate
                 createFor = existentConversation.getRecreateFor();
-                existentConversation = repo.save(
-                        Conversation
-                                .builder()
-                                .id(existentConversation.getId())
-                                .recreateFor(null)
-                                .build());
-                savedEntity = existentConversation;
-                conversation = mapper.map(existentConversation, ConversationDTO.class);
+                existentConversation.setRecreateFor(null);               
+                savedEntity = repo.save(existentConversation);
+                conversation = mapper.map(savedEntity, ConversationDTO.class);
             }
         }
 
@@ -110,8 +105,11 @@ public class ConversationService {
 
 
     public List<ConversationViewDTO> load(Long userId){
-        //Set participants' user/presence details, last message data and unread messages counts
-        return composeConversationsData(getAllByUserId(userId), userId);
+    	
+    	List<Conversation> conversations = getAllByUserId(userId);
+    	return (!conversations.isEmpty()) 
+    			? composeConversationsData(conversations, userId) 
+    			: null;
     }
 
 
@@ -119,20 +117,20 @@ public class ConversationService {
     public ConversationViewDTO delete(UUID conversationId, Long participantId){
 
         //Look for conversation
-        Conversation conversation = getById(conversationId);
+        Conversation entity = getById(conversationId);
         boolean permanently = false;
 
         //If exists...
-        if(conversation!=null){
+        if(entity!=null){
 
             //Get conversation participant IDs
-            List<Long> participantsIds = conversation.getParticipants()
+            List<Long> participantsIds = entity.getParticipants()
                     .stream()
                     .map(Participant::getUserId)
                     .toList();
 
             //Add userId to conversation recreateFor list
-            List<Long> recreateFor = conversation.getRecreateFor();
+            List<Long> recreateFor = entity.getRecreateFor();
             recreateFor.add(participantId);
 
             //If recreateFor matches participantsIds...
@@ -160,13 +158,8 @@ public class ConversationService {
                 //Deletion is local
 
                 //Update recreateFor list
-                repo.save(
-                        Conversation
-                                .builder()
-                                .id(conversationId)
-                                .recreateFor(recreateFor)
-                                .build()
-                );
+            	entity.setRecreateFor(recreateFor);
+                repo.save(entity);
                 //Delete in Cache
                 String userConversationsKey = generateUserConversationsKey(participantId);
                 redisTemplate.delete(userConversationsKey);
@@ -183,7 +176,7 @@ public class ConversationService {
                 .permanently(permanently)
                 .build());
 
-        return mapper.map(conversation, ConversationViewDTO.class);
+        return mapper.map(entity, ConversationViewDTO.class);
     }
 
 
@@ -204,8 +197,6 @@ public class ConversationService {
                     .findFirst().orElse(null);
             recipientIds.add(recipientId);
             
-            System.out.println("[[[[[[[[[[[[[[[[[[[[[[[[{" + recipientId);
-
             //And compose as part of conversation view
             conversationViews.get(i).setRecipient(
                     ConversationRecipientDTO
@@ -308,7 +299,7 @@ public class ConversationService {
 
 
 
-    public ConversationService(ConversationRepository repo, ParticipantService participantService, MessageService messageService, PresenceService presenceService, UserService userService, RedisTemplate<String, ConversationDTO> redisTemplate, KafkaTemplate<String, Object> kafkaTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
+    public ConversationService(ConversationRepository repo, MessageService messageService, ParticipantService participantService, PresenceService presenceService, UserService userService, RedisTemplate<String, ConversationDTO> redisTemplate, KafkaTemplate<String, Object> kafkaTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
         this.repo = repo;
         this.messageService = messageService;
         this.participantService = participantService;
@@ -322,8 +313,8 @@ public class ConversationService {
     }
 
     private final ConversationRepository repo;
-    private final ParticipantService participantService;
     private final MessageService messageService;
+    private final ParticipantService participantService;
     private final PresenceService presenceService;
     private final UserService userService;
     private final RedisTemplate<String, ConversationDTO> redisTemplate;
