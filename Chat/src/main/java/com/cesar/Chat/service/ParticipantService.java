@@ -32,7 +32,7 @@ public class ParticipantService {
 	public void cacheAll(List<Participant> participants, UUID conversationId) {
 		
 		//Store in Cache
-		String conversationParticipantsKey = generateConversationParticipantsKey(conversationId); 
+		String conversationParticipantsKey = generateConversationParticipantsHashKey(conversationId); 
 		
 		Map<String, ParticipantDTO> cacheable = participants
 				.stream()
@@ -47,12 +47,17 @@ public class ParticipantService {
 	}
 	
 	
+	public void evictAll(UUID conversationId) {
+		redisTemplate.delete(generateConversationParticipantsHashKey(conversationId));
+	}
 	
 	
 	
 	
-	private String generateConversationParticipantsKey(UUID conversationId) {
-		return String.format("conversation:%s:participants", conversationId);
+	
+	
+	private String generateConversationParticipantsHashKey(UUID conversationId) {
+		return String.format("conversation:%s:participant", conversationId);
 	}
 	
 	

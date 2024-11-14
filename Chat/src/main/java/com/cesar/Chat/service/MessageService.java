@@ -8,15 +8,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
-
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-
 import com.cesar.Chat.dto.ConversationDTO;
 import com.cesar.Chat.dto.ConversationViewDTO;
 import com.cesar.Chat.dto.LastMessageDTO;
@@ -170,7 +167,7 @@ public class MessageService {
 
         //And delete in Cache
         String unreadKey = generateUnreadKey(participantId);
-        globalRedisTemplate.opsForHash().delete(unreadKey, conversationId);
+        globalRedisTemplate.opsForHash().delete(unreadKey, conversationId.toString());
     }
 
 

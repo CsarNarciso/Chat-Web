@@ -116,7 +116,7 @@ public class ConversationService {
 
 
 
-    public ConversationViewDTO delete(UUID conversationId, Long participantId){
+    public boolean delete(UUID conversationId, Long participantId){
 
         //Look for conversation
         Conversation entity = getById(conversationId);
@@ -136,7 +136,7 @@ public class ConversationService {
             recreateFor.add(participantId);
 
             //If recreateFor matches participantsIds...
-            if(participantsIds.equals(recreateFor)){
+            if(participantsIds.containsAll(recreateFor)){
 
                 //Deletion is permanently
                 permanently = true;
@@ -151,6 +151,9 @@ public class ConversationService {
                         .collect(Collectors.toSet());
                 redisTemplate.delete(userConversationsKeys);
 
+                //Ask Participant service to delete deleted conversation participants
+                participantService.evictAll(conversationId);
+                
                 //Ask Message service to delete deleted conversation messages/unread counts
                 messageService.onConversationDeleted(conversationId, participantId, permanently);
             }
@@ -177,8 +180,8 @@ public class ConversationService {
                 .participantId(participantId)
                 .permanently(permanently)
                 .build());
-
-        return mapper.map(entity, ConversationViewDTO.class);
+        
+        return permanently;
     }
 
 
