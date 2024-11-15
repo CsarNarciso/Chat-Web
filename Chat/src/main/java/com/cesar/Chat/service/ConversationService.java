@@ -22,14 +22,16 @@ import com.cesar.Chat.dto.ConversationDeletedDTO;
 import com.cesar.Chat.dto.ConversationRecipientDTO;
 import com.cesar.Chat.dto.ConversationViewDTO;
 import com.cesar.Chat.dto.MessageForInitDTO;
+import com.cesar.Chat.dto.MessageForSendDTO;
 import com.cesar.Chat.entity.Conversation;
+import com.cesar.Chat.entity.Message;
 import com.cesar.Chat.repository.ConversationRepository;
 
 @Service
 public class ConversationService {
 
 
-    public void create(ConversationDTO conversation, MessageForInitDTO message){
+    public void create(ConversationDTO conversation, MessageForInitDTO firstInteractionMessage){
 
         List<Long> createFor = new ArrayList<>();
         Conversation savedEntity = new Conversation();
@@ -40,8 +42,8 @@ public class ConversationService {
             //Get message participant IDs
             List<Long> userIds = Stream
                     .of(
-                            message.getSenderId(),
-                            message.getRecipientId())
+                            firstInteractionMessage.getSenderId(),
+                            firstInteractionMessage.getRecipientId())
                     .toList();
 
             //Look for an existent conversation between both users
@@ -53,21 +55,25 @@ public class ConversationService {
                 //Create
                 createFor = userIds;
                 
-                //First participants references
-                
                 Conversation newConversation = new Conversation();
                 newConversation.setId(UUID.randomUUID());
+                newConversation.setParticipants(userIds);
                 newConversation.setCreatedAt(LocalDateTime.now());
                 newConversation.setRecreateFor(Collections.emptyList());
                 
-                //Then store in DB (along with participants through bidirectional relation)
+                //Message reference
+                Message message = messageService.createEntityOnSendRequest(mapper.map(firstInteractionMessage, MessageForSendDTO.class));
+                savedEntity.addMessage(message);
+                
+                //Store in DB (along with message)
                 savedEntity = repo.save(newConversation);
 
-                //And Cache
-                conversation = mapper.map(savedEntity, ConversationDTO.class);
+                //And Cache everything
+                conversation = mapToDTO(savedEntity);
                 for(Long id : createFor) {
                 	redisListTemplate.rightPush(generateUserConversationsKey(id), conversation);
               	};
+              	messageService.cacheConversationMessage(messageService.mapToDTO(message));
             }
             else{
 
@@ -75,10 +81,11 @@ public class ConversationService {
                 createFor = existentConversation.getRecreateFor();
                 existentConversation.setRecreateFor(Collections.emptyList());               
                 savedEntity = repo.save(existentConversation);
-                conversation = mapper.map(savedEntity, ConversationDTO.class);
+                conversation = mapToDTO(savedEntity);
             }
         }
-
+        
+        
         //For everyone involved in the creation/recreation
         for(Long participantId : createFor){
                 	
@@ -163,7 +170,7 @@ public class ConversationService {
         //Ask Message service to delete deleted conversation messages/unread counts
         messageService.onConversationDeleted(conversationId, participantId, permanently);
 
-        //----PUBLISH EVENT - ConversationDeleted----
+        //Event publisher - ConversationDeleted
         kafkaTemplate.send("ConversationDeleted", ConversationDeletedDTO
                 .builder()
                 .id(conversationId)
@@ -210,8 +217,23 @@ public class ConversationService {
         return conversationViews;
     }
 
+    @KafkaListener(topics = "UserDeleted", groupId = "${spring.kafka.consumer.group-id}")
+    public void onUserDeleted(Long id){
 
+        //Invalidate user conversations in cache
+        String userConversationsKey = generateUserConversationsKey(id);
+        List<Conversation> conversations = getAllByUserId(id);
+        List<UUID> conversationsIds = mapToIds(conversations);
+        redisTemplate.delete(userConversationsKey);
 
+        //Invalidate user messages and unread counts
+        messageService.onUserDeleted(id, conversationsIds);
+    }
+
+    
+    
+    
+    
     private List<Conversation> getAllByUserId(Long userId){
 
         //Try to fetch from Cache
@@ -238,7 +260,7 @@ public class ConversationService {
 				.map(c -> mapper.map(c, Conversation.class))
 				.toList();
     }
-
+    
     public Conversation getById(UUID id){
         return repo.findById(id).orElse(null);
     }
@@ -248,32 +270,18 @@ public class ConversationService {
     }
 
 
-    @KafkaListener(topics = "UserDeleted", groupId = "${spring.kafka.consumer.group-id}")
-    public void onUserDeleted(Long id){
-
-        //Invalidate user conversations in cache
-        String userConversationsKey = generateUserConversationsKey(id);
-        List<Conversation> conversations = getAllByUserId(id);
-        List<UUID> conversationsIds = mapToIds(conversations);
-        redisTemplate.delete(userConversationsKey);
-
-        //Invalidate user messages and unread counts
-        messageService.onUserDeleted(id, conversationsIds);
-    }
-
-
-
-
-
-    private String generateUserConversationsKey(Long userId){
-        return String.format("user:%s:conversations", userId);
-    }
+    
+    
 
     private List<ConversationDTO> mapToDTOs(List<Conversation> conversations){
         return conversations
                 .stream()
                 .map(c -> mapper.map(c, ConversationDTO.class))
                 .toList();
+    }
+    
+    private ConversationDTO mapToDTO(Conversation conversation){
+        return mapper.map(conversation, ConversationDTO.class);
     }
     
     private List<ConversationViewDTO> mapToViewDTOs(List<Conversation> conversations){
@@ -293,6 +301,12 @@ public class ConversationService {
 
 
 
+    
+    private String generateUserConversationsKey(Long userId){
+        return String.format("user:%s:conversations", userId);
+    }
+    
+    
     public ConversationService(ConversationRepository repo, MessageService messageService, PresenceService presenceService, UserService userService, RedisTemplate<String, ConversationDTO> redisTemplate, KafkaTemplate<String, Object> kafkaTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
         this.repo = repo;
         this.messageService = messageService;

@@ -43,6 +43,11 @@ public class Conversation{
     @OneToMany(mappedBy = "conversation", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Message> messages = new ArrayList<Message>();
     
+    public void addMessage(Message message) {
+    	this.messages.add(message);
+    	message.setConversation(this);
+    }
+    
     public void addMessages(List<Message> messages) {
     	this.messages.addAll(messages);
     	messages.forEach(m -> m.setConversation(this));
