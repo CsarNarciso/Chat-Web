@@ -9,11 +9,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+
 import com.cesar.Chat.dto.ConversationDTO;
 import com.cesar.Chat.dto.ConversationViewDTO;
 import com.cesar.Chat.dto.LastMessageDTO;
@@ -23,7 +25,6 @@ import com.cesar.Chat.dto.MessageForSendDTO;
 import com.cesar.Chat.dto.UnreadMessagesDTO;
 import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.entity.Message;
-import com.cesar.Chat.entity.Participant;
 import com.cesar.Chat.repository.MessageRepository;
 
 
@@ -43,9 +44,6 @@ public class MessageService {
 
             //and user belongs to
             if(conversation.getParticipants()
-                    .stream()
-                    .map(Participant::getUserId)
-                    .toList()
                     .contains(senderId)){
 
                 Message entity = mapper.map(messageRequest, Message.class);
@@ -239,7 +237,7 @@ public class MessageService {
                         //Filter its own messages
                         List<Message> missingConversationMessages = dbMessages
                                 .stream()
-                                .filter(m -> m.getConversationId().equals(id))
+                                .filter(m -> m.getConversation().getId().equals(id))
                                 .toList();
 
                         //And if there is something...

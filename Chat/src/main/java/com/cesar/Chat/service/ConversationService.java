@@ -23,7 +23,6 @@ import com.cesar.Chat.dto.ConversationRecipientDTO;
 import com.cesar.Chat.dto.ConversationViewDTO;
 import com.cesar.Chat.dto.MessageForInitDTO;
 import com.cesar.Chat.entity.Conversation;
-import com.cesar.Chat.entity.Participant;
 import com.cesar.Chat.repository.ConversationRepository;
 
 @Service
@@ -55,13 +54,11 @@ public class ConversationService {
                 createFor = userIds;
                 
                 //First participants references
-                List<Participant> participants = participantService.createAll(userIds);
                 
                 Conversation newConversation = new Conversation();
                 newConversation.setId(UUID.randomUUID());
                 newConversation.setCreatedAt(LocalDateTime.now());
                 newConversation.setRecreateFor(Collections.emptyList());
-                newConversation.addParticipants(participants); 
                 
                 //Then store in DB (along with participants through bidirectional relation)
                 savedEntity = repo.save(newConversation);
@@ -71,7 +68,6 @@ public class ConversationService {
                 for(Long id : createFor) {
                 	redisListTemplate.rightPush(generateUserConversationsKey(id), conversation);
               	};
-              	participantService.cacheAll(participants, savedEntity.getId());
             }
             else{
 
@@ -126,10 +122,7 @@ public class ConversationService {
         if(entity!=null){
 
             //Get conversation participant IDs
-            List<Long> participantsIds = entity.getParticipants()
-                    .stream()
-                    .map(Participant::getUserId)
-                    .toList();
+            List<Long> participantsIds = entity.getParticipants();
 
             //Add userId to conversation recreateFor list
             List<Long> recreateFor = entity.getRecreateFor();
@@ -151,9 +144,6 @@ public class ConversationService {
                         .collect(Collectors.toSet());
                 redisTemplate.delete(userConversationsKeys);
 
-                //Ask Participant service to delete deleted conversation participants
-                participantService.evictAll(conversationId);
-                
                 //Ask Message service to delete deleted conversation messages/unread counts
                 messageService.onConversationDeleted(conversationId, participantId, permanently);
             }
@@ -197,7 +187,6 @@ public class ConversationService {
             //Get recipient reference (conversation face for sender)
             Long recipientId = conversations.get(i).getParticipants()
                     .stream()
-                    .map(Participant::getUserId)
                     .filter(id -> !id.equals(conversationViewOwnerId))
                     .findFirst().orElse(null);
             recipientIds.add(recipientId);
@@ -304,10 +293,9 @@ public class ConversationService {
 
 
 
-    public ConversationService(ConversationRepository repo, MessageService messageService, ParticipantService participantService, PresenceService presenceService, UserService userService, RedisTemplate<String, ConversationDTO> redisTemplate, KafkaTemplate<String, Object> kafkaTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
+    public ConversationService(ConversationRepository repo, MessageService messageService, PresenceService presenceService, UserService userService, RedisTemplate<String, ConversationDTO> redisTemplate, KafkaTemplate<String, Object> kafkaTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
         this.repo = repo;
         this.messageService = messageService;
-        this.participantService = participantService;
         this.presenceService = presenceService;
         this.userService = userService;
         this.redisTemplate = redisTemplate;
@@ -319,7 +307,6 @@ public class ConversationService {
 
     private final ConversationRepository repo;
     private final MessageService messageService;
-    private final ParticipantService participantService;
     private final PresenceService presenceService;
     private final UserService userService;
     private final RedisTemplate<String, ConversationDTO> redisTemplate;
