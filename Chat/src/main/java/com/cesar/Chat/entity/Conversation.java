@@ -38,10 +38,10 @@ public class Conversation{
     @ElementCollection
     @CollectionTable(name="conversations_participants", joinColumns = @JoinColumn(name="conversation_id"))
     @Column(name="user_id")
-    private List<Long> participants;
+    private List<Long> participants = new ArrayList<>();
     
     @OneToMany(mappedBy = "conversation", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Message> messages = new ArrayList<Message>();
+    private List<Message> messages = new ArrayList<>();
     
     public void addMessage(Message message) {
     	this.messages.add(message);
