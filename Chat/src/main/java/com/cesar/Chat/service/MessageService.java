@@ -53,7 +53,7 @@ public class MessageService {
             	
             	//And Cache
             	MessageDTO message = mapToDTO(entity);
-            	cacheConversationMessage(message);
+            	cacheConversationMessage(message, conversationId);
 
                 //Send
                 webSocketTemplate.convertAndSend(
@@ -205,8 +205,7 @@ public class MessageService {
                 .forEach(id -> {
 
                     String conversationMessagesKey = generateConversationMessagesKey(id);
-                    MessageDTO cacheMessage = redisTemplate.opsForList().rightPop(conversationMessagesKey);
-                    
+                    MessageDTO cacheMessage = redisTemplate.opsForList().range(conversationMessagesKey, -1, -1).getFirst();
                     LastMessageDTO lastMessage = cacheMessage!=null ? mapper.map(cacheMessage, LastMessageDTO.class) : null;
 
                     if(lastMessage!=null){
@@ -223,7 +222,7 @@ public class MessageService {
             //Then, get all messages from DB
             List<Message> dbMessages = repo.findAllByConversationIds(missingCacheConversationMessagesIds);
 
-            //And for each missing conversation
+            //And for each conversation with missing messages
             missingCacheConversationMessagesIds
                     .forEach(id -> {
 
@@ -235,7 +234,7 @@ public class MessageService {
 
                         //And if there is something...
                         if(!missingConversationMessages.isEmpty()) {
-
+                        	
                         	//Store in Cache
                         	String conversationMessagesKey = generateConversationMessagesKey(id);
                         	
@@ -313,9 +312,9 @@ public class MessageService {
         return entity;
     }
 
-    public void cacheConversationMessage(MessageDTO message) {
+    public void cacheConversationMessage(MessageDTO message, UUID conversationId) {
     	
-        String messagesKey = generateConversationMessagesKey(message.getConversationId());
+        String messagesKey = generateConversationMessagesKey(conversationId);
         redisTemplate.opsForList().rightPush(messagesKey, message);
     }
     

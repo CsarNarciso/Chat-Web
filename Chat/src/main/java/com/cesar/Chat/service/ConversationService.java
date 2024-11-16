@@ -73,7 +73,7 @@ public class ConversationService {
                 for(Long id : createFor) {
                 	redisListTemplate.rightPush(generateUserConversationsKey(id), conversation);
               	};
-              	messageService.cacheConversationMessage(messageService.mapToDTO(message));
+              	messageService.cacheConversationMessage(messageService.mapToDTO(message), savedEntity.getId());
             }
             else{
 
@@ -251,7 +251,7 @@ public class ConversationService {
 
             //Then get from DB
             conversations = mapToDTOs(repo.findByUserId(userId));
-
+            
             //And store in Cache
             if(!conversations.isEmpty()){
                 redisListTemplate.rightPushAll(userConversationsKey, conversations);

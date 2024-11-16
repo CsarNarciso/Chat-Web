@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MessageDTO implements Serializable {
     private UUID id;
-    private UUID conversationId;
     private Long senderId;
     private String content;
     private LocalDateTime sentAt;
