@@ -62,7 +62,7 @@ public class MessageService {
 
                 //Increment Unread Message in Cache
                 String unreadKey = generateParticipantConversationUnreadMessagesHashKey(senderId);
-                globalRedisTemplate.opsForHash().increment(unreadKey, conversationId, 1);
+                globalRedisTemplate.opsForHash().increment(unreadKey, conversationId.toString(), 1L);
 
                 //If conversation needs to be recreated for someone
                 if(!conversation.getRecreateFor().isEmpty()){
