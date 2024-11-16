@@ -310,7 +310,6 @@ public class MessageService {
     	entity.setId(UUID.randomUUID());
         entity.setRead(false);
         entity.setSentAt(LocalDateTime.now());
-        System.out.println("************MESSAGE CREATED ON M SERVICE*************"+entity);
         return entity;
     }
 
