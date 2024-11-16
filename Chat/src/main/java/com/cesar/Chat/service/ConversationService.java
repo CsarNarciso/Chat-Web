@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -16,6 +17,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+
 import com.cesar.Chat.dto.ConversationCreatedDTO;
 import com.cesar.Chat.dto.ConversationDTO;
 import com.cesar.Chat.dto.ConversationDeletedDTO;
@@ -135,8 +137,11 @@ public class ConversationService {
             List<Long> recreateFor = entity.getRecreateFor();
             recreateFor.add(participantId);
 
-            //If recreateFor matches participantsIds...
-            if(participantsIds.containsAll(recreateFor)){
+            //If participantIds matches recreateFor...
+            Collections.sort(recreateFor);
+            Collections.sort(participantsIds);
+            
+            if(recreateFor.equals(participantsIds)){
 
                 //Deletion is permanently
                 permanently = true;
