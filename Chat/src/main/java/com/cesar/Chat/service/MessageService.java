@@ -106,7 +106,7 @@ public class MessageService {
         //In DB
         repo.cleanConversationUnreadMessages(participantId, conversationId);
         //In Cache
-        globalRedisTemplate.opsForHash().put(key, conversationId, 0);
+        globalRedisTemplate.delete(key);
         return conversationId;
     }
 
