@@ -63,7 +63,7 @@ public class ConversationService {
                 
                 //Message reference
                 Message message = messageService.createEntityOnSendRequest(mapper.map(firstInteractionMessage, MessageForSendDTO.class));
-                savedEntity.addMessage(message);
+                newConversation.addMessage(message);
                 
                 //Store in DB (along with message)
                 savedEntity = repo.save(newConversation);
