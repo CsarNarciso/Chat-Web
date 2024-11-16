@@ -61,7 +61,7 @@ public class MessageService {
                         message);
 
                 //Increment Unread Message in Cache
-                String unreadKey = generateConversationParticipantUnreadMessagesKey(senderId);
+                String unreadKey = generateParticipantConversationUnreadMessagesHashKey(senderId);
                 globalRedisTemplate.opsForHash().increment(unreadKey, conversationId, 1);
 
                 //If conversation needs to be recreated for someone
@@ -102,7 +102,7 @@ public class MessageService {
 
 
     public UUID cleanConversationUnreadMessages(UUID conversationId, Long participantId){
-        String key = generateConversationParticipantUnreadMessagesKey(participantId);
+        String key = generateParticipantConversationUnreadMessagesHashKey(participantId);
         //In DB
         repo.cleanConversationUnreadMessages(participantId, conversationId);
         //In Cache
@@ -137,7 +137,7 @@ public class MessageService {
                 });
 
         //Unread Messages
-        String unreadKey = generateConversationParticipantUnreadMessagesKey(userId);
+        String unreadKey = generateParticipantConversationUnreadMessagesHashKey(userId);
         globalRedisTemplate.delete(unreadKey);
     }
 
@@ -148,10 +148,7 @@ public class MessageService {
         //If deletion is permanently (for all participants)...
         if(permanently){
 
-            //Delete conversation messages in DB
-            repo.deleteByConversationId(conversationId);
-
-            //In Cache
+            //Delete conversation messages in Cache
             String conversationMessagesKey = generateConversationMessagesKey(conversationId);
             redisTemplate.delete(conversationMessagesKey);
         }
@@ -160,7 +157,7 @@ public class MessageService {
         repo.cleanConversationUnreadMessages(participantId, conversationId);
 
         //And delete in Cache
-        String unreadKey = generateConversationParticipantUnreadMessagesKey(participantId);
+        String unreadKey = generateParticipantConversationUnreadMessagesHashKey(participantId);
         globalRedisTemplate.opsForHash().delete(unreadKey, conversationId.toString());
     }
 
@@ -259,7 +256,7 @@ public class MessageService {
 
     private Map<UUID, Integer> getUnreadMessages(Long participantId, List<UUID> conversationIds){
 
-        String key = generateConversationParticipantUnreadMessagesKey(participantId);
+        String key = generateParticipantConversationUnreadMessagesHashKey(participantId);
         Collection<Object> hashes = new HashSet<>(conversationIds.stream().map(UUID::toString).toList());
 
         Map<UUID, Integer> unreadMessages = new HashMap<>();
@@ -348,8 +345,8 @@ public class MessageService {
     private String generateConversationMessagesKey(UUID conversationId){
         return String.format("conversation:%s:messages", conversationId);
     }
-    private String generateConversationParticipantUnreadMessagesKey(Long participantId){
-        return String.format("conversation:%s:user:%s:unreadMessages", participantId);
+    private String generateParticipantConversationUnreadMessagesHashKey(Long participantId){
+        return String.format("user:%s:unreadMessages:conversation", participantId);
     }
     
 

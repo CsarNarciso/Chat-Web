@@ -2,7 +2,9 @@ package com.cesar.Chat.entity;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -20,6 +22,8 @@ import lombok.ToString;
 public class Message {
     @Id
     private UUID id;
+    @Column(name="sender_id")
+    private Long senderId;
     private String content;
     @Column(name="sent_at")
     @Temporal(TemporalType.TIMESTAMP)

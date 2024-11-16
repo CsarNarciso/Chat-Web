@@ -11,15 +11,19 @@ import com.cesar.Chat.entity.Conversation;
 @Repository
 public interface ConversationRepository extends JpaRepository<Conversation, UUID> {
 
-	@Query("SELECT c FROM Conversation c "
-			+ "JOIN conversations_participants cp ON c.id = cp.conversation_id "
-			+ "WHERE cp.user_id IN :userIds "
-			+ "GROUP BY c.id "
-			+ "HAVING COUNT(DISTINCT cp.user_id) = :userCount")
+	@Query(value="""
+			SELECT c.* FROM conversations c 
+			JOIN conversations_participants cp ON c.id = cp.conversation_id
+			WHERE cp.user_id IN :userIds
+			GROUP BY c.id 
+			HAVING COUNT(DISTINCT cp.user_id) = :userCount
+			""", nativeQuery=true)
 	Conversation findByUserIds(@Param("userIds") List<Long> userIds, @Param("userCount") int userCount);
 
-    @Query("SELECT c FROM Conversation c " +
-            "JOIN conversations_participants cp ON c.id = cp.conversation_id " +
-            "WHERE cp.user_id = :userId ")
+    @Query(value="""
+    		SELECT c.* FROM conversations c 
+            JOIN conversations_participants cp ON c.id = cp.conversation_id 
+            WHERE cp.user_id = :userId 
+            """, nativeQuery=true)
     List<Conversation> findByUserId(@Param("userId") Long userId);
 }

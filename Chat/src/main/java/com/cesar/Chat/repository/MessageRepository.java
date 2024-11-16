@@ -14,25 +14,23 @@ import jakarta.transaction.Transactional;
 @Repository
 public interface MessageRepository extends JpaRepository<Message, UUID> {
 
-    @Query("SELECT m.conversationId AS conversationId, COUNT(m) AS count FROM Message m " +
-            "WHERE m.senderId!=:senderId AND m.read=false AND m.conversationId IN :conversationIds " +
-            "GROUP BY m.conversationId")
+    @Query("SELECT m.conversation.id AS conversationId, COUNT(m) AS count FROM Message m " +
+            "WHERE m.senderId!=:senderId AND m.read=false AND m.conversation.id IN :conversationIds " +
+            "GROUP BY m.conversation.id")
     List<UnreadMessagesDTO> getUnreadMessages(@Param("senderId") Long senderId,
                                               @Param("conversationIds") List<UUID> conversationIds);
-
     @Modifying
     @Transactional
     @Query("UPDATE Message m SET m.read=true " +
-            "WHERE m.senderId!=:senderId AND m.conversationId=:conversationId")
+            "WHERE m.senderId!=:senderId AND m.conversation.id=:conversationId")
     void cleanConversationUnreadMessages(@Param("senderId") Long senderId,
                                          @Param("conversationId") UUID conversationId);
 
-    @Query("SELECT m FROM Message m WHERE m.conversationId IN :conversationIds")
+    @Query("SELECT m FROM Message m WHERE m.conversation.id IN :conversationIds")
     List<Message> findAllByConversationIds(@Param("conversationIds") List<UUID> conversationIds);
 
-    List<Message> findAllByConversationId(UUID conversationId);
+    @Query("SELECT m FROM Message m WHERE m.conversation.id = :conversationId")
+    List<Message> findAllByConversationId(@Param("conversationId") UUID conversationId);
 
     void deleteBySenderId(Long senderId);
-
-    void deleteByConversationId(UUID conversationId);
 }
