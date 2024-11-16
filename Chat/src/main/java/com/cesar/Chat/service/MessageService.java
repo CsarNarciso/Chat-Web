@@ -170,7 +170,7 @@ public class MessageService {
         Map<UUID, LastMessageDTO> lastMessages = getLastMessages(senderId, conversationIds);
 
         //Fetch unreadMessages
-        Map<UUID, Integer> unreadMessages =
+        Map<UUID, Long> unreadMessages =
                 getUnreadMessages(senderId, conversationIds);
 
         //If data exists
@@ -182,7 +182,7 @@ public class MessageService {
         		
         		UUID conversationId = conversation.getId();
         		
-        		Integer unreadMessagesCount = unreadMessages.get(conversationId);
+        		Long unreadMessagesCount = unreadMessages.get(conversationId);
         		
         		conversation.setUnreadMessagesCount( unreadMessagesCount != null ? unreadMessagesCount : 0 );
         		conversation.setLastMessage(lastMessages.get(conversationId));
@@ -254,12 +254,12 @@ public class MessageService {
 
 
 
-    private Map<UUID, Integer> getUnreadMessages(Long participantId, List<UUID> conversationIds){
+    private Map<UUID, Long> getUnreadMessages(Long participantId, List<UUID> conversationIds){
 
         String key = generateParticipantConversationUnreadMessagesHashKey(participantId);
         Collection<Object> hashes = new HashSet<>(conversationIds.stream().map(UUID::toString).toList());
 
-        Map<UUID, Integer> unreadMessages = new HashMap<>();
+        Map<UUID, Long> unreadMessages = new HashMap<>();
         List<Object> missingCacheCountsConversationIds = new ArrayList<>(conversationIds);
 
         //Fetch Conversation unread messages counts from Cache
@@ -270,7 +270,7 @@ public class MessageService {
             for(int i = 0; i < conversationIds.size(); i++){
 
                 UUID conversationId = conversationIds.get(i);
-                Integer count = (Integer) counts.get(i);
+                Long count = (Long) counts.get(i);
 
                 if(count!=null){
                     unreadMessages.put(conversationId, count);
@@ -284,13 +284,13 @@ public class MessageService {
 
             //Get from DB
             List<UnreadMessagesDTO> dbCounts = repo.getUnreadMessages(participantId, conversationIds);
-            Map<String, Integer> cacheableCounts = new HashMap<>();
+            Map<String, Long> cacheableCounts = new HashMap<>();
 
             dbCounts
                     .forEach(unreadMessage -> {
 
                         UUID conversationId = unreadMessage.getConversationId();
-                        Integer count = unreadMessage.getCount();
+                        Long count = unreadMessage.getCount();
 
                         unreadMessages.put(conversationId, count);
                         cacheableCounts.put(conversationId.toString(), count);

@@ -16,5 +16,5 @@ public class ConversationViewDTO {
     private LocalDateTime createdAt;
     private ConversationRecipientDTO recipient;
     private LastMessageDTO lastMessage;
-    private Integer unreadMessagesCount;
+    private Long unreadMessagesCount;
 }
