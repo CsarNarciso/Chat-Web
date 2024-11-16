@@ -20,10 +20,6 @@ public interface ConversationRepository extends JpaRepository<Conversation, UUID
 			""", nativeQuery=true)
 	Conversation findByUserIds(@Param("userIds") List<Long> userIds, @Param("userCount") int userCount);
 
-    @Query(value="""
-    		SELECT c FROM Conversation c 
-            JOIN FETCH c.participants p
-            WHERE :userId MEMBER OF c.participants
-            """)
+    @Query("SELECT c FROM Conversation c WHERE :userId MEMBER OF c.participants")
     List<Conversation> findByUserId(@Param("userId") Long userId);
 }
