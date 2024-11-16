@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.modelmapper.ModelMapper;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -17,7 +16,6 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-
 import com.cesar.Chat.dto.ConversationCreatedDTO;
 import com.cesar.Chat.dto.ConversationDTO;
 import com.cesar.Chat.dto.ConversationDeletedDTO;
@@ -87,7 +85,6 @@ public class ConversationService {
             }
         }
         
-        
         //For everyone involved in the creation/recreation
         for(Long participantId : createFor){
                 	
@@ -113,9 +110,10 @@ public class ConversationService {
 
     public List<ConversationViewDTO> load(Long userId){
     	
+    	//If there is content
     	List<Conversation> conversations = getAllByUserId(userId);
     	return (!conversations.isEmpty()) 
-    			? composeConversationsData(conversations, userId) 
+    			? composeConversationsData(conversations, userId) //Compose views
     			: null;
     }
 
@@ -248,7 +246,6 @@ public class ConversationService {
 								.stream()
 								.filter(Objects::nonNull)
 								.toList();
-								
         //Check for missing cache
         if(conversations.isEmpty()){
 

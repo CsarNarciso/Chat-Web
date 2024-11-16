@@ -1,17 +1,24 @@
 package com.cesar.Chat.controller;
 
-import com.cesar.Chat.dto.MessageForInitDTO;
-import com.cesar.Chat.service.ConversationService;
+import java.util.List;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import java.util.UUID;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import com.cesar.Chat.dto.ConversationViewDTO;
+import com.cesar.Chat.dto.MessageForInitDTO;
+import com.cesar.Chat.service.ConversationService;
 
 @RestController
 @RequestMapping("/conversations")
 public class ConversationController {
-
 
     @PostMapping
     public void onFirstInteraction(@RequestBody MessageForInitDTO initMessage){
@@ -20,9 +27,12 @@ public class ConversationController {
 
     @GetMapping(value = "/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> onLoad(@PathVariable Long userId){
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(service.load(userId));
+    	List<ConversationViewDTO> conversations = service.load(userId);
+    	return conversations!=null 
+    			? ResponseEntity
+    					.status(HttpStatus.OK)
+    					.body(conversations)
+    			: ResponseEntity.notFound().build();
     }
 
     @DeleteMapping(value = "/{conversationId}/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
