@@ -37,9 +37,14 @@ public class ConversationController {
 
     @DeleteMapping(value = "/{conversationId}/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> onDelete(@PathVariable UUID conversationId, @PathVariable Long userId){
-    	return service.delete(conversationId, userId) 
-    			? ResponseEntity.status(HttpStatus.NOT_FOUND).build() 
-    			: ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    	
+    	Object permanently = service.delete(conversationId, userId); 
+    	HttpStatus status = HttpStatus.NOT_FOUND;
+    	
+    	if (permanently!=null && !(boolean)permanently) {
+    		status = HttpStatus.NO_CONTENT;
+    	}
+    	return ResponseEntity.status(status).build();
     }
 
 

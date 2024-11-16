@@ -40,11 +40,10 @@ public class ConversationService {
         if(conversation==null){
 
             //Get message participant IDs
-            List<Long> userIds = Stream
-                    .of(
-                            firstInteractionMessage.getSenderId(),
-                            firstInteractionMessage.getRecipientId())
-                    .toList();
+            List<Long> userIds = new ArrayList<>(Stream.of(
+            		firstInteractionMessage.getSenderId(),
+                    firstInteractionMessage.getRecipientId())
+    			.toList());
 
             //Look for an existent conversation between both users
             Conversation existentConversation = getByUserIds(userIds, userIds.size());
@@ -57,6 +56,7 @@ public class ConversationService {
                 
                 Conversation newConversation = new Conversation();
                 newConversation.setId(UUID.randomUUID());
+                Collections.sort(userIds);
                 newConversation.setParticipants(userIds);
                 newConversation.setCreatedAt(LocalDateTime.now());
                 newConversation.setRecreateFor(Collections.emptyList());
@@ -119,7 +119,7 @@ public class ConversationService {
 
 
 
-    public boolean delete(UUID conversationId, Long participantId){
+    public Object delete(UUID conversationId, Long participantId){
 
         //Look for conversation
         Conversation entity = getById(conversationId);
@@ -133,12 +133,12 @@ public class ConversationService {
 
             //Add userId to conversation recreateFor list
             List<Long> recreateFor = entity.getRecreateFor();
-            recreateFor.add(participantId);
-
-            //If participantIds matches recreateFor...
-            Collections.sort(recreateFor);
-            Collections.sort(participantsIds);
+            if(!recreateFor.contains(participantId)) {
+            	recreateFor.add(participantId);
+            	Collections.sort(recreateFor);
+            }
             
+            //If participantIds matches recreateFor...
             if(recreateFor.equals(participantsIds)){
 
                 //Deletion is permanently
@@ -169,19 +169,21 @@ public class ConversationService {
                 String userConversationsKey = generateUserConversationsKey(participantId);
                 redisTemplate.delete(userConversationsKey);
             }
-        }
-        //Ask Message service to delete deleted conversation messages/unread counts
-        messageService.onConversationDeleted(conversationId, participantId, permanently);
+            
+            
+            //Ask Message service to delete deleted conversation messages/unread counts
+            messageService.onConversationDeleted(conversationId, participantId, permanently);
 
-        //Event publisher - ConversationDeleted
-        kafkaTemplate.send("ConversationDeleted", ConversationDeletedDTO
-                .builder()
-                .id(conversationId)
-                .participantId(participantId)
-                .permanently(permanently)
-                .build());
-        
-        return permanently;
+            //Event publisher - ConversationDeleted
+            kafkaTemplate.send("ConversationDeleted", ConversationDeletedDTO
+                    .builder()
+                    .id(conversationId)
+                    .participantId(participantId)
+                    .permanently(permanently)
+                    .build());
+            return permanently;
+        }
+        return null;
     }
 
 
