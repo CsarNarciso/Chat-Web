@@ -205,7 +205,13 @@ public class MessageService {
                 .forEach(id -> {
 
                     String conversationMessagesKey = generateConversationMessagesKey(id);
-                    MessageDTO cacheMessage = redisTemplate.opsForList().range(conversationMessagesKey, -1, -1).getFirst();
+                    
+                    List<MessageDTO> lastMessageResult = redisTemplate.opsForList().range(conversationMessagesKey, -1, -1);
+                    MessageDTO cacheMessage = new MessageDTO();
+                    
+                    if(!lastMessageResult.isEmpty()) {
+                    	cacheMessage = lastMessageResult.getLast();
+                    }
                     LastMessageDTO lastMessage = cacheMessage!=null ? mapper.map(cacheMessage, LastMessageDTO.class) : null;
 
                     if(lastMessage!=null){
