@@ -21,9 +21,9 @@ public interface ConversationRepository extends JpaRepository<Conversation, UUID
 	Conversation findByUserIds(@Param("userIds") List<Long> userIds, @Param("userCount") int userCount);
 
     @Query(value="""
-    		SELECT c.* FROM conversations c 
-            JOIN conversations_participants cp ON c.id = cp.conversation_id 
-            WHERE cp.user_id = :userId 
-            """, nativeQuery=true)
+    		SELECT c FROM Conversation c 
+            JOIN FETCH c.participants p
+            WHERE :userId MEMBER OF c.participants
+            """)
     List<Conversation> findByUserId(@Param("userId") Long userId);
 }

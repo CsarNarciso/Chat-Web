@@ -35,7 +35,7 @@ public class Conversation{
     @Column(name="recreate_for")
     private List<Long> recreateFor;
     
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name="conversations_participants", joinColumns = @JoinColumn(name="conversation_id"))
     @Column(name="user_id")
     private List<Long> participants = new ArrayList<>();
