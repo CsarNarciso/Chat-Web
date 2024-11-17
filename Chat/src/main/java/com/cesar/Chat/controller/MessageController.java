@@ -12,17 +12,16 @@ import java.util.UUID;
 @RequestMapping("/messages")
 public class MessageController {
 
-
     @PostMapping
     public void onSend(@RequestBody MessageForSendDTO message){
         service.send(message);
     }
 
     @GetMapping(value = "/{conversationId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> onLoad(@PathVariable String conversationId) {
+    public ResponseEntity<?> onLoad(@PathVariable UUID conversationId) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(service.loadConversationMessages(UUID.fromString(conversationId)));
+                .body(service.loadConversationMessages(conversationId));
     }
 
     @PutMapping(value = "/clean.unread/{conversationId}/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
