@@ -26,10 +26,8 @@ public class MessageController {
     }
 
     @PutMapping(value = "/clean.unread/{conversationId}/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> onCleanUnread(@PathVariable UUID conversationId, @PathVariable Long userId){
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(service.cleanConversationUnreadMessages(conversationId, userId));
+    public void onCleanUnread(@PathVariable UUID conversationId, @PathVariable Long userId){
+    	service.cleanConversationUnreadMessages(conversationId, userId);
     }
 
 

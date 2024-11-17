@@ -25,6 +25,8 @@ import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.entity.Message;
 import com.cesar.Chat.repository.MessageRepository;
 
+import jakarta.transaction.Transactional;
+
 
 @Service
 public class MessageService {
@@ -101,13 +103,12 @@ public class MessageService {
 
 
 
-    public UUID cleanConversationUnreadMessages(UUID conversationId, Long participantId){
+    public void cleanConversationUnreadMessages(UUID conversationId, Long participantId){
         String key = generateParticipantConversationUnreadMessagesHashKey(participantId);
         //In DB
         repo.cleanConversationUnreadMessages(participantId, conversationId);
         //In Cache
         globalRedisTemplate.delete(key);
-        return conversationId;
     }
 
 
@@ -189,8 +190,6 @@ public class MessageService {
         	});
         }
     }
-
-
 
 
 
