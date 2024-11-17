@@ -9,11 +9,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.Cursor;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+
 import com.cesar.Chat.dto.ConversationDTO;
 import com.cesar.Chat.dto.ConversationViewDTO;
 import com.cesar.Chat.dto.LastMessageDTO;
@@ -24,8 +30,6 @@ import com.cesar.Chat.dto.UnreadMessagesDTO;
 import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.entity.Message;
 import com.cesar.Chat.repository.MessageRepository;
-
-import jakarta.transaction.Transactional;
 
 
 @Service
@@ -80,22 +84,33 @@ public class MessageService {
 
     public List<MessageDTO> loadConversationMessages(UUID conversationId) {
 
-        String key = generateConversationMessagesKey(conversationId);
+        String hashKeyPattern = generateConversationMessageHashKey(conversationId, null);
+        List<String> messageKeys = scanForHashKeys(hashKeyPattern);
 
         //Try to first fetch from Cache
-        List<MessageDTO> cacheMessages = 
-				redisTemplate.opsForList().range(key, 0, -1)
-					.stream()
-					.filter(Objects::nonNull)
-					.toList();
+        List<MessageDTO> cacheMessages = redisTemplate.executePipelined((RedisCallback<?>) connection -> {
+            messageKeys.forEach(key -> connection.hGetAll(key.getBytes())); // Fetch hashes
+            return null;
+        })
+        	.stream()
+        	.map(messageHashesAsMap -> mapper.map(messageHashesAsMap, MessageDTO.class))
+        	.toList();
 					
         //If not in Cache
         if (cacheMessages.isEmpty()){
+        	
             //, then from DB
             cacheMessages = mapToDTOs(repo.findAllByConversationId(conversationId));
+            
             //And store in Cache
 			if(!cacheMessages.isEmpty()){
-				redisTemplate.opsForList().rightPushAll(key, cacheMessages);
+				redisTemplate.executePipelined((RedisCallback<?>) connection -> {
+					cacheMessages.forEach(message -> {
+						hashKeyPattern.replace("*", message.getId().toString());
+						connection.hMSet(hashKeyPattern.getBytes(), (Map<byte[], byte[]>) mapper.map(message, Map.class));
+					});
+					return null;
+				});
 			}
         }
         return cacheMessages;
@@ -345,13 +360,42 @@ public class MessageService {
     
     
     
-    
-    private String generateConversationMessagesKey(UUID conversationId){
-        return String.format("conversation:%s:messages", conversationId);
+    private String generateConversationMessageHashKey(UUID conversationId, UUID messageId){
+        return String.format("conversation:%s:message:%s", 
+        		conversationId==null ? "*" : conversationId, 
+        		messageId==null ? "*" : messageId);
     }
     private String generateParticipantConversationUnreadMessagesHashKey(Long participantId){
         return String.format("user:%s:unreadMessages:conversation", participantId);
     }
+    
+    private List<String> scanForHashKeys(String pattern) {
+        
+    	List<String> keys = new ArrayList<>();
+        
+        //Use a RedisConnection for SCAN
+        RedisConnection redisConnection = null;
+        try {
+        	redisConnection = redisTemplate.getConnectionFactory().getConnection();
+        	
+            //Configure scan behavior (options)
+            ScanOptions options = ScanOptions.scanOptions()
+                    .match(pattern)
+                    .count(100) // Number of keys per batch
+                    .build();
+
+            //Get a 'cursor' to iterate over the keys
+            Cursor<byte[]> cursor = redisConnection.scan(options);
+
+            while (cursor.hasNext()) {
+                keys.add(new String(cursor.next())); // Add key to the result list
+            }
+		} finally {
+			redisConnection.close();
+		}
+        return keys;
+    }
+    
     
 
     public MessageService(MessageRepository repo, @Lazy ConversationService conversationService, RedisTemplate<String, MessageDTO> redisTemplate, RedisTemplate<String, Object> globalRedisTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
