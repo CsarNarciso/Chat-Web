@@ -15,19 +15,18 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfiguration {
 
 	@Bean
-    public JedisConnectionFactory connectionFactory() {
+    JedisConnectionFactory connectionFactory() {
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
-        configuration.setHostName("localhost");
-        configuration.setPort(6379);
+        configuration.setHostName(REDIS_HOSTNAME);
+        configuration.setPort(REDIS_PORT);
         return new JedisConnectionFactory(configuration);
     }
 
     @Bean
-    public RedisTemplate<String, Object> template() {
+    RedisTemplate<String, Object> template() {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory());
         template.setKeySerializer(new StringRedisSerializer());
-        template.setHashKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new JdkSerializationRedisSerializer());
         template.setValueSerializer(new JdkSerializationRedisSerializer());
         template.setEnableTransactionSupport(true);
@@ -41,5 +40,4 @@ public class RedisConfiguration {
 
     @Value("${redis.port}")
     private Integer REDIS_PORT;
-//    private final ObjectMapper mapper;
 }
