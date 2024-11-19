@@ -12,11 +12,6 @@ import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.redis.connection.RedisConnection;
-import org.springframework.data.redis.core.Cursor;
-import org.springframework.data.redis.core.RedisCallback;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +33,7 @@ public class MessageService {
 
     public void send(MessageForSendDTO messageRequest){
 
-        Conversation conversation = conversationService.getById(messageRequest.getConversationId());
+        Conversation conversation = new Conversation();// conversationService.getById(messageRequest.getConversationId());
 
         //If conversation exists,
         if(conversation!=null){
@@ -66,9 +61,9 @@ public class MessageService {
                         String.format("/topic/conversation/%s",conversationId),
                         message);
 
-                //Increment Unread Message in Cache
-                String unreadKey = generateParticipantConversationUnreadMessagesHashKey(senderId);
-                globalRedisTemplate.opsForHash().increment(unreadKey, conversationId.toString(), 1L);
+//                //Increment Unread Message in Cache
+//                String unreadKey = generateParticipantConversationUnreadMessagesHashKey(senderId);
+//                globalRedisTemplate.opsForHash().increment(unreadKey, conversationId.toString(), 1L);
 
                 //If conversation needs to be recreated for someone
                 if(!conversation.getRecreateFor().isEmpty()){
@@ -84,17 +79,18 @@ public class MessageService {
 
     public List<MessageDTO> loadConversationMessages(UUID conversationId) {
 
-        String hashKeyPattern = generateConversationMessageHashKey(conversationId, null);
-        List<String> messageKeys = scanForHashKeys(hashKeyPattern);
+        String hashKeyPattern = generateConversationMessageHashKey(conversationId);
+//        List<String> messageKeys = scanForHashKeys(hashKeyPattern);
 
         //Try to first fetch from Cache
-        List<MessageDTO> cacheMessages = redisTemplate.executePipelined((RedisCallback<?>) connection -> {
-            messageKeys.forEach(key -> connection.hGetAll(key.getBytes())); // Fetch hashes
-            return null;
-        })
-        	.stream()
-        	.map(messageHashesAsMap -> mapper.map(messageHashesAsMap, MessageDTO.class))
-        	.toList();
+        List<MessageDTO> cacheMessages = new ArrayList<>();
+//        List<MessageDTO> cacheMessages = redisTemplate.executePipelined((RedisCallback<?>) connection -> {
+//            messageKeys.forEach(key -> connection.hGetAll(key.getBytes())); // Fetch hashes
+//            return null;
+//        })
+//        	.stream()
+//        	.map(messageHashesAsMap -> mapper.map(messageHashesAsMap, MessageDTO.class))
+//        	.toList();
 					
         //If not in Cache
         if (cacheMessages.isEmpty()){
@@ -102,16 +98,16 @@ public class MessageService {
             //, then from DB
             cacheMessages = mapToDTOs(repo.findAllByConversationId(conversationId));
             
-            //And store in Cache
-			if(!cacheMessages.isEmpty()){
-				redisTemplate.executePipelined((RedisCallback<?>) connection -> {
-					cacheMessages.forEach(message -> {
-						hashKeyPattern.replace("*", message.getId().toString());
-						connection.hMSet(hashKeyPattern.getBytes(), (Map<byte[], byte[]>) mapper.map(message, Map.class));
-					});
-					return null;
-				});
-			}
+//            //And store in Cache
+//			if(!cacheMessages.isEmpty()){
+//				redisTemplate.executePipelined((RedisCallback<?>) connection -> {
+//					cacheMessages.forEach(message -> {
+//						hashKeyPattern.replace("*", message.getId().toString());
+//						connection.hMSet(hashKeyPattern.getBytes(), (Map<byte[], byte[]>) mapper.map(message, Map.class));
+//					});
+//					return null;
+//				});
+//			}
         }
         return cacheMessages;
     }
@@ -122,8 +118,8 @@ public class MessageService {
         String key = generateParticipantConversationUnreadMessagesHashKey(participantId);
         //In DB
         repo.cleanConversationUnreadMessages(participantId, conversationId);
-        //In Cache
-        globalRedisTemplate.delete(key);
+//        //In Cache
+//        globalRedisTemplate.delete(key);
     }
 
 
@@ -138,23 +134,23 @@ public class MessageService {
                 .forEach(conversationId -> {
 
                     //For each user's conversation...
-                    String messageKey = generateConversationMessagesKey(conversationId);
+                    String messageKey = generateConversationMessageHashKey(conversationId);
 
                     //Get actual conversation messages list from Cache to filter out user messages
-                    List<MessageDTO> cacheMessages = redisTemplate.opsForList().range(messageKey, 0, -1)
-							.stream()
+                    List<MessageDTO> cacheMessages = new ArrayList<>(); //redisTemplate.opsForList().range(messageKey, 0, -1)
+							cacheMessages.stream()
 							.filter(Objects::nonNull)
                             .filter(m -> !m.getSenderId().equals(userId))
                             .toList();
 
-                    //And update in Cache
-                    redisTemplate.delete(messageKey);
-                    redisTemplate.opsForList().rightPushAll(messageKey, cacheMessages);
+//                    And update in Cache
+//                    redisTemplate.delete(messageKey);
+//                    redisTemplate.opsForList().rightPushAll(messageKey, cacheMessages);
                 });
 
         //Unread Messages
         String unreadKey = generateParticipantConversationUnreadMessagesHashKey(userId);
-        globalRedisTemplate.delete(unreadKey);
+//        globalRedisTemplate.delete(unreadKey);
     }
 
 
@@ -165,8 +161,8 @@ public class MessageService {
         if(permanently){
 
             //Delete conversation messages in Cache
-            String conversationMessagesKey = generateConversationMessagesKey(conversationId);
-            redisTemplate.delete(conversationMessagesKey);
+            String conversationMessagesKey = generateConversationMessageHashKey(conversationId);
+//            redisTemplate.delete(conversationMessagesKey);
         }
 
         //Mark unread messages in DB as read (for participant)
@@ -174,7 +170,7 @@ public class MessageService {
 
         //And delete in Cache
         String unreadKey = generateParticipantConversationUnreadMessagesHashKey(participantId);
-        globalRedisTemplate.opsForHash().delete(unreadKey, conversationId.toString());
+//        globalRedisTemplate.opsForHash().delete(unreadKey, conversationId.toString());
     }
 
 
@@ -218,9 +214,9 @@ public class MessageService {
         conversationIds
                 .forEach(id -> {
 
-                    String conversationMessagesKey = generateConversationMessagesKey(id);
+                    String conversationMessagesKey = generateConversationMessageHashKey(id);
                     
-                    List<MessageDTO> lastMessageResult = redisTemplate.opsForList().range(conversationMessagesKey, -1, -1);
+                    List<MessageDTO> lastMessageResult = new ArrayList<>(); //redisTemplate.opsForList().range(conversationMessagesKey, -1, -1);
                     MessageDTO cacheMessage = new MessageDTO();
                     
                     if(!lastMessageResult.isEmpty()) {
@@ -256,12 +252,12 @@ public class MessageService {
                         if(!missingConversationMessages.isEmpty()) {
                         	
                         	//Store in Cache
-                        	String conversationMessagesKey = generateConversationMessagesKey(id);
+                        	String conversationMessagesKey = generateConversationMessageHashKey(id);
                         	
-                            redisTemplate.opsForList().rightPushAll(
-                                    conversationMessagesKey,
-                                    mapToDTOs(missingConversationMessages));
-                            
+//                            redisTemplate.opsForList().rightPushAll(
+//                                    conversationMessagesKey,
+//                                    mapToDTOs(missingConversationMessages));
+//                            
                             //Get last message
                             lastMessages.put(id, 
     							mapper.map(missingConversationMessages.getLast(), LastMessageDTO.class));
@@ -282,7 +278,7 @@ public class MessageService {
         List<Object> missingCacheCountsConversationIds = new ArrayList<>(conversationIds);
 
         //Fetch Conversation unread messages counts from Cache
-        List<Object> counts = globalRedisTemplate.opsForHash().multiGet(key, hashes);
+        List<Object> counts = new ArrayList<>(); //globalRedisTemplate.opsForHash().multiGet(key, hashes);
 
         if(!counts.isEmpty()){
 
@@ -316,7 +312,7 @@ public class MessageService {
                     });
 
             //And store in Cache
-            globalRedisTemplate.opsForHash().putAll(key, cacheableCounts);
+//            globalRedisTemplate.opsForHash().putAll(key, cacheableCounts);
         }
         return unreadMessages;
     }
@@ -334,8 +330,8 @@ public class MessageService {
 
     public void cacheConversationMessage(MessageDTO message, UUID conversationId) {
     	
-        String messagesKey = generateConversationMessagesKey(conversationId);
-        redisTemplate.opsForList().rightPush(messagesKey, message);
+        String messagesKey = generateConversationMessageHashKey(conversationId);
+//        redisTemplate.opsForList().rightPush(messagesKey, message);
     }
     
     
@@ -360,57 +356,56 @@ public class MessageService {
     
     
     
-    private String generateConversationMessageHashKey(UUID conversationId, UUID messageId){
-        return String.format("conversation:%s:message:%s", 
-        		conversationId==null ? "*" : conversationId, 
-        		messageId==null ? "*" : messageId);
+    private String generateConversationMessageHashKey(UUID conversationId){
+        return String.format("conversation:%s", 
+        		conversationId==null ? "*" : conversationId); 
     }
     private String generateParticipantConversationUnreadMessagesHashKey(Long participantId){
         return String.format("user:%s:unreadMessages:conversation", participantId);
     }
     
-    private List<String> scanForHashKeys(String pattern) {
-        
-    	List<String> keys = new ArrayList<>();
-        
-        //Use a RedisConnection for SCAN
-        RedisConnection redisConnection = null;
-        try {
-        	redisConnection = redisTemplate.getConnectionFactory().getConnection();
-        	
-            //Configure scan behavior (options)
-            ScanOptions options = ScanOptions.scanOptions()
-                    .match(pattern)
-                    .count(100) // Number of keys per batch
-                    .build();
-
-            //Get a 'cursor' to iterate over the keys
-            Cursor<byte[]> cursor = redisConnection.scan(options);
-
-            while (cursor.hasNext()) {
-                keys.add(new String(cursor.next())); // Add key to the result list
-            }
-		} finally {
-			redisConnection.close();
-		}
-        return keys;
-    }
+//    private List<String> scanForHashKeys(String pattern) {
+//        
+//    	List<String> keys = new ArrayList<>();
+//        
+//        //Use a RedisConnection for SCAN
+//        RedisConnection redisConnection = null;
+//        try {
+//        	redisConnection = redisTemplate.getConnectionFactory().getConnection();
+//        	
+//            //Configure scan behavior (options)
+//            ScanOptions options = ScanOptions.scanOptions()
+//                    .match(pattern)
+//                    .count(100) // Number of keys per batch
+//                    .build();
+//
+//            //Get a 'cursor' to iterate over the keys
+//            Cursor<byte[]> cursor = redisConnection.scan(options);
+//
+//            while (cursor.hasNext()) {
+//                keys.add(new String(cursor.next())); // Add key to the result list
+//            }
+//		} finally {
+//			redisConnection.close();
+//		}
+//        return keys;
+//    }
     
     
 
-    public MessageService(MessageRepository repo, @Lazy ConversationService conversationService, RedisTemplate<String, MessageDTO> redisTemplate, RedisTemplate<String, Object> globalRedisTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
+    public MessageService(MessageRepository repo, @Lazy ConversationService conversationService, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
         this.repo = repo;
         this.conversationService = conversationService;
-        this.redisTemplate = redisTemplate;
-        this.globalRedisTemplate = globalRedisTemplate;
+//        this.redisTemplate = redisTemplate;
+//        this.globalRedisTemplate = globalRedisTemplate;
         this.webSocketTemplate = webSocketTemplate;
         this.mapper = mapper;
     }
 
     private final MessageRepository repo;
     private final ConversationService conversationService;
-    private final RedisTemplate<String, MessageDTO> redisTemplate;
-    private final RedisTemplate<String, Object> globalRedisTemplate;
+//    private final RedisTemplate<String, MessageDTO> redisTemplate;
+//    private final RedisTemplate<String, Object> globalRedisTemplate;
     private final SimpMessagingTemplate webSocketTemplate;
     private final ModelMapper mapper;
 }

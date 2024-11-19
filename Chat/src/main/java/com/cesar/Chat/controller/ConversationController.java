@@ -2,6 +2,7 @@ package com.cesar.Chat.controller;
 
 import java.util.List;
 import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import com.cesar.Chat.dto.ConversationViewDTO;
 import com.cesar.Chat.dto.MessageForInitDTO;
 import com.cesar.Chat.service.ConversationService;
@@ -19,7 +21,7 @@ import com.cesar.Chat.service.ConversationService;
 @RestController
 @RequestMapping("/conversations")
 public class ConversationController {
-
+	
     @PostMapping
     public void onFirstInteraction(@RequestBody MessageForInitDTO initMessage){
         service.create(null, initMessage);
