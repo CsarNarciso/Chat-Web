@@ -26,7 +26,7 @@ import com.cesar.Chat.entity.Message;
 @Service
 public class ConversationService {
 	
-	public ConversationDTO create(ConversationDTO conversation, MessageForInitDTO firstInteractionMessage){
+	public ConversationDTO create(ConversationDTO conversation, MessageForInitDTO firstInteractionMessage) {
 	
 		List<Long> createFor = new ArrayList<>();
 		Conversation savedEntity = new Conversation();
@@ -146,7 +146,7 @@ public class ConversationService {
 		    }
 		    
 		    //Ask Message service to delete deleted conversation's messages/unread counts
-		    messageService.onConversationDeleted(conversationId, participantId, permanently);
+		    messageService.onConversationDeleted(conversationId, participantId);
 		
 		    //Event publisher - ConversationDeleted
 		    kafkaTemplate.send("ConversationDeleted", ConversationDeletedDTO
@@ -170,8 +170,10 @@ public class ConversationService {
 		//For each conversation
 		for (int i = 0; i < conversations.size(); i++){
 		
+			ConversationDTO conversation = conversations.get(i);
+			
 		    //Get recipient reference (conversation face for sender)
-		    Long recipientId = conversations.get(i).getParticipants()
+		    Long recipientId = conversation.getParticipants()
 		            .stream()
 		            .filter(id -> !id.equals(conversationViewOwnerId))
 		            .findFirst().orElse(null);
@@ -183,6 +185,11 @@ public class ConversationService {
 		                    .builder()
 		                    .userId(recipientId)
 		                    .build());
+		    
+		    //Set recreate for someone
+		    if(!conversation.getRecreateFor().isEmpty()) {
+		    	conversationViews.get(i).setRecreateForSomeone(true);
+		    }
 		}
 		//Inject recipients' user details
 		userService.injectConversationsParticipantsDetails(conversationViews, recipientIds);
@@ -199,14 +206,8 @@ public class ConversationService {
 	
 	@KafkaListener(topics = "UserDeleted", groupId = "${spring.kafka.consumer.group-id}")
 	public void onUserDeleted(Long id){
-	
-//		List<Conversation> conversations = service.getAllByUserId(id);
-//		List<UUID> conversationsIds = mapToIds(conversations);
-//		//Invalidate user conversations in cache
-//		//redisTemplate.delete(userConversationsKey);
-//		
-//		//Invalidate user messages and unread counts
-//		messageService.onUserDeleted(id, conversationsIds);
+		//Ask message service to delete messages and unread counts
+		messageService.onUserDeleted(id);
 	}
 	
 	

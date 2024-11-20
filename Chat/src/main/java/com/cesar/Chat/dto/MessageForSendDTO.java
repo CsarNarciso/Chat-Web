@@ -8,4 +8,5 @@ public class MessageForSendDTO {
     private UUID conversationId;
     private Long senderId;
     private String content;
+    private boolean recreateForSomeone;
 }

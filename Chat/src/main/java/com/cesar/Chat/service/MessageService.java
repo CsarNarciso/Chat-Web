@@ -11,14 +11,12 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import com.cesar.Chat.dto.ConversationDTO;
 import com.cesar.Chat.dto.ConversationViewDTO;
 import com.cesar.Chat.dto.LastMessageDTO;
 import com.cesar.Chat.dto.MessageDTO;
 import com.cesar.Chat.dto.MessageForInitDTO;
 import com.cesar.Chat.dto.MessageForSendDTO;
 import com.cesar.Chat.dto.UnreadMessagesDTO;
-import com.cesar.Chat.entity.Conversation;
 import com.cesar.Chat.entity.Message;
 
 
@@ -28,37 +26,23 @@ public class MessageService {
 
     public void send(MessageForSendDTO messageRequest) {
 
-        Conversation conversation = conversationDataService.getById(messageRequest.getConversationId());
+        UUID conversationId = messageRequest.getConversationId();
 
-        //If conversation exists,
-        if(conversation!=null){
+    	//Save
+    	Message entity = mapper.map(messageRequest, Message.class);
+    	entity.setId(UUID.randomUUID());
+        entity.setRead(false);
+        entity.setSentAt(LocalDateTime.now());
+    	MessageDTO message = dataService.save(entity, conversationId);
+    	
+        //Send
+        webSocketTemplate.convertAndSend(
+                String.format("/topic/conversation/%s", conversationId),
+                message);
 
-            Long senderId = messageRequest.getSenderId();
-            UUID conversationId = conversation.getId();
-
-            //and user belongs to
-            if(conversation.getParticipants()
-                    .contains(senderId)){
-
-            	//Save
-            	Message entity = mapper.map(messageRequest, Message.class);
-            	entity.setId(UUID.randomUUID());
-                entity.setRead(false);
-                entity.setSentAt(LocalDateTime.now());
-            	MessageDTO message = dataService.save(entity, conversationId);
-            	
-                //Send
-                webSocketTemplate.convertAndSend(
-                        String.format("/topic/conversation/%s", conversationId),
-                        message);
-
-                //If conversation needs to be recreated for someone
-                if(!conversation.getRecreateFor().isEmpty()){
-                    conversationService.create(
-                            mapper.map(conversation, ConversationDTO.class),
-                            mapper.map(messageRequest, MessageForInitDTO.class));
-                }
-            }
+        //Check if conversation needs to be recreated for someone
+        if(messageRequest.isRecreateForSomeone()) {
+            conversationService.create(null, mapper.map(messageRequest, MessageForInitDTO.class));
         }
     }
 
@@ -82,8 +66,8 @@ public class MessageService {
     	dataService.markMessagesAsRead(conversationId, participantId);
     }
 
-    public void onUserDeleted(Long userId, List<UUID> conversationIds) {
-    	dataService.deleteByUserId(userId);
+    public void onUserDeleted(Long id) {
+    	dataService.deleteByUserId(id);
     }
 
     public void injectConversationsMessagesDetails(List<ConversationViewDTO> conversations,
@@ -158,17 +142,15 @@ public class MessageService {
     
     
 
-    public MessageService(MessageDataService dataService, @Lazy ConversationService conversationService, ConversationDataAccessService conversationDataService, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
+    public MessageService(MessageDataService dataService, @Lazy ConversationService conversationService, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
         this.dataService = dataService;
     	this.conversationService = conversationService;
-    	this.conversationDataService = conversationDataService;
         this.webSocketTemplate = webSocketTemplate;
         this.mapper = mapper;
     }
 
     private final MessageDataService dataService;
     private final ConversationService conversationService;
-    private final ConversationDataAccessService conversationDataService;
     private final SimpMessagingTemplate webSocketTemplate;
     private final ModelMapper mapper;
 }

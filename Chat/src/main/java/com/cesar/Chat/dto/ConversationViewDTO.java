@@ -2,6 +2,7 @@ package com.cesar.Chat.dto;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,4 +18,5 @@ public class ConversationViewDTO {
     private ConversationRecipientDTO recipient;
     private LastMessageDTO lastMessage;
     private Long unreadMessagesCount;
+    private boolean recreateForSomeone;
 }
