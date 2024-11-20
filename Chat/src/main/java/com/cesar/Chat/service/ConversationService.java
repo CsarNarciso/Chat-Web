@@ -99,8 +99,7 @@ public class ConversationService {
 	
 	
 	public List<ConversationViewDTO> load(Long userId){
-		List<ConversationDTO> conversations = new ArrayList<>();
-		conversations = dataService.getAllByUserId(userId);
+		List<ConversationDTO> conversations = dataService.getAllByUserId(userId);
 		return (!conversations.isEmpty()) 
 				? composeConversationsData(conversations, userId) //Compose views
 				: null;
@@ -128,7 +127,7 @@ public class ConversationService {
 		    }
 		    
 		    //If participantIds matches recreateFor...
-		    if(recreateFor.equals(participantsIds)){
+		    if(recreateFor.containsAll(participantsIds)){
 		
 		        //Deletion is permanently
 		        permanently = true;
