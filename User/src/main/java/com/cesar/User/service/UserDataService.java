@@ -1,32 +1,41 @@
 package com.cesar.User.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
+
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+
 import com.cesar.User.dto.UserDTO;
 import com.cesar.User.entity.User;
 import com.cesar.User.repository.UserRepository;
 
 @Service
+@CacheConfig(cacheNames = "users")
 public class UserDataService {
 
+	@CachePut(key = "#result.id")
     public UserDTO save(User user){
         return mapToDTO(repo.save(user));
     }
     
+    @Cacheable(key = "#id")
     public UserDTO getById(Long id){
 		User entity = repo.findById(id).orElse(null);
 		return mapToDTO(entity);
     }
 
     public List<UserDTO> getByIds(List<Long> ids){
-		List<User> users = repo.findAllById(missingCacheIds);
+		List<User> users = repo.findAllById(ids);
         return mapToDTOS(users);
     }
 
-    public void delete(User user){
-		repo.delete(user);
+    @CacheEvict(key = "#id")
+    public void delete(Long id){
+		repo.deleteById(id);
     }
 
 
@@ -45,9 +54,8 @@ public class UserDataService {
 
 
 
-    public UserService(UserRepository repo, ModelMapper mapper) {
+    public UserDataService(UserRepository repo, ModelMapper mapper) {
         this.repo = repo;
-        this.mediaService = mediaService;
         this.mapper = mapper;
     }
 
