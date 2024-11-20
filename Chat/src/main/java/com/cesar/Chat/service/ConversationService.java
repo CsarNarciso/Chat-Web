@@ -26,7 +26,7 @@ import com.cesar.Chat.entity.Message;
 @Service
 public class ConversationService {
 	
-	public ConversationDTO create(ConversationDTO conversation, MessageForInitDTO firstInteractionMessage) {
+	public void create(ConversationDTO conversation, MessageForInitDTO firstInteractionMessage) {
 	
 		List<Long> createFor = new ArrayList<>();
 		Conversation savedEntity = new Conversation();
@@ -96,7 +96,6 @@ public class ConversationService {
 		            .id(conversation.getId())
 		            .createFor(createFor)
 		            .build());
-		return conversation;
 	}
 	
 	
