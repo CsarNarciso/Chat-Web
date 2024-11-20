@@ -17,16 +17,6 @@ import com.cesar.Chat.repository.ConversationRepository;
 @Service
 @CacheConfig(cacheNames = "userConversations")
 public class ConversationDataService {
-	
-	private final ConversationRepository repo;
-	private final ModelMapper mapper;
-	
-	public ConversationDataAccessService(ConversationRepository repo, ModelMapper mapper) {
-		this.repo = repo;
-		this.mapper = mapper;
-	}
-	
-
 
 	@Caching(evict = {
 			@CacheEvict(key = "#senderId"),
@@ -62,4 +52,14 @@ public class ConversationDataService {
 		        .map(c -> mapper.map(c, ConversationDTO.class))
 		        .toList();
 	}
+	
+	
+	
+	public ConversationDataService(ConversationRepository repo, ModelMapper mapper) {
+		this.repo = repo;
+		this.mapper = mapper;
+	}
+	
+	private final ConversationRepository repo;
+	private final ModelMapper mapper;
 }

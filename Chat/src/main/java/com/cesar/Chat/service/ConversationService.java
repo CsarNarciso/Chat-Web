@@ -40,7 +40,7 @@ public class ConversationService {
 			.toList());
 	
 	    //Look for an existent conversation between both users
-	    Conversation existentConversation = dataAccessService.matchByUserIds(userIds, userIds.size());
+	    Conversation existentConversation = dataService.matchByUserIds(userIds, userIds.size());
 	
 	    //If don't exists
 	    if(existentConversation==null){
@@ -60,7 +60,7 @@ public class ConversationService {
 	        newConversation.addMessage(message);
 	        
 	        //Save (along with message)
-	        savedEntity = dataAccessService.save(newConversation, senderId, recipientId);
+	        savedEntity = dataService.save(newConversation, senderId, recipientId);
 	        conversation = mapToDTO(savedEntity);
 	    }
 	    else{
@@ -68,7 +68,7 @@ public class ConversationService {
 	        //Recreate
 	        createFor = existentConversation.getRecreateFor();
 	        existentConversation.setRecreateFor(Collections.emptyList());               
-	        savedEntity = dataAccessService.save(existentConversation, senderId, recipientId);
+	        savedEntity = dataService.save(existentConversation, senderId, recipientId);
 	        conversation = mapToDTO(savedEntity);
 	    }
 	
@@ -100,7 +100,7 @@ public class ConversationService {
 	
 	public List<ConversationViewDTO> load(Long userId){
 		List<ConversationDTO> conversations = new ArrayList<>();
-		conversations = dataAccessService.getAllByUserId(userId);
+		conversations = dataService.getAllByUserId(userId);
 		return (!conversations.isEmpty()) 
 				? composeConversationsData(conversations, userId) //Compose views
 				: null;
@@ -111,7 +111,7 @@ public class ConversationService {
 	public Object delete(UUID conversationId, Long participantId){
 	
 		//Look for conversation
-		Conversation entity = dataAccessService.getById(conversationId);
+		Conversation entity = dataService.getById(conversationId);
 		boolean permanently = false;
 		
 		//If exists...
@@ -132,7 +132,7 @@ public class ConversationService {
 		
 		        //Deletion is permanently
 		        permanently = true;
-		        dataAccessService.delete(conversationId, participantId);
+		        dataService.delete(conversationId, participantId);
 		    }
 		    //If not,
 		    else{
@@ -140,7 +140,7 @@ public class ConversationService {
 		
 		        //Update recreateFor list
 		    	entity.setRecreateFor(recreateFor);
-		    	dataAccessService.save(entity, participantId, participantsIds
+		    	dataService.save(entity, participantId, participantsIds
 		    			.stream()
 		    			.filter(id->!id.equals(participantId))
 		    			.findFirst().orElse(null));

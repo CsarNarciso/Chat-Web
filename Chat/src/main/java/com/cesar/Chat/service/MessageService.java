@@ -109,9 +109,9 @@ public class MessageService {
 	            Message conversationMessage = messages
 	                    .stream()
 	                    .filter(m -> m.getConversation().getId().equals(id))
-	                    .findFirst().get().orElse(null);
+	                    .findFirst().orElse(null);
 	
-	            if(message!=null) {
+	            if(conversationMessage!=null) {
 	                lastMessages.put(id, mapper.map(conversationMessage, LastMessageDTO.class));
 	            }
         	});
