@@ -39,7 +39,8 @@
 ## Avaliable Services At The Moment
 
 * Internal:
-  + User  
+  + User
+  + Chat  
 * External:
   + Media
   + Gateway
@@ -141,3 +142,24 @@ Base url: http://localhost:8001/users
 | updateDetails | /id | PATCH | String username, String email | application-json | none | Long id |
 | updateProfileImage | /id | PUT | MultipartFile imageMetadata | form-data | none | Long id |
 | delete | /id | DELETE | none | application-json | none | Long id |
+
+#### Chat Service
+
+Base urls: 
+
+http://localhost:8002/conversations
+   
+| Name | Path | Method | Body | Media Type | Parameters | Path variables
+|-|-|-|-|-|-|-|
+| createOnFirstInteractionMessage | none | POST | Long senderId, Long recipientId, String content | application-json | none | none |
+| loadUserConversations | /userId | GET | none | application-json | none | Long userId |
+| delete | /conversationId/userId | DELETE | none | application-json | none | UUID conversationId, Long userId |
+   
+http://localhost:8002/messages
+
+| Name | Path | Method | Body | Media Type | Parameters | Path variables
+|-|-|-|-|-|-|-|
+| send | none | POST | UUID conversationId, Long senderId, String content, boolean recreateForSomeone | application-json | none | none |
+| loadMessages | /conversationId | GET | none | application-json | none | UUID conversationId |
+| markAsRead | /conversationId/readerId | PUT | none | application-json | none | UUID conversationId, Long readerId |
+
