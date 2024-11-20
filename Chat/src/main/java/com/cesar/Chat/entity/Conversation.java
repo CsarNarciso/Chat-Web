@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -31,6 +32,8 @@ public class Conversation{
     @Column(name="created_at")
     private LocalDateTime createdAt;
     
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name="conversations_recreateFor", joinColumns = @JoinColumn(name="conversation_id"))
     @Column(name="recreate_for")
     private List<Long> recreateFor;
     

@@ -26,7 +26,7 @@ public class ConversationDataService {
 		return repo.save(conversation);
     }
 	
-	@Cacheable(key = "#userId")
+	@Cacheable(key = "#userId", unless = "#result == null or #result.size() == 0")
     public List<ConversationDTO> getAllByUserId(Long userId){
     	return mapToDTOs(repo.findByUserId(userId));
     }
