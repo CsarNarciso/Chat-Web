@@ -11,7 +11,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
@@ -259,22 +258,15 @@ public class UserService {
                 .toList();
     }
 
-    private String generateUserKey(Long id){
-        return String.format("user:%s", id);
-    }
 
-
-
-    public UserService(UserRepository repo, RedisTemplate<String, UserDTO> redisTemplate, KafkaTemplate<String, Object> kafkaTemplate, MediaService mediaService, ModelMapper mapper) {
+    public UserService(UserDataService repo, KafkaTemplate<String, Object> kafkaTemplate, MediaService mediaService, ModelMapper mapper) {
         this.repo = repo;
-        this.redisTemplate = redisTemplate;
         this.kafkaTemplate = kafkaTemplate;
         this.mediaService = mediaService;
         this.mapper = mapper;
     }
 
-    private final UserRepository repo;
-    private final RedisTemplate<String, UserDTO> redisTemplate;
+    private final UserDataService repo;
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final MediaService mediaService;
     private final ModelMapper mapper;
