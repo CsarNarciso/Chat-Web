@@ -100,21 +100,19 @@ public class MessageService {
     private Map<UUID, LastMessageDTO> getLastMessages(Long participantId, List<UUID> conversationIds){
 
         Map<UUID, LastMessageDTO> lastMessages = new HashMap<>();
-        List<Message> messages = dataService.getAllByConversationIds(conversationIds);
+        List<Message> messages = dataService.getLastMessages(participantId, conversationIds);
         
         conversationIds
         	.forEach(id -> {
 
-	            //Filter own conversation messages
-	            List<Message> conversationMessages = messages
+	            //Filter own conversation last message
+	            Message conversationMessage = messages
 	                    .stream()
 	                    .filter(m -> m.getConversation().getId().equals(id))
-	                    .toList();
+	                    .findFirst().get().orElse(null);
 	
-	            if(!conversationMessages.isEmpty()) {
-	                //Get last one
-	                lastMessages.put(id, 
-						mapper.map(conversationMessages.getLast(), LastMessageDTO.class));
+	            if(message!=null) {
+	                lastMessages.put(id, mapper.map(conversationMessage, LastMessageDTO.class));
 	            }
         	});
     	return lastMessages;

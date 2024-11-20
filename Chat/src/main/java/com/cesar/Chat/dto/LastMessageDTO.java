@@ -9,4 +9,5 @@ public class LastMessageDTO {
     private UUID id;
     private String content;
     private LocalDateTime sentAt;
+	private boolean read;
 }

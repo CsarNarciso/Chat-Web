@@ -17,11 +17,29 @@ import jakarta.transaction.Transactional;
 @Repository
 public interface MessageRepository extends JpaRepository<Message, UUID> {
 
-    @Query("SELECT new com.cesar.Chat.dto.UnreadMessagesDTO(m.conversation.id, COUNT(m)) FROM Message m " +
-            "WHERE m.senderId!=:senderId AND m.read=false AND m.conversation.id IN :conversationIds " +
-            "GROUP BY m.conversation.id")
+    @Query("""
+		SELECT new com.cesar.Chat.dto.UnreadMessagesDTO(m.conversation.id, COUNT(m)) 
+		FROM Message m
+		JOIN m.conversation c
+        WHERE m.senderId!=:senderId 
+			AND m.read=false 
+			AND c.id IN :conversationIds
+        GROUP BY c.id
+	""")
     List<UnreadMessagesDTO> getUnreadMessages(@Param("senderId") Long senderId,
                                               @Param("conversationIds") List<UUID> conversationIds);
+	
+	@Query("""
+		SELECT m 
+		FROM Message m
+		WHERE m.senderId!=:senderId 
+			AND m.conversation.id IN :conversationIds 
+		GROUP BY m.conversation.id 
+		ORDER BY MAX(m.sentAt) DESC
+	""")
+	List<Message> getLastMessages(@Param("senderId") Long senderId,
+                                     @Param("conversationIds") List<UUID> conversationIds);
+	
     @Modifying
     @Transactional
     @Query("UPDATE Message m SET m.read=true " +
