@@ -241,8 +241,8 @@ public class ConversationService {
 	
 	
 	
-	public ConversationService(ConversationDataAccessService dataAccessService, MessageService messageService, PresenceService presenceService, UserService userService, KafkaTemplate<String, Object> kafkaTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
-		this.dataAccessService = dataAccessService;
+	public ConversationService(ConversationDataService dataService, MessageService messageService, PresenceService presenceService, UserService userService, KafkaTemplate<String, Object> kafkaTemplate, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
+		this.dataService = dataService;
 		this.messageService = messageService;
 		this.presenceService = presenceService;
 		this.userService = userService;
@@ -251,7 +251,7 @@ public class ConversationService {
 		this.mapper = mapper;
 	}
 	
-	private final ConversationDataAccessService dataAccessService;
+	private final ConversationDataService dataService;
 	private final MessageService messageService;
 	private final PresenceService presenceService;
 	private final UserService userService;

@@ -16,7 +16,7 @@ import com.cesar.Chat.repository.ConversationRepository;
 
 @Service
 @CacheConfig(cacheNames = "userConversations")
-public class ConversationDataAccessService {
+public class ConversationDataService {
 	
 	private final ConversationRepository repo;
 	private final ModelMapper mapper;
