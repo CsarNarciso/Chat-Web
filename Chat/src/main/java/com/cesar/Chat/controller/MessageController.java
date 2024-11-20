@@ -26,7 +26,7 @@ public class MessageController {
 
     @PutMapping(value = "/clean.unread/{conversationId}/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public void onCleanUnread(@PathVariable UUID conversationId, @PathVariable Long userId){
-    	service.cleanConversationUnreadMessages(conversationId, userId);
+    	service.cleanUnreadMessages(conversationId, userId);
     }
 
 

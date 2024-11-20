@@ -1,11 +1,9 @@
 package com.cesar.Chat.service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
@@ -28,9 +26,9 @@ import com.cesar.Chat.entity.Message;
 public class MessageService {
 
 
-    public void send(MessageForSendDTO messageRequest){
+    public void send(MessageForSendDTO messageRequest) {
 
-        Conversation conversation = conversationService.getById(messageRequest.getConversationId());
+        Conversation conversation = conversationDataService.getById(messageRequest.getConversationId());
 
         //If conversation exists,
         if(conversation!=null){
@@ -47,16 +45,12 @@ public class MessageService {
             	entity.setId(UUID.randomUUID());
                 entity.setRead(false);
                 entity.setSentAt(LocalDateTime.now());
-            	repo.save(entity);
+            	MessageDTO message = dataService.save(entity, conversationId);
             	
-            	MessageDTO message = mapToDTO(entity);
-
                 //Send
                 webSocketTemplate.convertAndSend(
-                        String.format("/topic/conversation/%s",conversationId),
+                        String.format("/topic/conversation/%s", conversationId),
                         message);
-
-                //Increment Unread Message in Cache
 
                 //If conversation needs to be recreated for someone
                 if(!conversation.getRecreateFor().isEmpty()){
@@ -68,33 +62,29 @@ public class MessageService {
         }
     }
 
-
-
+    public Message createEntityOnSendRequest(MessageForSendDTO messageRequest) {
+    	Message entity = mapper.map(messageRequest, Message.class);
+    	entity.setId(UUID.randomUUID());
+        entity.setRead(false);
+        entity.setSentAt(LocalDateTime.now());
+        return entity;
+    }
+    
     public List<MessageDTO> loadConversationMessages(UUID conversationId) {
-        List<MessageDTO> messages = new ArrayList<>();
-        return messages;
+        return dataService.getAllByConversationId(conversationId);
     }
 
-
-
-    public void cleanConversationUnreadMessages(UUID conversationId, Long participantId){
-        repo.cleanConversationUnreadMessages(participantId, conversationId);
+    public void cleanUnreadMessages(UUID conversationId, Long participantId) {
+        dataService.markMessagesAsRead(conversationId, participantId);
     }
 
-
+    public void onConversationDeleted(UUID conversationId, Long participantId) {
+    	dataService.markMessagesAsRead(conversationId, participantId);
+    }
 
     public void onUserDeleted(Long userId, List<UUID> conversationIds) {
-    	repo.deleteByUserId(userId);
+    	dataService.deleteByUserId(userId);
     }
-
-
-
-    public void onConversationDeleted(UUID conversationId, Long participantId){
-        //Mark unread messages in DB as read (for participant)
-        repo.cleanConversationUnreadMessages(participantId, conversationId);
-    }
-
-
 
     public void injectConversationsMessagesDetails(List<ConversationViewDTO> conversations,
                                                    List<UUID> conversationIds,
@@ -123,53 +113,42 @@ public class MessageService {
         }
     }
 
-
-
-
     private Map<UUID, LastMessageDTO> getLastMessages(Long participantId, List<UUID> conversationIds){
 
-        //Fetch last message details of each conversation
         Map<UUID, LastMessageDTO> lastMessages = new HashMap<>();
-        List<MessageDTO> messages = repo.findAllByConversationIds(conversationIds);
-
-        messages
+        List<Message> messages = dataService.getAllByConversationIds(conversationIds);
+        
+        conversationIds
         	.forEach(id -> {
 
-	            //Filter its own messages
-	            List<Message> missingConversationMessages = dbMessages
+	            //Filter own conversation messages
+	            List<Message> conversationMessages = messages
 	                    .stream()
 	                    .filter(m -> m.getConversation().getId().equals(id))
 	                    .toList();
 	
-	            //And if there is something...
-	            if(!missingConversationMessages.isEmpty()) {
-	            	
-	                //Get last message
+	            if(!conversationMessages.isEmpty()) {
+	                //Get last one
 	                lastMessages.put(id, 
-						mapper.map(missingConversationMessages.getLast(), LastMessageDTO.class));
+						mapper.map(conversationMessages.getLast(), LastMessageDTO.class));
 	            }
         	});
     	return lastMessages;
     }
 
-
-
+    
     private Map<UUID, Long> getUnreadMessages(Long participantId, List<UUID> conversationIds){
 
-
         Map<UUID, Long> unreadMessages = new HashMap<>();
-
-        List<UnreadMessagesDTO> counts = repo.getUnreadMessages(participantId, conversationIds);
+        List<UnreadMessagesDTO> counts = dataService.getUnreadMessages(participantId, conversationIds);
 
         if(!counts.isEmpty()){
 
         	counts
         		.forEach(unreadMessage -> {
-        		
-	        		UUID conversationId = unreadMessage.getConversationId();
-	        		Long count = unreadMessage.getCount();
-	        		
-	        		unreadMessages.put(conversationId, count);
+	        		unreadMessages.put(
+	        				unreadMessage.getConversationId(), 
+	        				unreadMessage.getCount());
         		});
         }
         return unreadMessages;
@@ -178,45 +157,18 @@ public class MessageService {
 
     
     
-    public Message createEntityOnSendRequest(MessageForSendDTO messageRequest) {
-    	Message entity = mapper.map(messageRequest, Message.class);
-    	entity.setId(UUID.randomUUID());
-        entity.setRead(false);
-        entity.setSentAt(LocalDateTime.now());
-        return entity;
-    }
 
-    
-    
-    
-    
-    
-    
-    public MessageDTO mapToDTO(Message message){
-        return mapper.map(message, MessageDTO.class);
-    }
-    
-    private List<MessageDTO> mapToDTOs(List<Message> messages){
-        return messages
-                .stream()
-                .filter(Objects::nonNull)
-                .map(m -> mapper.map(m, MessageDTO.class))
-                .toList();
-    }
-	
-    
-
-
-    
-    
-
-    public MessageService(@Lazy ConversationService conversationService, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
-        this.conversationService = conversationService;
+    public MessageService(MessageDataService dataService, @Lazy ConversationService conversationService, ConversationDataAccessService conversationDataService, SimpMessagingTemplate webSocketTemplate, ModelMapper mapper) {
+        this.dataService = dataService;
+    	this.conversationService = conversationService;
+    	this.conversationDataService = conversationDataService;
         this.webSocketTemplate = webSocketTemplate;
         this.mapper = mapper;
     }
 
+    private final MessageDataService dataService;
     private final ConversationService conversationService;
+    private final ConversationDataAccessService conversationDataService;
     private final SimpMessagingTemplate webSocketTemplate;
     private final ModelMapper mapper;
 }
