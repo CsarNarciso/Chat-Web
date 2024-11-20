@@ -41,10 +41,12 @@ public class MessageDataService {
 		return repo.getUnreadMessages(participantId, conversationIds);
 	}
 	
+	@CacheEvict(key = "#conversationId")
 	public void markMessagesAsRead(UUID conversationId, Long participantId) {
     	repo.markMessagesAsRead(participantId, conversationId);
     }
-
+	
+	@CacheEvict(allEntries = true)
     public void deleteByUserId(Long userId) {
     	repo.deleteBySenderId(userId);
     }
