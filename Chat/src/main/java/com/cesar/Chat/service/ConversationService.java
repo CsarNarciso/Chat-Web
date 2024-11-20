@@ -31,50 +31,46 @@ public class ConversationService {
 		List<Long> createFor = new ArrayList<>();
 		Conversation savedEntity = new Conversation();
 		
-		//If request is not for recreation
-		if(conversation==null){
+	    //Get message participant IDs
+		Long senderId = firstInteractionMessage.getSenderId();
+		Long recipientId = firstInteractionMessage.getRecipientId();
+	    List<Long> userIds = new ArrayList<>(Stream.of(
+	    		senderId,
+	    		recipientId)
+			.toList());
 	
-		    //Get message participant IDs
-			Long senderId = firstInteractionMessage.getSenderId();
-			Long recipientId = firstInteractionMessage.getRecipientId();
-		    List<Long> userIds = new ArrayList<>(Stream.of(
-		    		senderId,
-		    		recipientId)
-				.toList());
-		
-		    //Look for an existent conversation between both users
-		    Conversation existentConversation = dataAccessService.matchByUserIds(userIds, userIds.size());
-		
-		    //If don't exists
-		    if(existentConversation==null){
-		
-		        //Create
-		        createFor = userIds;
-		        
-		        Conversation newConversation = new Conversation();
-		        newConversation.setId(UUID.randomUUID());
-		        Collections.sort(userIds);
-		        newConversation.setParticipants(userIds);
-		        newConversation.setCreatedAt(LocalDateTime.now());
-		        newConversation.setRecreateFor(Collections.emptyList());
-		        
-		        //Message reference
-		        Message message = messageService.createEntityOnSendRequest(mapper.map(firstInteractionMessage, MessageForSendDTO.class));
-		        newConversation.addMessage(message);
-		        
-		        //Save (along with message)
-		        savedEntity = dataAccessService.save(newConversation, senderId, recipientId);
-		        conversation = mapToDTO(savedEntity);
-		    }
-		    else{
-		
-		        //Recreate
-		        createFor = existentConversation.getRecreateFor();
-		        existentConversation.setRecreateFor(Collections.emptyList());               
-		        savedEntity = dataAccessService.save(existentConversation, senderId, recipientId);
-		        conversation = mapToDTO(savedEntity);
-		    }
-		}
+	    //Look for an existent conversation between both users
+	    Conversation existentConversation = dataAccessService.matchByUserIds(userIds, userIds.size());
+	
+	    //If don't exists
+	    if(existentConversation==null){
+	
+	        //Create
+	        createFor = userIds;
+	        
+	        Conversation newConversation = new Conversation();
+	        newConversation.setId(UUID.randomUUID());
+	        Collections.sort(userIds);
+	        newConversation.setParticipants(userIds);
+	        newConversation.setCreatedAt(LocalDateTime.now());
+	        newConversation.setRecreateFor(Collections.emptyList());
+	        
+	        //Message reference
+	        Message message = messageService.createEntityOnSendRequest(mapper.map(firstInteractionMessage, MessageForSendDTO.class));
+	        newConversation.addMessage(message);
+	        
+	        //Save (along with message)
+	        savedEntity = dataAccessService.save(newConversation, senderId, recipientId);
+	        conversation = mapToDTO(savedEntity);
+	    }
+	    else{
+	
+	        //Recreate
+	        createFor = existentConversation.getRecreateFor();
+	        existentConversation.setRecreateFor(Collections.emptyList());               
+	        savedEntity = dataAccessService.save(existentConversation, senderId, recipientId);
+	        conversation = mapToDTO(savedEntity);
+	    }
 	
 		//For everyone involved in the creation/recreation
 		for(Long participantId : createFor){
@@ -89,6 +85,9 @@ public class ConversationService {
 		            "/user/reply/createConversation",
 		            conversationView);
 		};
+		
+	    //Update conversation recreateForSomeone on client
+	    webSocketTemplate.convertAndSend(conversation.getId().toString() + "/updateRecreateForSomeone", false);
 		
 		//Event publisher - ConversationCreated
 		kafkaTemplate.send("ConversationCreated", ConversationCreatedDTO
@@ -141,7 +140,13 @@ public class ConversationService {
 		
 		        //Update recreateFor list
 		    	entity.setRecreateFor(recreateFor);
-		    	dataAccessService.save(entity, participantId, participantsIds.stream().filter(id->!id.equals(participantId)).findFirst().orElse(null));
+		    	dataAccessService.save(entity, participantId, participantsIds
+		    			.stream()
+		    			.filter(id->!id.equals(participantId))
+		    			.findFirst().orElse(null));
+		    	
+		    	//Update conversation recreateForSomeone on client
+			    webSocketTemplate.convertAndSend(conversationId.toString() + "/updateRecreateForSomeone", true);
 		    }
 		    
 		    //Ask Message service to delete deleted conversation's messages/unread counts

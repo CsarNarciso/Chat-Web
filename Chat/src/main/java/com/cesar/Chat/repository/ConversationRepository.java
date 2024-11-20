@@ -17,7 +17,6 @@ public interface ConversationRepository extends JpaRepository<Conversation, UUID
 			SELECT c.* FROM conversations c 
 			JOIN conversations_participants cp ON c.id = cp.conversation_id
 			WHERE cp.user_id IN :userIds 
-			AND cp.user_id NOT MEMBER OF c.recreateFor
 			GROUP BY c.id 
 			HAVING COUNT(DISTINCT cp.user_id) = :userCount
 			""", nativeQuery=true)
