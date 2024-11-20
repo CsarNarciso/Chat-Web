@@ -33,8 +33,8 @@ public class MessageDataService {
         return repo.findAllByConversationIds(conversationIds);
     }
 	
-	public List<Message> getLastMessages(Long participantId, List<UUID> conversationIds){
-		return repo.getLastMessages(participantId, conversationIds);
+	public List<Message> getLastMessages(List<UUID> conversationIds){
+		return repo.getLastMessages(conversationIds);
 	}
 	
 	public List<UnreadMessagesDTO> getUnreadMessages(Long participantId, List<UUID> conversationIds){

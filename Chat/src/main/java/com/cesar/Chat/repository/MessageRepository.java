@@ -32,13 +32,11 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
 	@Query("""
 		SELECT m 
 		FROM Message m
-		WHERE m.senderId!=:senderId 
-			AND m.conversation.id IN :conversationIds 
+		WHERE m.conversation.id IN :conversationIds 
 		GROUP BY m.conversation.id 
 		ORDER BY MAX(m.sentAt) DESC
 	""")
-	List<Message> getLastMessages(@Param("senderId") Long senderId,
-                                     @Param("conversationIds") List<UUID> conversationIds);
+	List<Message> getLastMessages(@Param("conversationIds") List<UUID> conversationIds);
 	
     @Modifying
     @Transactional

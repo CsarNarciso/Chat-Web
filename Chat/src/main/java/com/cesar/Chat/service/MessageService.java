@@ -74,7 +74,7 @@ public class MessageService {
                                                    List<UUID> conversationIds,
                                                    Long senderId){
         //Fetch last messages
-        Map<UUID, LastMessageDTO> lastMessages = getLastMessages(senderId, conversationIds);
+        Map<UUID, LastMessageDTO> lastMessages = getLastMessages(conversationIds);
 
         //Fetch unreadMessages
         Map<UUID, Long> unreadMessages =
@@ -97,10 +97,10 @@ public class MessageService {
         }
     }
 
-    private Map<UUID, LastMessageDTO> getLastMessages(Long participantId, List<UUID> conversationIds){
+    private Map<UUID, LastMessageDTO> getLastMessages(List<UUID> conversationIds){
 
         Map<UUID, LastMessageDTO> lastMessages = new HashMap<>();
-        List<Message> messages = dataService.getLastMessages(participantId, conversationIds);
+        List<Message> messages = dataService.getLastMessages(conversationIds);
         
         conversationIds
         	.forEach(id -> {
@@ -128,9 +128,11 @@ public class MessageService {
 
         	counts
         		.forEach(unreadMessage -> {
+        			
+        			Long count = unreadMessage.getCount();
 	        		unreadMessages.put(
 	        				unreadMessage.getConversationId(), 
-	        				unreadMessage.getCount());
+	        				 count != null ? count : 0);
         		});
         }
         return unreadMessages;
