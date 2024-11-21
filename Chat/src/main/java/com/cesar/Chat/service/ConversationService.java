@@ -26,76 +26,99 @@ import com.cesar.Chat.entity.Message;
 @Service
 public class ConversationService {
 	
-	public void create(ConversationDTO conversation, MessageForInitDTO firstInteractionMessage) {
+	public void create(UUID existentConversationId, MessageForInitDTO firstInteractionMessage) {
 	
-		List<Long> createFor = new ArrayList<>();
+		Conversation existentConversation = new Conversation();
 		Conversation savedEntity = new Conversation();
+		ConversationDTO conversation = new ConversationDTO();
+		List<Long> createFor = new ArrayList<>();
+		Long senderId;
+		Long recipientId;
 		
-	    //Get message participant IDs
-		Long senderId = firstInteractionMessage.getSenderId();
-		Long recipientId = firstInteractionMessage.getRecipientId();
-	    List<Long> userIds = new ArrayList<>(Stream.of(
-	    		senderId,
-	    		recipientId)
-			.toList());
-	
-	    //Look for an existent conversation between both users
-	    Conversation existentConversation = dataService.matchByUserIds(userIds, userIds.size());
-	
-	    //If don't exists
-	    if(existentConversation==null){
-	
-	        //Create
-	        createFor = userIds;
-	        
-	        Conversation newConversation = new Conversation();
-	        newConversation.setId(UUID.randomUUID());
-	        Collections.sort(userIds);
-	        newConversation.setParticipants(userIds);
-	        newConversation.setCreatedAt(LocalDateTime.now());
-	        newConversation.setRecreateFor(Collections.emptyList());
-	        
-	        //Message reference
-	        Message message = messageService.createEntityOnSendRequest(mapper.map(firstInteractionMessage, MessageForSendDTO.class));
-	        newConversation.addMessage(message);
-	        
-	        //Save (along with message)
-	        savedEntity = dataService.save(newConversation, senderId, recipientId);
-	        conversation = mapToDTO(savedEntity);
-	    }
-	    else{
-	
-	        //Recreate
-	        createFor = existentConversation.getRecreateFor();
-	        existentConversation.setRecreateFor(Collections.emptyList());               
-	        savedEntity = dataService.save(existentConversation, senderId, recipientId);
-	        conversation = mapToDTO(savedEntity);
-	    }
-	
-		//For everyone involved in the creation/recreation
-		for(Long participantId : createFor){
-		        	
-			//Compose custom conversation view: recipient presence/details, last message data and unread message count
-		    ConversationViewDTO conversationView = 
-		    		composeConversationsData(Stream.of(conversation).toList(), participantId).getFirst();
+		//If conversation exists for sender (conversation id provided), but it needs to be recreated for someone
+		if(existentConversationId!=null) {
+			existentConversation = dataService.getById(existentConversationId);
+			if(existentConversation!=null) {
+				createFor = existentConversation.getRecreateFor();
+				existentConversation.setRecreateFor(Collections.emptyList());  
+				senderId = firstInteractionMessage.getSenderId();
+				recipientId = createFor.getFirst();
+				savedEntity = dataService.save(existentConversation, senderId, recipientId);
+			}
+		}
+		//When no conversation id provided, it needs to check if a conversation between those both users already exists, if does
+		//then recreate it, if not, create new one
+		else {
+			//Get message participant IDs
+			senderId = firstInteractionMessage.getSenderId();
+			recipientId = firstInteractionMessage.getRecipientId();
+		    List<Long> userIds = new ArrayList<>(Stream.of(
+		    		senderId,
+		    		recipientId)
+				.toList());
+		
+		    //Look for an existent conversation between both users
+		    existentConversation = dataService.matchByUserIds(userIds, userIds.size());
+		
+		    //If don't exists
+		    if(existentConversation==null){
+		
+		        //Create
+		        createFor = userIds;
+		        
+		        Conversation newConversation = new Conversation();
+		        newConversation.setId(UUID.randomUUID());
+		        Collections.sort(userIds);
+		        newConversation.setParticipants(userIds);
+		        newConversation.setCreatedAt(LocalDateTime.now());
+		        newConversation.setRecreateFor(Collections.emptyList());
+		        
+		        //Message reference
+		        Message message = messageService.createEntityOnSendRequest(mapper.map(firstInteractionMessage, MessageForSendDTO.class));
+		        newConversation.addMessage(message);
+		        
+		        //Save (along with message)
+		        savedEntity = dataService.save(newConversation, senderId, recipientId);
+		    }
+		    else{
+		
+		        //Recreate
+		        createFor = existentConversation.getRecreateFor();
+		        existentConversation.setRecreateFor(Collections.emptyList());               
+		        savedEntity = dataService.save(existentConversation, senderId, recipientId);
+		    }
+		}
+		
+		//If an action was performed
+		if(savedEntity!=null) {
+			conversation = mapToDTO(savedEntity);
 			
-		    //Send
-		    webSocketTemplate.convertAndSendToUser(
-		            participantId.toString(),
-		            "/user/reply/createConversation",
-		            conversationView);
-		};
-		
-	    //Update conversation recreateForSomeone on client
-	    webSocketTemplate.convertAndSend(conversation.getId().toString() + "/updateRecreateForSomeone", false);
-		
-		//Event publisher - ConversationCreated
-		kafkaTemplate.send("ConversationCreated", ConversationCreatedDTO
-		    		.builder()
-		            .id(conversation.getId())
-		            .createFor(createFor)
-		            .build());
+			//For everyone involved in the creation/recreation
+			for(Long participantId : createFor){
+			        	
+				//Compose custom conversation view: recipient presence/details, last message data and unread message count
+			    ConversationViewDTO conversationView = 
+			    		composeConversationsData(Stream.of(conversation).toList(), participantId).getFirst();
+				
+			    //Send
+			    webSocketTemplate.convertAndSendToUser(
+			            participantId.toString(),
+			            "/user/reply/createConversation",
+			            conversationView);
+			};
+			
+		    //Update conversation recreateForSomeone on client
+		    webSocketTemplate.convertAndSend(conversation.getId().toString() + "/updateRecreateForSomeone", false);
+			
+			//Event publisher - ConversationCreated
+			kafkaTemplate.send("ConversationCreated", ConversationCreatedDTO
+			    		.builder()
+			            .id(conversation.getId())
+			            .createFor(createFor)
+			            .build());
+		}
 	}
+	
 	
 	
 	public List<ConversationViewDTO> load(Long userId){
