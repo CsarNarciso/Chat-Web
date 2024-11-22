@@ -42,7 +42,7 @@ public class MessageService {
 
         //Check if conversation needs to be recreated for someone
         if(messageRequest.isRecreateForSomeone()) {
-            conversationService.create(null, mapper.map(messageRequest, MessageForInitDTO.class));
+            conversationService.create(conversationId, mapper.map(messageRequest, MessageForInitDTO.class));
         }
     }
 

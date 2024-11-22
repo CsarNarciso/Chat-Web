@@ -33,6 +33,7 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
 		SELECT m 
 		FROM Message m
 		WHERE m.conversation.id IN :conversationIds 
+		GROUP BY m.id
 		ORDER BY MAX(m.sentAt) DESC
 	""")
 	List<Message> getLastMessages(@Param("conversationIds") List<UUID> conversationIds);

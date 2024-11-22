@@ -35,10 +35,14 @@ public class ConversationService {
 		Long senderId;
 		Long recipientId;
 		
-		//If conversation exists for sender (conversation id provided), but it needs to be recreated for someone
+		//If conversation exists for sender (conversation id provided)
 		if(existentConversationId!=null) {
+			
 			existentConversation = dataService.getById(existentConversationId);
+			
 			if(existentConversation!=null) {
+				
+				//but it needs to be recreated for someone
 				createFor = existentConversation.getRecreateFor();
 				existentConversation.setRecreateFor(Collections.emptyList());  
 				senderId = firstInteractionMessage.getSenderId();
@@ -46,9 +50,9 @@ public class ConversationService {
 				savedEntity = dataService.save(existentConversation, senderId, recipientId);
 			}
 		}
-		//When no conversation id provided, it needs to check if a conversation between those both users already exists, if does
-		//then recreate it, if not, create new one
+		//When no conversation id provided
 		else {
+			
 			//Get message participant IDs
 			senderId = firstInteractionMessage.getSenderId();
 			recipientId = firstInteractionMessage.getRecipientId();
