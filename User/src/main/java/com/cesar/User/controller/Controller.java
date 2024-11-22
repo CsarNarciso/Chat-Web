@@ -82,14 +82,13 @@ public class Controller {
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateProfileImage(
             @PathVariable Long id,
-            @RequestParam MultipartFile imageMetadata,
-            @RequestParam(required = true) String oldPath){
+            @RequestParam MultipartFile imageMetadata){
     	
-    	String newProfileImageUrl = service.updateProfileImage(id, imageMetadata, oldPath);
+    	String newProfileImageUrl = service.updateProfileImage(id, imageMetadata);
     	
     	return newProfileImageUrl!=null
     			
-    			 ? newProfileImageUrl.equals(oldPath) 
+    			 ? newProfileImageUrl.isEmpty() 
     				? ResponseEntity
     						.status(HttpStatus.SERVICE_UNAVAILABLE)
     						.body("Media service down or unreachable")

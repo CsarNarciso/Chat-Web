@@ -94,13 +94,14 @@ public class UserService {
     }
     
 
-    public String updateProfileImage(Long id, MultipartFile imageMetadata, String oldPath) {
+    public String updateProfileImage(Long id, MultipartFile imageMetadata) {
 
     	UserDTO user = dataService.getById(id);
     	if(user!=null) {
     		
     		//If either new image is not empty (no bad arguments request),
             // or media service request was performed successful (no fallback)
+    		String oldPath = user.getProfileImageUrl();
         	String newImageUrl = mediaService.upload(imageMetadata, oldPath);
             
         	if(newImageUrl!=null && !newImageUrl.equals(oldPath)){
@@ -114,7 +115,7 @@ public class UserService {
 
                 return user.getProfileImageUrl();
             }
-        	return oldPath;
+        	return "";
     	}
         return null;
     }
