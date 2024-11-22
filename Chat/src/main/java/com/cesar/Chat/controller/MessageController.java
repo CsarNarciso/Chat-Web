@@ -36,10 +36,11 @@ public class MessageController {
     			? ResponseEntity
                 	.status(HttpStatus.OK)
                 	.body(messages)
-                : ResponseEntity.notFound().build();
+                : ResponseEntity.noContent().build();
     }
 
     @PutMapping(value = "/clean.unread/{conversationId}/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(code = HttpStatus.NO_CONTENT)
     public void onCleanUnread(@PathVariable UUID conversationId, @PathVariable Long userId){
     	service.cleanUnreadMessages(conversationId, userId);
     }

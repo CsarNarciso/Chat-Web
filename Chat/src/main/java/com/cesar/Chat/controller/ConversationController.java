@@ -36,7 +36,7 @@ public class ConversationController {
     			? ResponseEntity
     					.status(HttpStatus.OK)
     					.body(conversations)
-    			: ResponseEntity.notFound().build();
+    			: ResponseEntity.noContent().build();
     }
 
     @DeleteMapping(value = "/{conversationId}/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
