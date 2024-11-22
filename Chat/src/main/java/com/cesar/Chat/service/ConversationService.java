@@ -29,11 +29,11 @@ public class ConversationService {
 	public void create(UUID existentConversationId, MessageForInitDTO firstInteractionMessage) {
 	
 		Conversation existentConversation = new Conversation();
-		Conversation savedEntity = null;
+		Conversation entity = null;
 		ConversationDTO conversation = new ConversationDTO();
 		List<Long> createFor = new ArrayList<>();
-		Long senderId;
-		Long recipientId;
+		Long senderId = null;
+		Long recipientId = null;
 		
 		//If conversation exists for sender (conversation id provided)
 		if(existentConversationId!=null) {
@@ -49,7 +49,7 @@ public class ConversationService {
 					existentConversation.setRecreateFor(Collections.emptyList());  
 					recipientId = createFor.getFirst();
 					senderId = firstInteractionMessage.getSenderId();
-					savedEntity = dataService.save(existentConversation, senderId, recipientId);
+					entity = existentConversation;
 				}
 			}
 		}
@@ -79,26 +79,29 @@ public class ConversationService {
 		        newConversation.setParticipants(userIds);
 		        newConversation.setCreatedAt(LocalDateTime.now());
 		        newConversation.setRecreateFor(Collections.emptyList());
-		        
-		        //Message reference
-		        Message message = messageService.createEntityOnSendRequest(mapper.map(firstInteractionMessage, MessageForSendDTO.class));
-		        newConversation.addMessage(message);
-		        
-		        //Save (along with message)
-		        savedEntity = dataService.save(newConversation, senderId, recipientId);
+		        entity = newConversation;
 		    }
 		    else{
 		
 		        //Recreate
 		        createFor = existentConversation.getRecreateFor();
 		        existentConversation.setRecreateFor(Collections.emptyList());               
-		        savedEntity = dataService.save(existentConversation, senderId, recipientId);
+		        entity = existentConversation;
 		    }
 		}
 		
 		//If an action was performed
-		if(savedEntity!=null) {
-			conversation = mapToDTO(savedEntity);
+		if(entity!=null) {
+			
+			//Message reference if needed
+			if(existentConversationId==null) {
+				Message message = messageService.createEntityOnSendRequest(mapper.map(firstInteractionMessage, MessageForSendDTO.class));
+				entity.addMessage(message);
+			}
+			
+			//Save
+			entity = dataService.save(entity, senderId, recipientId);
+			conversation = mapToDTO(entity);
 			
 			//For everyone involved in the creation/recreation
 			for(Long participantId : createFor){
