@@ -32,7 +32,7 @@ public class Conversation{
     @Column(name="created_at")
     private LocalDateTime createdAt;
     
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name="conversations_recreateFor", joinColumns = @JoinColumn(name="conversation_id"))
     @Column(name="recreate_for")
     private List<Long> recreateFor;
