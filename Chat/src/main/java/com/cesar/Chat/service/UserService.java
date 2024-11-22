@@ -22,7 +22,6 @@ public class UserService {
                 getDetails(participantsIds)
                         .stream()
                         .collect(Collectors.toMap(UserDTO::getId, Function.identity()));
-
         //If data was fetched
         if(!details.isEmpty()) {
         	
@@ -31,9 +30,8 @@ public class UserService {
         		.forEach(c -> {
         			
         			UserDTO recipientDetails = details.get(c.getRecipient().getUserId());
-        			
         			if(recipientDetails!=null) {
-        				mapper.map(c.getRecipient(), recipientDetails);
+        				mapper.map(recipientDetails, c.getRecipient());
         			}
         		});
         }
