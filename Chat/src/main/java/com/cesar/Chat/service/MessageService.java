@@ -58,7 +58,7 @@ public class MessageService {
         return dataService.getAllByConversationId(conversationId);
     }
 
-    public void cleanUnreadMessages(UUID conversationId, Long participantId) {
+    public void markMessagesAsRead(UUID conversationId, Long participantId) {
         dataService.markMessagesAsRead(conversationId, participantId);
     }
 

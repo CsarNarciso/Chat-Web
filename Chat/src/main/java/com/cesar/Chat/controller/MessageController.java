@@ -39,10 +39,10 @@ public class MessageController {
                 : ResponseEntity.noContent().build();
     }
 
-    @PutMapping(value = "/clean.unread/{conversationId}/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/read/{conversationId}/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
-    public void onCleanUnread(@PathVariable UUID conversationId, @PathVariable Long userId){
-    	service.cleanUnreadMessages(conversationId, userId);
+    public void onRead(@PathVariable UUID conversationId, @PathVariable Long userId){
+    	service.markMessagesAsRead(conversationId, userId);
     }
 
 
