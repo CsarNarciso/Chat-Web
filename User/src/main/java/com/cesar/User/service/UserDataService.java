@@ -22,15 +22,19 @@ public class UserDataService {
         return mapToDTO(repo.save(user));
     }
     
-    @Cacheable(key = "#id")
+    @Cacheable(key = "#id", unless = "#result == null")
     public UserDTO getById(Long id){
 		User entity = repo.findById(id).orElse(null);
-		return mapToDTO(entity);
+		return entity!=null 
+				? mapToDTO(entity) 
+				: null;
     }
 
     public List<UserDTO> getByIds(List<Long> ids){
 		List<User> users = repo.findAllById(ids);
-        return mapToDTOS(users);
+		return !users.isEmpty() 
+				? mapToDTOS(users)
+				: null;
     }
 
     @CacheEvict(key = "#id")

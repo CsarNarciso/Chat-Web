@@ -54,7 +54,7 @@ public class Controller {
         
     	List<UserDTO> users = service.getByIds(ids);
     	
-    	return !users.isEmpty()
+    	return users!=null
     			
     			? ResponseEntity
     					.status(HttpStatus.OK)
@@ -89,7 +89,11 @@ public class Controller {
     	
     	return newProfileImageUrl!=null
     			
-    			? ResponseEntity
+    			 ? newProfileImageUrl.equals(oldPath) 
+    				? ResponseEntity
+    						.status(HttpStatus.SERVICE_UNAVAILABLE)
+    						.body("Media service down or unreachable")
+    				: ResponseEntity
     					.status(HttpStatus.OK)
     					.body(newProfileImageUrl)
     			
