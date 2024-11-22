@@ -24,7 +24,7 @@ public class MessageDataService {
 		return mapToDTO(repo.save(message));
 	}
 	
-	@Cacheable(key = "#conversationId")
+	@Cacheable(key = "#conversationId", unless = "#result == null or #result.size() == 0")
 	public List<MessageDTO> getAllByConversationId(UUID conversationId) {
         return mapToDTOs(repo.findAllByConversationId(conversationId));
     }
