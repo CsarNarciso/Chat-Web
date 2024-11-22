@@ -18,7 +18,7 @@ import jakarta.transaction.Transactional;
 public interface MessageRepository extends JpaRepository<Message, UUID> {
 
     @Query("""
-		SELECT new com.cesar.Chat.dto.UnreadMessagesDTO(m.conversation.id, COUNT(m)) 
+		SELECT new com.cesar.Chat.dto.UnreadMessagesDTO(c.id, COUNT(m)) 
 		FROM Message m
 		JOIN m.conversation c
         WHERE m.senderId!=:senderId 
@@ -32,9 +32,15 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
 	@Query("""
 		SELECT m 
 		FROM Message m
-		WHERE m.conversation.id IN :conversationIds 
-		GROUP BY m.id
-		ORDER BY MAX(m.sentAt) DESC
+		JOIN m.conversation c
+		WHERE m.sentAt = (
+			SELECT MAX(m2.sentAt) 
+			FROM Message m2
+			JOIN m2.conversation c2
+			WHERE c2.id = c.id
+		)
+			AND c.id IN :conversationIds 
+		ORDER BY m.sentAt DESC
 	""")
 	List<Message> getLastMessages(@Param("conversationIds") List<UUID> conversationIds);
 	
@@ -45,10 +51,10 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     void markMessagesAsRead(@Param("senderId") Long senderId,
                                          @Param("conversationId") UUID conversationId);
 
-    @Query("SELECT m FROM Message m WHERE m.conversation.id IN :conversationIds")
+    @Query("SELECT m FROM Message m JOIN m.conversation c WHERE c.id IN :conversationIds ORDER BY m.sentAt DESC")
     List<Message> findAllByConversationIds(@Param("conversationIds") List<UUID> conversationIds);
 
-    @Query("SELECT m FROM Message m WHERE m.conversation.id = :conversationId")
+    @Query("SELECT m FROM Message m JOIN m.conversation c WHERE c.id = :conversationId ORDER BY m.sentAt DESC")
     List<Message> findAllByConversationId(@Param("conversationId") UUID conversationId);
 
     void deleteBySenderId(Long senderId);

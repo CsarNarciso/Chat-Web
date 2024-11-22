@@ -29,7 +29,7 @@ public class ConversationService {
 	public void create(UUID existentConversationId, MessageForInitDTO firstInteractionMessage) {
 	
 		Conversation existentConversation = new Conversation();
-		Conversation savedEntity = new Conversation();
+		Conversation savedEntity = null;
 		ConversationDTO conversation = new ConversationDTO();
 		List<Long> createFor = new ArrayList<>();
 		Long senderId;
@@ -44,10 +44,13 @@ public class ConversationService {
 				
 				//but it needs to be recreated for someone
 				createFor = existentConversation.getRecreateFor();
-				existentConversation.setRecreateFor(Collections.emptyList());  
-				senderId = firstInteractionMessage.getSenderId();
-				recipientId = createFor.getFirst();
-				savedEntity = dataService.save(existentConversation, senderId, recipientId);
+				if(!createFor.isEmpty()) {
+					
+					existentConversation.setRecreateFor(Collections.emptyList());  
+					recipientId = createFor.getFirst();
+					senderId = firstInteractionMessage.getSenderId();
+					savedEntity = dataService.save(existentConversation, senderId, recipientId);
+				}
 			}
 		}
 		//When no conversation id provided
