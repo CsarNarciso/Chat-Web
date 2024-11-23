@@ -149,48 +149,57 @@ public class ConversationService {
 		//If exists...
 		if(entity!=null){
 		
-		    //Get conversation participant IDs
-		    List<Long> participantsIds = entity.getParticipants();
-		
-		    //Add userId to conversation recreateFor list
-		    List<Long> recreateFor = entity.getRecreateFor();
-		    if(!recreateFor.contains(participantId)) {
-		    	recreateFor.add(participantId);
-		    	Collections.sort(recreateFor);
-		    }
-		    
-		    //If participantIds matches recreateFor...
-		    if(recreateFor.containsAll(participantsIds)){
-		
-		        //Deletion is permanently
-		        permanently = true;
+			//First, if conversation is already disabled
+			if(entity.isParticipantDisabled()){
+				//Permanently deletion
+				permanently = true;
 		        dataService.delete(conversationId, participantId);
-		    }
-		    //If not,
-		    else{
-		        //Deletion is local
-		
-		        //Update recreateFor list
-		    	entity.setRecreateFor(recreateFor);
-		    	dataService.save(entity, participantId, participantsIds
-		    			.stream()
-		    			.filter(id->!id.equals(participantId))
-		    			.findFirst().orElse(null));
-		    	
-		    	//Update conversation recreateForSomeone on client
-			    webSocketTemplate.convertAndSend(conversationId.toString() + "/updateRecreateForSomeone", true);
-		    }
-		    
-		    //Ask Message service to delete deleted conversation's messages/unread counts
-		    messageService.onConversationDeleted(conversationId, participantId);
-		
-		    //Event publisher - ConversationDeleted
-		    kafkaTemplate.send("ConversationDeleted", ConversationDeletedDTO
-		            .builder()
-		            .id(conversationId)
-		            .participantId(participantId)
-		            .permanently(permanently)
-		            .build());
+			}
+			else{
+				
+				//Get conversation participant IDs
+				List<Long> participantsIds = entity.getParticipants();
+			
+				//Add userId to conversation recreateFor list
+				List<Long> recreateFor = entity.getRecreateFor();
+				if(!recreateFor.contains(participantId)) {
+					recreateFor.add(participantId);
+					Collections.sort(recreateFor);
+				}
+				
+				//If participantIds matches recreateFor...
+				if(recreateFor.containsAll(participantsIds)){
+			
+					//Deletion is permanently
+					permanently = true;
+					dataService.delete(conversationId, participantId);
+				}
+				//If not,
+				else{
+					//Deletion is local
+			
+					//Update recreateFor list
+					entity.setRecreateFor(recreateFor);
+					dataService.save(entity, participantId, participantsIds
+							.stream()
+							.filter(id->!id.equals(participantId))
+							.findFirst().orElse(null));
+					
+					//Update conversation recreateForSomeone on client
+					webSocketTemplate.convertAndSend(conversationId.toString() + "/updateRecreateForSomeone", true);
+				}
+				
+				//Ask Message service to delete deleted conversation's messages/unread counts
+				messageService.onConversationDeleted(conversationId, participantId);
+			
+				//Event publisher - ConversationDeleted
+				kafkaTemplate.send("ConversationDeleted", ConversationDeletedDTO
+						.builder()
+						.id(conversationId)
+						.participantId(participantId)
+						.permanently(permanently)
+						.build());
+			}
 		    return permanently;
 		}
 		return null;
