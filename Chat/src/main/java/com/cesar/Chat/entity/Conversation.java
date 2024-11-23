@@ -45,6 +45,7 @@ public class Conversation{
     @OneToMany(mappedBy = "conversation", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Message> messages = new ArrayList<>();
     
+    @Column(name="participant_deleted")
     private boolean participantDeleted;
     
     public void addMessage(Message message) {
