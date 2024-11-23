@@ -44,6 +44,7 @@ public class ConversationDataService {
     	repo.deleteById(id);
     }
     
+    @CacheEvict(allEntries = true)
     public void disableOnUserDeleted(Long userId) {
     	repo.disableOnUserDeleted(userId);
     }
