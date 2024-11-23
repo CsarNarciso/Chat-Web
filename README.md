@@ -17,6 +17,7 @@
 - User delete (along with their conversations and messages)
 
 ## Technologies
+
 1. Java 21
 2. Docker Compose
 3. PostgreSQL, MySQL, CassandraDB
@@ -35,6 +36,10 @@
    + Resilience4j Circuit Braker
 10. SockJS
 11. Maven 3.0+
+
+| Spring Framework | Tools & Other Languages | Architectures | 
+|-|-|-|
+| ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-6DB33F?logo=Spring%20Boot&logoColor=black&style=for-the-badge) ![Eureka](https://img.shields.io/badge/Eureka-6DB33F?style=for-the-badge&logo=Spring&logoColor=black) ![RestTemplate, FeignClient](https://img.shields.io/badge/RestTemplate,%20FeignClient%20-white?style=for-the-badge&logo=Spring&logoColor=6DB33F) ![Spring Api Gateway](https://img.shields.io/badge/Api%20Gateway-6DB33F?style=for-the-badge&logo=Spring&logoColor=black) ![Spring Config Server](https://img.shields.io/badge/Config%20Server-6DB33F?style=for-the-badge&logo=Spring&logoColor=black) ![Spring Circuit Breaker](https://img.shields.io/badge/Circuit%20Breaker-6DB33F?style=for-the-badge&logo=Spring&logoColor=black) ![Spring Sockets](https://img.shields.io/badge/Sockets-black?logo=Spring%20Boot&logoColor=6DB33F&style=for-the-badge) | ![Redis](https://img.shields.io/badge/Redis-black?style=for-the-badge&logo=redis&logoColor=D5540F) ![Docker](https://img.shields.io/badge/Docker-white?style=for-the-badge&logo=docker&logoColor=4DB1E0) ![Kafka](https://img.shields.io/badge/Apache%20Kafka-white?style=for-the-badge&logo=Apache%20Kafka&logoColor=black) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-6284A7?style=for-the-badge&logo=postgresql&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white) ![Lombok](https://img.shields.io/badge/Lombok-red?style=for-the-badge) ![Eclipse](https://img.shields.io/badge/Eclipse%20IDE-2C2255?logo=Eclipse-IDE&logoColor=orange&style=for-the-badge) | ![Microservices](https://img.shields.io/badge/Microservices-00B9FF?style=for-the-badge) ![REST](https://img.shields.io/badge/Rest%20Api-green?style=for-the-badge) | 
 
 ## Avaliable Services At The Moment
 
