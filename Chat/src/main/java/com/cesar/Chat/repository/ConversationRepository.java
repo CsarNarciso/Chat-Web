@@ -24,4 +24,11 @@ public interface ConversationRepository extends JpaRepository<Conversation, UUID
 
     @Query("SELECT c FROM Conversation c WHERE :userId MEMBER OF c.participants AND :userId NOT MEMBER OF c.recreateFor")
     List<Conversation> findByUserId(@Param("userId") Long userId);
+    
+    @Query(value="""
+    		UPDATE Conversation c 
+    		SET participantDeleted = true 
+    		WHERE :userId MEMBER OF c.participants
+    			""")
+    void disableOnUserDeleted(@Param("userId") Long userId);
 }

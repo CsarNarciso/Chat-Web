@@ -66,10 +66,6 @@ public class MessageService {
     	dataService.markMessagesAsRead(conversationId, participantId);
     }
 
-    public void onUserDeleted(Long id) {
-    	dataService.deleteByUserId(id);
-    }
-
     public void injectConversationsMessagesDetails(List<ConversationViewDTO> conversations,
                                                    List<UUID> conversationIds,
                                                    Long senderId){

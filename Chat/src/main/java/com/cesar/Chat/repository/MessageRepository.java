@@ -56,6 +56,4 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
 
     @Query("SELECT m FROM Message m JOIN m.conversation c WHERE c.id = :conversationId ORDER BY m.sentAt DESC")
     List<Message> findAllByConversationId(@Param("conversationId") UUID conversationId);
-
-    void deleteBySenderId(Long senderId);
 }

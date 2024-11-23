@@ -242,8 +242,8 @@ public class ConversationService {
 	
 	@KafkaListener(topics = "UserDeleted", groupId = "${spring.kafka.consumer.group-id}")
 	public void onUserDeleted(Long id){
-		//Ask message service to delete messages and unread counts
-		messageService.onUserDeleted(id);
+		//Disable deleted user conversations
+		dataService.disableOnUserDeleted(id);
 	}
 	
 	

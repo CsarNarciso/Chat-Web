@@ -43,6 +43,10 @@ public class ConversationDataService {
     public void delete(UUID id, Long userId){
     	repo.deleteById(id);
     }
+    
+    public void disableOnUserDeleted(Long userId) {
+    	repo.disableOnUserDeleted(userId);
+    }
 	
     
     

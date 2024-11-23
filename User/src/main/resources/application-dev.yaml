@@ -60,3 +60,8 @@ services:
 #Media
 defaultImage:
   url: http://localhost:${server.port}/DefaultProfileImage.png
+
+#Deleted user default details
+default:
+  deleted:
+    username: "[deleted]"

@@ -30,16 +30,13 @@ public class UserService {
         return dataService.save(entity);
     }
     
-     
     public UserDTO getById(Long id) {
     	return dataService.getById(id);
     }
 
-
     public List<UserDTO> getByIds(List<Long> ids) {
     	return dataService.getByIds(ids);
     }
-
 
     public UserDTO updateDetails(Long id, UpdateRequestDTO updateRequest) {
     	
@@ -129,8 +126,11 @@ public class UserService {
         	//Remove Profile Image from Media Server
             mediaService.delete(user.getProfileImageUrl());
 
-            //Delete
-            dataService.delete(id);
+            //Mark as deleted
+            User deletedUser = new User();
+            deletedUser.setId(id);
+            deletedUser.setDeleted(true);
+            user = dataService.save(deletedUser);
 
             //Event Publisher - User Deleted
             kafkaTemplate.send("UserDeleted", id);
@@ -141,11 +141,8 @@ public class UserService {
     }
 
 
+
     
-
-
-
-
 
     public UserService(UserDataService dataService, KafkaTemplate<String, Object> kafkaTemplate, MediaService mediaService, ModelMapper mapper) {
         this.dataService = dataService;

@@ -26,4 +26,5 @@ public class User {
     private String password;
     @Column(name="profile_image_url")
     private String profileImageUrl;
+    private boolean deleted;
 }

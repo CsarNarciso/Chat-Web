@@ -36,14 +36,13 @@ public class MediaService {
         }
         return newImageUrl;
     }
-
+    
     public void delete(String path){
         if(!path.equals(DEFAULT_IMAGE_URL)){
             feign.delete(path);
         }
     }
-
-
+    
 
     public MediaService(MediaFeign feign) {
         this.feign = feign;

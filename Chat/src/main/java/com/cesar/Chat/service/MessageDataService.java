@@ -46,13 +46,6 @@ public class MessageDataService {
     	repo.markMessagesAsRead(participantId, conversationId);
     }
 	
-	@CacheEvict(allEntries = true)
-    public void deleteByUserId(Long userId) {
-    	repo.deleteBySenderId(userId);
-    }
-	
-	
-	
 	public MessageDTO mapToDTO(Message message){
         return mapper.map(message, MessageDTO.class);
     }
