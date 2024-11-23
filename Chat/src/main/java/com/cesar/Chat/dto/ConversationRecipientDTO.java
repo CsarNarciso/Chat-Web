@@ -12,4 +12,5 @@ public class ConversationRecipientDTO {
     private String profileImageUrl;
     private String presenceStatus;
     private LocalDateTime lastSeen;
+    private boolean deleted;
 }

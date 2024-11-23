@@ -19,4 +19,5 @@ public class ConversationDTO implements Serializable {
     private List<Long> participants;
     private List<Long> recreateFor;
     private LocalDateTime createdAt;
+    private boolean participantDeleted;
 }

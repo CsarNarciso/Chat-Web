@@ -19,4 +19,5 @@ public class ConversationViewDTO {
     private LastMessageDTO lastMessage;
     private Long unreadMessagesCount;
     private boolean recreateForSomeone;
+    private boolean participantDeleted; 
 }
