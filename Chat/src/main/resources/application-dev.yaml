@@ -69,3 +69,9 @@ services:
 eureka:
   client:
     enabled: false
+    
+#Deleted user default details
+deletedUser:
+  default:
+    username: "[deleted]"
+    profileImageUrl: http://${services.user.url}/DefaultProfileImage.png

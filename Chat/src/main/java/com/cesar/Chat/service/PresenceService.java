@@ -17,25 +17,28 @@ public class PresenceService {
     public void injectConversationsParticipantsStatuses(List<ConversationViewDTO> conversations,
                                                         List<Long> participantsIds){
         //Fetch presence statuses
-        Map<Long, UserPresenceDTO> statuses =
-                feign.getByUserIds(participantsIds)
-                        .stream()
-                        .collect(Collectors.toMap(UserPresenceDTO::getId, Function.identity()));
+		if(!participantsIds.isEmpty()){
+			
+			Map<Long, UserPresenceDTO> statuses =
+					feign.getByUserIds(participantsIds)
+							.stream()
+							.collect(Collectors.toMap(UserPresenceDTO::getId, Function.identity()));
 
-        //If data was fetched
-        if(!statuses.isEmpty()) {
-        
-        	//Match statuses with participants
-        	conversations
-                	.forEach(c -> {
-                		
-                		UserPresenceDTO recipientStatus = statuses.get(c.getRecipient().getUserId());
-                		
-                		if(recipientStatus!=null) {
-                			mapper.map(c.getRecipient(), recipientStatus);
-                		}
-                	});
-        }
+			//If data was fetched
+			if(!statuses.isEmpty()) {
+			
+				//Match statuses with participants
+				conversations
+						.forEach(c -> {
+							
+							UserPresenceDTO recipientStatus = statuses.get(c.getRecipient().getUserId());
+							
+							if(recipientStatus!=null) {
+								mapper.map(c.getRecipient(), recipientStatus);
+							}
+						});
+			}
+		}
     }
 
 

@@ -9,23 +9,44 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class UserService {
 
 
 
-    public void injectConversationsParticipantsDetails(List<ConversationViewDTO> conversations, List<Long> participantsIds){
+    public void injectConversationsParticipantsDetails(List<ConversationViewDTO> conversations, List<Long> participantsIds, List<Long> deletedParticipantsIds){
 
-        //Fetch details
-        Map<Long, UserDTO> details =
-                getDetails(participantsIds)
+		Map<Long, UserDTO> details = new HashMap<>();
+
+		//Fetch details from user Service
+		if(!participantsIds.isEmpty()){	
+		
+			details = fetchDetails(participantsIds)
                         .stream()
                         .collect(Collectors.toMap(UserDTO::getId, Function.identity()));
-        //If data was fetched
+		}
+		
+		//Set default deleted user details
+		if(!deletedParticipantsIds.isEmpty()){	
+		
+			deletedParticipantsIds
+				.forEach(participantId -> {
+					UserDTO deletedParticipantDetails = 
+									UserDTO
+										.builder()
+											.username(DEFAULT_DELETED_USER_USERNAME)
+											.profileImageUrl(DEFAULT_DELETED_USER_IMAGE_URL)
+											.deleted(true)
+										.build();
+					details.put(participantId, deletedParticipantDetails);
+				});
+		}
+
+		//Match details with participants
         if(!details.isEmpty()) {
-        	
-        	//Match details with participants
+			
         	conversations
         		.forEach(c -> {
         			
@@ -38,7 +59,7 @@ public class UserService {
     }
 
     
-    private List<UserDTO> getDetails(List<Long> ids){
+    private List<UserDTO> fetchDetails(List<Long> ids){
         return feign.getDetails(ids);
     }
 
@@ -52,4 +73,8 @@ public class UserService {
 
     private final UserFeign feign;
     private final ModelMapper mapper;
+	@Value("${deletedUser.default.username}")
+    private String DEFAULT_DELETED_USER_USERNAME;
+    @Value("${deletedUser.default.profileImageUrl}")
+    private String DEFAULT_DELETED_USER_IMAGE_URL
 }

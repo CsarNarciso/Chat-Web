@@ -209,6 +209,7 @@ public class ConversationService {
 	private List<ConversationViewDTO> composeConversationsData(List<ConversationDTO> conversations,
 	                                                     Long conversationViewOwnerId){
 		List<Long> recipientIds = new ArrayList<>();
+		List<Long> deletedRecipientIds = new ArrayList<>();
 		List<UUID> conversationIds = mapToIds(conversations);
 		List<ConversationViewDTO> conversationViews = mapToViewDTOs(conversations);
 		
@@ -222,8 +223,14 @@ public class ConversationService {
 		            .stream()
 		            .filter(id -> !id.equals(conversationViewOwnerId))
 		            .findFirst().orElse(null);
-		    recipientIds.add(recipientId);
-		    
+			
+			//Check if deleted user or not
+			if(conversation.isParticipantDisabled()){	
+				deletedRecipientIds.add(recipientId);
+			}else{
+				recipientIds.add(recipientId);
+			}
+			
 		    //And compose as part of conversation view
 		    conversationViews.get(i).setRecipient(
 		            ConversationRecipientDTO
@@ -237,13 +244,16 @@ public class ConversationService {
 		    }
 		}
 		//Inject recipients' user details
-		userService.injectConversationsParticipantsDetails(conversationViews, recipientIds);
+		userService.injectConversationsParticipantsDetails(
+					conversationViews, recipientIds, deletedRecipientIds);
 		
 		//, presence statuses
-		presenceService.injectConversationsParticipantsStatuses(conversationViews, recipientIds);
+		presenceService.injectConversationsParticipantsStatuses(
+					conversationViews, recipientIds);
 		
-		//And view owner last messages and unread message counts
-		messageService.injectConversationsMessagesDetails(conversationViews, conversationIds, conversationViewOwnerId);
+		//And conversations last messages and view owner unread messages counts
+		messageService.injectConversationsMessagesDetails(
+					conversationViews, conversationIds, conversationViewOwnerId);
 		
 		return conversationViews;
 	}

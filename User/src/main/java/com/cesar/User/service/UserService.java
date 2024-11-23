@@ -126,11 +126,8 @@ public class UserService {
         	//Remove Profile Image from Media Server
             mediaService.delete(user.getProfileImageUrl());
 
-            //Mark as deleted
-            User deletedUser = new User();
-            deletedUser.setId(id);
-            deletedUser.setDeleted(true);
-            user = dataService.save(deletedUser);
+            //Delete
+            dataService.delete(id);
 
             //Event Publisher - User Deleted
             kafkaTemplate.send("UserDeleted", id);
