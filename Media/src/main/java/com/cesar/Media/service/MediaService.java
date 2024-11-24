@@ -1,13 +1,15 @@
 package com.cesar.Media.service;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class MediaService {
@@ -29,8 +31,7 @@ public class MediaService {
                 try {
                 	
                     if(oldPath!=null && !oldPath.isEmpty()){
-                    	
-                        Files.deleteIfExists(Path.of( mediaPath + "\\" + oldPath.replace(mediaBaseUrl, "")));
+                        Files.deleteIfExists(Path.of( mediaPath + "\\" + oldPath.substring(oldPath.lastIndexOf("/")+1)));
                     }
                     imageMetadata.transferTo(file);
                     
