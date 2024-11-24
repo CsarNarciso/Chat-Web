@@ -45,7 +45,7 @@ public class MediaService {
 
     public void delete(String path) {
         try {
-            Files.deleteIfExists(Path.of(path));
+        	Files.deleteIfExists(Path.of( mediaPath + "\\" + path.substring(path.lastIndexOf("/")+1)));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
