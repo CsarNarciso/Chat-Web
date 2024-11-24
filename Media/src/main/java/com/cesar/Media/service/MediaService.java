@@ -30,7 +30,7 @@ public class MediaService {
                 try {
                 	
                     if(oldPath!=null && !oldPath.isEmpty()){
-                        Files.deleteIfExists(Path.of( mediaPath + "\\" + oldPath.substring(oldPath.lastIndexOf("/")+1)));
+                    	delete(oldPath);
                     }
                     imageMetadata.transferTo(file);
                     
