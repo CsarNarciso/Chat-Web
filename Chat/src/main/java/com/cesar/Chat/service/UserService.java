@@ -40,6 +40,7 @@ public class UserService {
 						.builder()
 						.username(DEFAULT_DELETED_USER_USERNAME)
 						.profileImageUrl(DEFAULT_DELETED_USER_IMAGE_URL)
+						.deleted(true)
 						.build();
 				details.put(participantId, deletedParticipantDetails);
 			}

@@ -1,6 +1,7 @@
 package com.cesar.Chat.dto;
 
 import java.time.LocalDateTime;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -12,4 +13,5 @@ public class ConversationRecipientDTO {
     private String profileImageUrl;
     private String presenceStatus;
     private LocalDateTime lastSeen;
+    private boolean deleted;
 }
