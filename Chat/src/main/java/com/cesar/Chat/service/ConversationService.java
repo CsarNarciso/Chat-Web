@@ -150,7 +150,7 @@ public class ConversationService {
 		if(entity!=null){
 		
 			//First, if conversation is already disabled
-			if(entity.isParticipantDisabled()){
+			if(entity.isParticipantDeleted()){
 				//Permanently deletion
 				permanently = true;
 		        dataService.delete(conversationId, participantId);
@@ -225,7 +225,7 @@ public class ConversationService {
 		            .findFirst().orElse(null);
 			
 			//Check if deleted user or not
-			if(conversation.isParticipantDisabled()){	
+			if(conversation.isParticipantDeleted()){	
 				deletedRecipientIds.add(recipientId);
 			}else{
 				recipientIds.add(recipientId);

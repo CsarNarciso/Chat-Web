@@ -1,15 +1,18 @@
 package com.cesar.Chat.service;
 
-import com.cesar.Chat.dto.ConversationViewDTO;
-import com.cesar.Chat.dto.UserDTO;
-import com.cesar.Chat.feign.UserFeign;
-import org.modelmapper.ModelMapper;
-import org.springframework.stereotype.Service;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import com.cesar.Chat.dto.ConversationViewDTO;
+import com.cesar.Chat.dto.UserDTO;
+import com.cesar.Chat.feign.UserFeign;
 
 @Service
 public class UserService {
@@ -30,31 +33,27 @@ public class UserService {
 		
 		//Set default deleted user details
 		if(!deletedParticipantsIds.isEmpty()){	
-		
-			deletedParticipantsIds
-				.forEach(participantId -> {
-					UserDTO deletedParticipantDetails = 
-									UserDTO
-										.builder()
-											.username(DEFAULT_DELETED_USER_USERNAME)
-											.profileImageUrl(DEFAULT_DELETED_USER_IMAGE_URL)
-											.deleted(true)
-										.build();
-					details.put(participantId, deletedParticipantDetails);
-				});
+			for(Long participantId : deletedParticipantsIds) {
+				
+				UserDTO deletedParticipantDetails = 
+						UserDTO
+						.builder()
+						.username(DEFAULT_DELETED_USER_USERNAME)
+						.profileImageUrl(DEFAULT_DELETED_USER_IMAGE_URL)
+						.build();
+				details.put(participantId, deletedParticipantDetails);
+			}
 		}
 
 		//Match details with participants
         if(!details.isEmpty()) {
-			
-        	conversations
-        		.forEach(c -> {
-        			
-        			UserDTO recipientDetails = details.get(c.getRecipient().getUserId());
-        			if(recipientDetails!=null) {
-        				mapper.map(recipientDetails, c.getRecipient());
-        			}
-        		});
+			for(ConversationViewDTO conversation : conversations) {
+				
+				UserDTO recipientDetails = details.get(conversation.getRecipient().getUserId());
+				if(recipientDetails!=null) {
+					mapper.map(recipientDetails, conversation.getRecipient());
+				}
+			}
         }
     }
 
@@ -76,5 +75,5 @@ public class UserService {
 	@Value("${deletedUser.default.username}")
     private String DEFAULT_DELETED_USER_USERNAME;
     @Value("${deletedUser.default.profileImageUrl}")
-    private String DEFAULT_DELETED_USER_IMAGE_URL
+    private String DEFAULT_DELETED_USER_IMAGE_URL;
 }
