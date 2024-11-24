@@ -14,7 +14,7 @@ public class MediaService {
         String newImageUrl;
         
         //If image provided,
-        if(!imageMetadata.isEmpty()){
+        if(imageMetadata != null && !imageMetadata.isEmpty()){
         	
         	//Try to upload
         	String uploadedImageUrl = feign.upload(imageMetadata, oldPath);

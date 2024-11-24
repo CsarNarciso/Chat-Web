@@ -5,6 +5,7 @@ import java.util.List;
 import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +17,7 @@ import com.cesar.User.repository.UserRepository;
 @CacheConfig(cacheNames = "users")
 public class UserDataService {
 
-	@Cacheable(key = "#result.id")
+	@CachePut(key = "#result.id")
     public UserDTO save(User user){
         return mapToDTO(repo.save(user));
     }
