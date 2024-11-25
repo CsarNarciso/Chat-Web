@@ -19,8 +19,15 @@ $(document).ready(function() {
 			connectionStatusMessage.textContent = `Connected as User ${userId}`;
 			connectionStatusMessage.style.color = 'green';	
 			
-			stomp.subscribe(`/queue/onFirstInteraction/user/${userId}`, function(message){
-				console.log(JSON.parse(message.body));
+			stomp.subscribe(`/queue/onFirstInteraction/user/${userId}`, function(newConversation){
+				
+				var conversation = JSON.parse(newConversation.body);
+				var conversationId = conversation.id;
+				console.log(conversation);
+				
+				stomp.subscribe(`/topic/conversation/${conversationId}`, function(message){
+					console.log(JSON.parse(message.body));
+				});
 			});
 		}
 	});
