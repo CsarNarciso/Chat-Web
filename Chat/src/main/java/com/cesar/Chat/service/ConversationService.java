@@ -111,9 +111,8 @@ public class ConversationService {
 			    		composeConversationsData(Stream.of(conversation).toList(), participantId).getFirst();
 				
 			    //Send
-			    webSocketTemplate.convertAndSendToUser(
-			            participantId.toString(),
-			            "/user/reply/createConversation",
+			    webSocketTemplate.convertAndSend(
+			            "/queue/user/" + participantId.toString() + "/onFirstInteraction",
 			            conversationView);
 			};
 			
