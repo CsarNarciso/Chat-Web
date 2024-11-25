@@ -28,6 +28,7 @@ $(document).ready(function() {
 				var conversationRecipientId = conversation.recipient.userId;
 
 			    // Display conversation 
+				console.log("New conversation: ", conversation);
 			    displayData(conversation, `Conversation with ${conversationRecipientId}`);
 
 				//And for each new one, subscribe to them to hear for messages
@@ -36,6 +37,7 @@ $(document).ready(function() {
 					var sentMessage = JSON.parse(message.body);
 					
 					//Display new message
+					console.log("New message: ", sentMessage);
 			        displayData(sentMessage , "New message");
 			    });
 			});
