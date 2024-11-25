@@ -19,7 +19,7 @@ $(document).ready(function() {
 			connectionStatusMessage.textContent = `Connected as User ${userId}`;
 			connectionStatusMessage.style.color = 'green';	
 			
-			stomp.subscribe(`/queue/user/${userId}/onFirstInteraction`, function(message){
+			stomp.subscribe(`/queue/onFirstInteraction/user/${userId}`, function(message){
 				console.log(JSON.parse(message.body));
 			});
 		}
