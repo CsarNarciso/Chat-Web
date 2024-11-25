@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+    <title>Chat page</title>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+	<script src="websocketsFunctionality.js"></script>
+     
+</head>
+
+<body>
+	<h1>Connect to Chat</h1>
+	<label for="userId">Enter your User ID:</label>
+	<input type="text" id="userId" placeholder="User ID" />
+	<button id="connectBtn">Connect</button>
+	<p id="connectionStatusMessage"></p>
+</body>
+
+</html>

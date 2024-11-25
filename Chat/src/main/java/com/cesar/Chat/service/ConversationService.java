@@ -112,7 +112,7 @@ public class ConversationService {
 				
 			    //Send
 			    webSocketTemplate.convertAndSend(
-			            "/queue/user/" + participantId.toString() + "/onFirstInteraction",
+			            "/queue/onFirstInteraction/user/" + participantId.toString(),
 			            conversationView);
 			};
 			
