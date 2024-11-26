@@ -34,6 +34,7 @@ $(document).ready(function() {
 					// Display conversation 
 					console.log("New conversation: ", conversation);
 					displayData(conversation, `Conversation with ${conversationRecipientId}`);
+					$("#json-container").innerHTML = prettyPrintJson.toHtml(conversation);
 
 					//And for each new one, subscribe to them to hear for messages
 					stomp.subscribe(`/topic/conversation/${conversationId}`, function (message) {
@@ -43,12 +44,13 @@ $(document).ready(function() {
 						//Display new message
 						console.log("New message: ", sentMessage);
 						displayData(sentMessage , "New message");
+						$("#json-container").innerHTML = prettyPrintJson.toHtml(sentMessage);
 					});
 				});
 
 				// Function to format and display data
 				function displayData(data, title) {
-					const container = $("#receivedData");
+					const container = $("#json-container");
 					
 					// Create a card or structured HTML for better presentation
 					const card = $(`
