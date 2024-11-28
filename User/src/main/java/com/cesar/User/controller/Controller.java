@@ -23,12 +23,40 @@ import com.cesar.User.dto.UpdateRequestDTO;
 import com.cesar.User.dto.UserDTO;
 import com.cesar.User.service.UserService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+
 @RestController
 @RequestMapping("/users")
 public class Controller {
 
 	
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(
+            summary = "Create User",
+            description = "Create new user and return the new one's details.",
+            tags = {"Creation"},
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "User details and password",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = CreateRequestDTO.class)
+                    )
+            ),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successful user creation.",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = UserDTO.class)
+                            )
+                    )
+            }
+    )
     public ResponseEntity<?> create(@ModelAttribute CreateRequestDTO createRequest){
         return ResponseEntity
                 .status(HttpStatus.CREATED)
