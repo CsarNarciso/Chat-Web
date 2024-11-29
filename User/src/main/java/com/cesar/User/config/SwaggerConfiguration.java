@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.servers.Server;
         info = @Info(
                 title = "USER SERVICE",
                 description = "User details data handling and retrieve",
-                termsOfService = "https://Some-condition-terms-for/CsarNarciso/Chat-Web.com",
+                termsOfService = "https://some-condition-terms-for/CsarNarciso/Chat-Web.com",
                 version = "1.0.0",
                 contact = @Contact(
                         name = "CsarNarciso",
@@ -18,7 +18,7 @@ import io.swagger.v3.oas.annotations.servers.Server;
                         email = "cesarpazol1029@gmail.com"
                 ),
                 license = @License(
-                        name = "Standard Software Use License for CsarNarciso/Chat-Web",
+                        name = "Standard Software Use License for CsarNarciso - Chat-Web",
                         url = "www.csarnarciso.chat-web.com/licence"
                 )
         ),
