@@ -50,6 +50,11 @@ eureka:
   client:
     enabled: false
 
+#Swagger OpenApi
+springdoc:
+  swagger-ui:
+    path: /docs
+
 #Feign Services
 services:
   media:
