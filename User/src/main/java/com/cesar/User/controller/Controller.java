@@ -37,18 +37,18 @@ public class Controller {
     @Operation(
             summary = "Create User",
             description = "Create new user and return the new one's details.",
-            tags = {"Creation"},
+            tags = {"User handling"},
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "User details and password",
+                    description = "User registration details",
                     required = true,
                     content = @Content(
-                            mediaType = "application/json",
+                            mediaType = "multipart/form-data",
                             schema = @Schema(implementation = CreateRequestDTO.class)
                     )
             ),
             responses = {
                     @ApiResponse(
-                            responseCode = "200",
+                            responseCode = "201",
                             description = "Successful user creation.",
                             content = @Content(
                                     mediaType = "application/json",
@@ -65,6 +65,25 @@ public class Controller {
 
     
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(
+            summary = "Get User by ID",
+            description = "Fetch a user by provided ID.",
+            tags = {"User fetching"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successful user retrieve.",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = UserDTO.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "No existent user."
+                    )
+            }
+    )
     public ResponseEntity<?> getById(@PathVariable Long id){
     	
         UserDTO user = service.getById(id);
@@ -79,6 +98,25 @@ public class Controller {
     
     
     @GetMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(
+            summary = "Get Users by IDs",
+            description = "Fetch users by provided IDs.",
+            tags = {"User fetching"},
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successful users retrieve.",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = List.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "No existent users."
+                    )
+            }
+    )
     public ResponseEntity<?> getByIds(@RequestParam List<Long> ids){
         
     	List<UserDTO> users = service.getByIds(ids);
