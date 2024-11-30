@@ -196,6 +196,24 @@ public class UserDataServiceTest {
 		assertNull(usersResult);
 	}
 	
+	@Test
+	public void givenUserId_whenDelete_thenCallsRepositoryDelete() {
+		
+		//When
+		service.delete(ID);
+		
+		//Then
+		
+		//Verify repository interaction
+		verify(repo, times(1)).deleteById( anyLong() );
+		
+		//Verify NO ModelMapper interaction
+		verify(mapper, times(0)).map(any(), any());
+	}
+	
+	
+	
+	
 
 	
 	private User createMockUser(Long id) {
