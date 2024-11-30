@@ -4,9 +4,11 @@ package com.cesar.User.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,9 +29,6 @@ public class UserDataServiceTest {
 	public void setup() {
 		
 		this.mockUser = createMockUser(1l);
-		
-		when(mapper.map(any(User.class), eq(UserDTO.class)))
-        	.thenReturn(mapToDTO());
 	}
 	
 	@Test
@@ -39,7 +38,11 @@ public class UserDataServiceTest {
 		Long id = this.id;
 		
 		//When
-		when(repo.findById( anyLong() )).thenReturn( Optional.of(mockUser) );
+		when(repo.findById( anyLong() )).thenReturn( Optional.of(mockUser) );		
+		
+		when(mapper.map(any(User.class), eq(UserDTO.class)))
+    		.thenReturn(mapToDTO());
+		
 		UserDTO userResult = service.getById(id);
 		
 		//Then
@@ -49,7 +52,7 @@ public class UserDataServiceTest {
 		
 		//Verify ModelMapper interaction and capture entity before map to DTO
 		ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-		verify(mapper, times(1)).map(userCaptor, eq(UserDTO.class) );
+		verify(mapper, times(1)).map(userCaptor.capture(), eq(UserDTO.class) );
 		User capturedEntityBeforeMap = userCaptor.getValue();
 		
 		//Asserts on captured user
@@ -81,7 +84,7 @@ public class UserDataServiceTest {
 		//Verify repository interaction
 		verify(repo, times(1)).findById( anyLong() );
 		
-		//Verify ModelMapper interaction and capture entity before map to DTO
+		//Verify NO ModelMapper interaction
 		verify(mapper, times(0)).map(any(), any());
 		
 		//Asserts on result
@@ -97,6 +100,10 @@ public class UserDataServiceTest {
 		
 		//When
 		when(repo.findAllById( ids )).thenReturn( entities );
+		
+		when(mapper.map(any(User.class), eq(UserDTO.class)))
+    		.thenReturn(mapToDTO());
+		
 		List<UserDTO> usersResult = service.getByIds(ids);
 		
 		//Then
@@ -108,7 +115,7 @@ public class UserDataServiceTest {
 		
 		//Verify ModelMapper interaction and capture entity before map to DTO
 		ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-//		verify(mapper, times(1)).map(userCaptor, eq(UserDTO.class) );
+		verify(mapper, times(ids.size())).map(userCaptor.capture(), eq(UserDTO.class) );
 		List<User> capturedEntitiesBeforeMap = userCaptor.getAllValues();
 		
 		for(int i = 0; i<ids.size(); i++) {
@@ -129,6 +136,28 @@ public class UserDataServiceTest {
 			assertEquals(EMAIL, userResult.getEmail());
 			assertEquals(IMAGE_URL, userResult.getProfileImageUrl());
 		}
+	}
+	
+	@Test
+	public void givenInvalidUserIds_whenGetByIds_thenReturnsEmptyList() {
+		
+		//Given
+		List<Long> ids = List.of(7l, 8l, 9l);
+		
+		//When
+		when(repo.findAllById( ids )).thenReturn( Collections.emptyList() );
+		List<UserDTO> usersResult = service.getByIds(ids);
+		
+		//Then
+		
+		//Verify repository interaction
+		verify(repo, times(1)).findAllById( ids );
+		
+		//Verify NO ModelMapper interaction
+		verify(mapper, times(0)).map(any(), any());
+		
+		//Asserts on result
+		assertNull(usersResult);
 	}
 	
 
