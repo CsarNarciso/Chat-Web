@@ -175,7 +175,10 @@
                         </goals>
                         <configuration>
                             <excludes>
-                                <exclude>com/cesar/User/*.class</exclude>
+                            	<exclude>com/cesar/User/*.class</exclude>
+                                <exclude>com/cesar/User/config/*.class</exclude>
+                                <exclude>com/cesar/User/entity/*.class</exclude>
+                                <exclude>com/cesar/User/dto/*.class</exclude>
                             </excludes>
                         </configuration>
                     </execution>
