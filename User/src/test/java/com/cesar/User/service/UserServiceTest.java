@@ -20,7 +20,7 @@ import com.cesar.User.entity.User;
 public class UserServiceTest {
 
 	@Test
-	public void givenFullCreateUserRequest_whenCreate_thenReturnsUserDTOWithCustomImageUrl() {
+	public void givenFullCreateRequest_whenCreate_thenReturnsUserDTOWithCustomImageUrl() {
 		
 		//Given
 		CreateRequestDTO createRequest = new CreateRequestDTO(USERNAME, EMAIL, PASSWORD, IMAGE_FILE);
@@ -29,9 +29,9 @@ public class UserServiceTest {
 		when(mapper.map( any(CreateRequestDTO.class), eq(User.class)))
 			.thenReturn(new User(null, USERNAME, EMAIL, PASSWORD, null));
 		
-		when(mediaService.upload( any(MultipartFile.class), eq(null))).thenReturn(CUSTOM_IMAGE_URL);
+		when(mediaService.upload( any(MultipartFile.class), eq(null))).thenReturn(IMAGE_URL);
 		
-		when(dataService.save( any(User.class) )).thenReturn(new UserDTO(ID, USERNAME, EMAIL, CUSTOM_IMAGE_URL));
+		when(dataService.save( any(User.class) )).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
 		
 		UserDTO userResult = service.create(createRequest);
 		
@@ -53,14 +53,37 @@ public class UserServiceTest {
 		assertEquals(null, entityBeforeSave.getId());
 		assertEquals(USERNAME, entityBeforeSave.getUsername());
 		assertEquals(EMAIL, entityBeforeSave.getEmail());
-		assertEquals(CUSTOM_IMAGE_URL, entityBeforeSave.getProfileImageUrl());
+		assertEquals(IMAGE_URL, entityBeforeSave.getProfileImageUrl());
 		
 		//Asserts on result
 		assertNotNull(userResult);
 		assertEquals(ID, userResult.getId());
 		assertEquals(USERNAME, userResult.getUsername());
 		assertEquals(EMAIL, userResult.getEmail());
-		assertEquals(CUSTOM_IMAGE_URL, userResult.getProfileImageUrl());
+		assertEquals(IMAGE_URL, userResult.getProfileImageUrl());
+	}
+	
+	@Test
+	public void givenUserId_whenGetById_thenReturnsUserDTO() {
+		
+		//When
+		when(dataService.getById( any(Long.class) )).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
+		UserDTO userResult = service.getById(ID);
+		
+		//Then
+		
+		//Verify Data Service interaction and capture User entity
+		verify(dataService, times(1)).getById(any(Long.class));
+		
+		//Verify NO ModelMapper interaction
+		verify(mapper, times(0)).map(any(), any());
+		
+		//Asserts on result
+		assertNotNull(userResult);
+		assertEquals(ID, userResult.getId());
+		assertEquals(USERNAME, userResult.getUsername());
+		assertEquals(EMAIL, userResult.getEmail());
+		assertEquals(IMAGE_URL, userResult.getProfileImageUrl());
 	}
 	
 	
@@ -71,8 +94,7 @@ public class UserServiceTest {
 	private final String USERNAME = "Username";
 	private final String EMAIL = "Email";
 	private final String PASSWORD = "PASSWORD";
-	private final String CUSTOM_IMAGE_URL = "CUSTOM_URL";
-	private final String DEFAULT_IMAGE_URL = "DEFAULT_URL";
+	private final String IMAGE_URL = "IMAGE_URL";
 	private final MultipartFile IMAGE_FILE = mock(MultipartFile.class);
 	
 	@Mock
