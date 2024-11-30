@@ -6,10 +6,11 @@ import static org.mockito.Mockito.*;
 
 import java.util.List;
 import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -21,64 +22,147 @@ import com.cesar.User.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class UserDataServiceTest {
+	
+	@BeforeEach
+	public void setup() {
+		
+		this.mockUser = createMockUser(1l);
+		
+		when(mapper.map(any(User.class), eq(UserDTO.class)))
+        	.thenReturn(mapToDTO());
+	}
+	
+	@Test
+	public void givenUserId_whenGetById_thenReturnsUserDTO() {
+		
+		//Given
+		Long id = this.id;
+		
+		//When
+		when(repo.findById( anyLong() )).thenReturn( Optional.of(mockUser) );
+		UserDTO userResult = service.getById(id);
+		
+		//Then
+		
+		//Verify repository interaction
+		verify(repo, times(1)).findById( anyLong() );
+		
+		//Verify ModelMapper interaction and capture entity before map to DTO
+		ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+		verify(mapper, times(1)).map(userCaptor, eq(UserDTO.class) );
+		User capturedEntityBeforeMap = userCaptor.getValue();
+		
+		//Asserts on captured user
+		assertNotNull(capturedEntityBeforeMap);
+		assertEquals(USERNAME, capturedEntityBeforeMap.getUsername());
+		assertEquals(EMAIL, capturedEntityBeforeMap.getEmail());
+		assertEquals(PASSWORD, capturedEntityBeforeMap.getPassword());
+		assertEquals(IMAGE_URL, capturedEntityBeforeMap.getProfileImageUrl());
+		
+		//Asserts on result
+		assertNotNull(userResult);
+		assertEquals(USERNAME, userResult.getUsername());
+		assertEquals(EMAIL, userResult.getEmail());
+		assertEquals(IMAGE_URL, userResult.getProfileImageUrl());
+	}
+	
+	@Test
+	public void givenInvalidUserId_whenGetById_thenReturnsNull() {
+		
+		//Given
+		Long id = 500l;
+		
+		//When
+		when(repo.findById( anyLong() )).thenReturn( Optional.empty() );
+		UserDTO userResult = service.getById(id);
+		
+		//Then
+		
+		//Verify repository interaction
+		verify(repo, times(1)).findById( anyLong() );
+		
+		//Verify ModelMapper interaction and capture entity before map to DTO
+		verify(mapper, times(0)).map(any(), any());
+		
+		//Asserts on result
+		assertNull(userResult);
+	}
+	
+	@Test
+	public void givenUserIds_whenGetByIds_thenReturnsListOfUserDTO() {
+		
+		//Given
+		List<Long> ids = this.ids;
+		entities = createMockUsers(ids);
+		
+		//When
+		when(repo.findAllById( ids )).thenReturn( entities );
+		List<UserDTO> usersResult = service.getByIds(ids);
+		
+		//Then
+		assertNotNull(usersResult);
+		assertFalse(usersResult.isEmpty());
+		
+		//Verify repository interaction
+		verify(repo, times(1)).findAllById( ids );
+		
+		//Verify ModelMapper interaction and capture entity before map to DTO
+		ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+//		verify(mapper, times(1)).map(userCaptor, eq(UserDTO.class) );
+		List<User> capturedEntitiesBeforeMap = userCaptor.getAllValues();
+		
+		for(int i = 0; i<ids.size(); i++) {
+			
+			User capturedEntityBeforeMap = capturedEntitiesBeforeMap.get(i);
+			UserDTO userResult = usersResult.get(i);
+			
+			//Asserts on captured user
+			assertNotNull(capturedEntityBeforeMap);
+			assertEquals(USERNAME, capturedEntityBeforeMap.getUsername());
+			assertEquals(EMAIL, capturedEntityBeforeMap.getEmail());
+			assertEquals(PASSWORD, capturedEntityBeforeMap.getPassword());
+			assertEquals(IMAGE_URL, capturedEntityBeforeMap.getProfileImageUrl());
+			
+			//Asserts on result
+			assertNotNull(userResult);
+			assertEquals(USERNAME, userResult.getUsername());
+			assertEquals(EMAIL, userResult.getEmail());
+			assertEquals(IMAGE_URL, userResult.getProfileImageUrl());
+		}
+	}
+	
 
+	
+	private User createMockUser(Long id) {
+		return new User(id, USERNAME, EMAIL, PASSWORD, IMAGE_URL);
+	}
+	
+	private List<User> createMockUsers(List<Long> ids){
+		return ids
+				.stream()
+				.map(this::createMockUser)
+				.toList();
+	}
+	
+	private UserDTO mapToDTO(){
+		return new UserDTO(mockUser.getId(), mockUser.getUsername(), mockUser.getEmail(), mockUser.getProfileImageUrl());
+	}
+	
+	
+	private User mockUser;
+	private final Long id = 1l;
+	private final String USERNAME = "Username";
+	private final String EMAIL = "Email";
+	private final String PASSWORD = "PASSWORD";
+	private final String IMAGE_URL = "IMAGE_URL";
+	
+	private List<Long> ids = List.of(1l, 3l, 4l);
+	private List<User> entities = createMockUsers(ids);
+	
 	@Mock
 	private UserRepository repo;
 	@Mock
 	private ModelMapper mapper;
 	@InjectMocks
 	private UserDataService service;
-	
-	private User entity;
-	private List<User> entities;
-	
-	@BeforeEach
-	public void init() {
-		this.entity = new User(1l, "Username", "Email", "Password", "AvatarUrl");
-		when(mapper.map(any(User.class), eq(UserDTO.class)))
-        .thenReturn(new UserDTO(entity.getId(), entity.getUsername(), entity.getEmail(), entity.getProfileImageUrl()));
-	}
-	
-	@Test
-	public void getById() {
-		
-		//Given
-		Long id = 1l;
-		
-		//When
-		when(repo.findById( anyLong() )).thenReturn( Optional.of(entity) );
-		UserDTO user = service.getById(id);
-		
-		//Then
-		assertNotNull(user);
-		assertEquals(entity.getUsername(), user.getUsername());
-		assertEquals(entity.getEmail(), user.getEmail());
-		assertEquals(entity.getProfileImageUrl(), user.getProfileImageUrl());
-		verify(repo).findById( anyLong() );
-		verify(mapper).map(entity, UserDTO.class);
-	}
-	
-	@Test
-	public void getByIds() {
-		
-		//Given
-		List<Long> ids = List.of(1l, 3l, 85l);
-		entities = List.of(
-				entity,
-				new User(3l, "Username", "Email", "Password", "AvatarUrl"),
-				new User(5l, "Username", "Email", "Password", "AvatarUrl"),
-				new User(86l, "Username", "Email", "Password", "AvatarUrl")
-				);		
-		//When
-		when(repo.findAllById( (List<Long>) any() )).thenReturn( entities );
-		List<UserDTO> users = service.getByIds(ids);
-		
-		//Then
-		assertNotNull(users);
-		assertFalse(users.isEmpty());
-		assertEquals(entities.get(0).getUsername(), users.get(0).getUsername());
-		assertEquals(entities.get(0).getEmail(), users.get(0).getEmail());
-		assertEquals(entities.get(0).getProfileImageUrl(), users.get(0).getProfileImageUrl());
-		verify(repo).findAllById( anyList() );
-	}
 }
