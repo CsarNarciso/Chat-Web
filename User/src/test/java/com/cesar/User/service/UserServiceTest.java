@@ -14,8 +14,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import com.cesar.User.dto.CreateRequestDTO;
+import com.cesar.User.dto.UpdateRequestDTO;
 import com.cesar.User.dto.UserDTO;
 import com.cesar.User.entity.User;
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -54,6 +56,7 @@ public class UserServiceTest {
 		assertEquals(null, entityBeforeSave.getId());
 		assertEquals(USERNAME, entityBeforeSave.getUsername());
 		assertEquals(EMAIL, entityBeforeSave.getEmail());
+		assertEquals(PASSWORD, entityBeforeSave.getPassword());
 		assertEquals(IMAGE_URL, entityBeforeSave.getProfileImageUrl());
 		
 		//Asserts on result
@@ -120,6 +123,57 @@ public class UserServiceTest {
 			assertEquals(EMAIL, usersResult.get(i).getEmail());
 			assertEquals(IMAGE_URL, usersResult.get(i).getProfileImageUrl());
 		}
+	}
+	
+	@Test
+	public void givenUserIdAndUpdateRequest_whenUpdateDetails_thenPublishKafkaTopicAndReturnsUpdatedUserDTO() {
+		
+		//Given
+		String updatedUsername = "UpdatedUsername";
+		String updatedEmail = "UpdatedEmail";
+		UpdateRequestDTO updateRequest = new UpdateRequestDTO(
+												Optional.of(updatedUsername), 
+												Optional.of(updatedEmail));
+		
+		//When
+		when(dataService.getById( any(Long.class) )).thenReturn(new User(ID, USERNAME, EMAIL, IMAGE_URL));
+		
+		when(mapper.map( any(UserDTO.class), eq(User.class)))
+			.thenReturn(new User(ID, USERNAME, EMAIL, PASSWORD, IMAGE_URL));
+				
+		when(dataService.save( any(User.class) )).thenReturn(new UserDTO(ID, updatedUsername, updatedEmail, IMAGE_URL));
+		
+		UserDTO userResult = service.updateDetails(updateRequest);
+		
+		//Then
+		
+		//Verify Data Service interactions and capture entity before save
+		verify(dataService, times(1)).getById(any(Long.class);
+		
+		ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+		verify(dataService, times(1)).save(userCaptor.capture());
+		User entityBeforeSave = userCaptor.getValue();
+		
+		//Verify ModelMapper interaction
+		verify(mapper, times(1)).map(any(UserDTO.class), eq(User.class));
+		
+		//Verify KafkaTemplate interaction
+		verify(kafkaTemplate, times(1)).send(eq("UserUpdated"), any(UserDTO.class));
+		
+		//Asserts on entity before save
+		assertNotNull(entityBeforeSave);
+		assertEquals(ID, entityBeforeSave.getId());
+		assertEquals(updatedUsername, entityBeforeSave.getUsername());
+		assertEquals(updatedEmail, entityBeforeSave.getEmail());
+		assertEquals(PASSWORD, entityBeforeSave.getPassword());
+		assertEquals(IMAGE_URL, entityBeforeSave.getProfileImageUrl());
+		
+		//Asserts on result
+		assertNotNull(userResult);
+		assertEquals(ID, userResult.getId());
+		assertEquals(updatedUsername, userResult.getUsername());
+		assertEquals(updatedEmail, userResult.getEmail());
+		assertEquals(IMAGE_URL, userResult.getProfileImageUrl());
 	}
 	
 	@Test
