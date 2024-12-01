@@ -1,17 +1,9 @@
 package com.cesar.User.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.util.List;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -19,8 +11,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.cesar.User.dto.CreateRequestDTO;
 import com.cesar.User.dto.UserDTO;
 import com.cesar.User.entity.User;
@@ -130,6 +122,67 @@ public class UserServiceTest {
 		}
 	}
 	
+	@Test
+	public void givenUserId_whenDelete_thenCallsMediaServiceDeletePublishKafkaTopicAndReturnsUserDTO() {
+		
+		//When
+		when(dataService.getById( any(Long.class) )).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
+		UserDTO userResult = service.delete(ID);
+		
+		//Then
+		
+		//Verify Data Service interaction
+		verify(dataService, times(1)).getById(any(Long.class));
+		
+		verify(dataService, times(1)).delete(any(Long.class));
+		
+		//Verify Media Service interaction
+		verify(mediaService, times(1)).delete(IMAGE_URL);
+		
+		//Verify KafkaTemplate interaction
+		verify(kafkaTemplate, times(1)).send("UserDeleted", ID);
+		
+		//Verify NO ModelMapper interaction
+		verify(mapper, times(0)).map(any(), any());
+		
+		//Asserts on result
+		assertNotNull(userResult);
+		assertEquals(ID, userResult.getId());
+		assertEquals(USERNAME, userResult.getUsername());
+		assertEquals(EMAIL, userResult.getEmail());
+		assertEquals(IMAGE_URL, userResult.getProfileImageUrl());
+	}
+	
+	@Test
+	public void givenInexistentUserId_whenDelete_thenReturnsNull() {
+		
+		//Given
+		Long id = 2l;
+		
+		//When
+		when(dataService.getById( any(Long.class) )).thenReturn(null);
+		UserDTO userResult = service.delete(id);
+		
+		//Then
+		
+		//Verify Data Service interaction
+		verify(dataService, times(1)).getById(any(Long.class));
+		
+		verify(dataService, times(0)).delete(any());
+		
+		//Verify NO Media Service interaction
+		verify(mediaService, times(0)).delete(any());
+		
+		//Verify NO KafkaTemplate interaction
+		verify(kafkaTemplate, times(0)).send(any(), any());
+		
+		//Verify NO ModelMapper interaction
+		verify(mapper, times(0)).map(any(), any());
+		
+		//Asserts on result
+		assertNull(userResult);
+	}
+	
 	
 	
 	
@@ -145,6 +198,8 @@ public class UserServiceTest {
 	private ModelMapper mapper;
 	@Mock
 	private MediaService mediaService;
+	@Mock
+	private KafkaTemplate<String, Object> kafkaTemplate;
 	@Mock
 	private UserDataService dataService;
 	@InjectMocks
