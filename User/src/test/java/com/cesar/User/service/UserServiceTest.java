@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -17,7 +18,6 @@ import com.cesar.User.dto.CreateRequestDTO;
 import com.cesar.User.dto.UpdateRequestDTO;
 import com.cesar.User.dto.UserDTO;
 import com.cesar.User.entity.User;
-import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -130,25 +130,24 @@ public class UserServiceTest {
 		
 		//Given
 		String updatedUsername = "UpdatedUsername";
-		String updatedEmail = "UpdatedEmail";
 		UpdateRequestDTO updateRequest = new UpdateRequestDTO(
 												Optional.of(updatedUsername), 
-												Optional.of(updatedEmail));
+												Optional.empty());
 		
 		//When
-		when(dataService.getById( any(Long.class) )).thenReturn(new User(ID, USERNAME, EMAIL, IMAGE_URL));
+		when(dataService.getById( any(Long.class) )).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
 		
 		when(mapper.map( any(UserDTO.class), eq(User.class)))
 			.thenReturn(new User(ID, USERNAME, EMAIL, PASSWORD, IMAGE_URL));
 				
-		when(dataService.save( any(User.class) )).thenReturn(new UserDTO(ID, updatedUsername, updatedEmail, IMAGE_URL));
+		when(dataService.save( any(User.class) )).thenReturn(new UserDTO(ID, updatedUsername, EMAIL, IMAGE_URL));
 		
-		UserDTO userResult = service.updateDetails(updateRequest);
+		UserDTO userResult = service.updateDetails(ID, updateRequest);
 		
 		//Then
 		
 		//Verify Data Service interactions and capture entity before save
-		verify(dataService, times(1)).getById(any(Long.class);
+		verify(dataService, times(1)).getById(any(Long.class));
 		
 		ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
 		verify(dataService, times(1)).save(userCaptor.capture());
@@ -164,7 +163,7 @@ public class UserServiceTest {
 		assertNotNull(entityBeforeSave);
 		assertEquals(ID, entityBeforeSave.getId());
 		assertEquals(updatedUsername, entityBeforeSave.getUsername());
-		assertEquals(updatedEmail, entityBeforeSave.getEmail());
+		assertEquals(EMAIL, entityBeforeSave.getEmail());
 		assertEquals(PASSWORD, entityBeforeSave.getPassword());
 		assertEquals(IMAGE_URL, entityBeforeSave.getProfileImageUrl());
 		
@@ -172,7 +171,73 @@ public class UserServiceTest {
 		assertNotNull(userResult);
 		assertEquals(ID, userResult.getId());
 		assertEquals(updatedUsername, userResult.getUsername());
-		assertEquals(updatedEmail, userResult.getEmail());
+		assertEquals(EMAIL, userResult.getEmail());
+		assertEquals(IMAGE_URL, userResult.getProfileImageUrl());
+	}
+	
+	@Test
+	public void givenInexistentUserId_whenUpdateDetails_thenReturnsNull() {
+		
+		//Given
+		Long id = 2l;
+		UpdateRequestDTO updateRequest = new UpdateRequestDTO();
+		
+		//When
+		when(dataService.getById( any(Long.class) )).thenReturn(null);
+		
+		UserDTO userResult = service.updateDetails(id, updateRequest);
+		
+		//Then
+		
+		//Verify Data Service interactions
+		verify(dataService, times(1)).getById(any(Long.class));
+		
+		verify(dataService, times(0)).save(any());
+		
+		//Verify NO ModelMapper interaction
+		verify(mapper, times(0)).map(any(), any());
+		
+		//Verify NO KafkaTemplate interaction
+		verify(kafkaTemplate, times(0)).send(any(), any());
+		
+		//Asserts on result
+		assertNull(userResult);
+	}
+	
+	@Test
+	public void givenUserIdAndNothingToUpdateOnUpdateRequest_whenUpdateDetails_thenReturnsSameUserDTO() {
+		
+		//Given
+		UpdateRequestDTO updateRequest = new UpdateRequestDTO(
+												Optional.empty(), 
+												Optional.empty());
+		
+		//When
+		when(dataService.getById( any(Long.class) )).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
+		
+		when(mapper.map( any(UserDTO.class), eq(User.class)))
+			.thenReturn(new User(ID, USERNAME, EMAIL, PASSWORD, IMAGE_URL));
+				
+		UserDTO userResult = service.updateDetails(ID, updateRequest);
+		
+		//Then
+		
+		//Verify Data Service interactions and capture entity before save
+		verify(dataService, times(1)).getById(any(Long.class));
+		
+		verify(dataService, times(0)).save(any());
+		
+		//Verify ModelMapper interaction
+		verify(mapper, times(1)).map(any(UserDTO.class), eq(User.class));
+		
+		//Verify NO KafkaTemplate interaction
+		verify(kafkaTemplate, times(0)).send(any(), any());
+		
+		//Asserts on result
+		assertNotNull(userResult);
+		assertEquals(ID, userResult.getId());
+		assertEquals(USERNAME, userResult.getUsername());
+		assertEquals(EMAIL, userResult.getEmail());
 		assertEquals(IMAGE_URL, userResult.getProfileImageUrl());
 	}
 	
