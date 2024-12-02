@@ -1,24 +1,11 @@
 package com.cesar.User.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -28,12 +15,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.cesar.User.dto.CreateRequestDTO;
 import com.cesar.User.dto.UpdateRequestDTO;
 import com.cesar.User.dto.UserDTO;
 import com.cesar.User.entity.User;
-import com.cesar.User.helper.ReflectionHelper;
+import com.cesar.User.helper.ReflectionsHelper;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -156,8 +142,8 @@ public class UserServiceTest {
 	    when(dataService.save(any(User.class)))
 	        .thenReturn(new UserDTO(ID, updatedUsername, EMAIL, IMAGE_URL));
 
-	    when(rh.getFieldss(UpdateRequestDTO.class)).thenReturn(UpdateRequestDTO.class.getDeclaredFields());
-	    when(rh.findField(eq(User.class), eq("username"))).thenReturn(User.class.getDeclaredField("username"));
+	    when(reflectionsHelper.getFieldss(UpdateRequestDTO.class)).thenReturn(UpdateRequestDTO.class.getDeclaredFields());
+	    when(reflectionsHelper.findField(eq(User.class), eq("username"))).thenReturn(User.class.getDeclaredField("username"));
 
 	    //Then-When
 	    UserDTO userResult = service.updateDetails(ID, updateRequest);
@@ -236,7 +222,7 @@ public class UserServiceTest {
 		when(mapper.map( any(UserDTO.class), eq(User.class)))
 			.thenReturn(new User(ID, USERNAME, EMAIL, PASSWORD, IMAGE_URL));
 		
-	    when(rh.getFieldss(UpdateRequestDTO.class)).thenReturn( UpdateRequestDTO.class.getDeclaredFields() );
+	    when(reflectionsHelper.getFieldss(UpdateRequestDTO.class)).thenReturn( UpdateRequestDTO.class.getDeclaredFields() );
 				
 		UserDTO userResult = service.updateDetails(ID, updateRequest);
 		
@@ -276,7 +262,7 @@ public class UserServiceTest {
 	    
 		doThrow(new IllegalArgumentException()).when(updateRequestField).get(any());
 
-	    when(rh.getFieldss(eq(UpdateRequestDTO.class))).thenReturn(updateRequestFields);
+	    when(reflectionsHelper.getFieldss(eq(UpdateRequestDTO.class))).thenReturn(updateRequestFields);
 
 	    UserDTO userResult = service.updateDetails(ID, updateRequest);
 
@@ -319,8 +305,8 @@ public class UserServiceTest {
 		
 		doThrow(new IllegalAccessException()).when(entityForUpdateField).set(any(User.class), any());
 		
-		when(rh.getFieldss(eq(UpdateRequestDTO.class))).thenReturn(entityFields);
-		when(rh.findField(eq(User.class), anyString())).thenReturn(entityForUpdateField);
+		when(reflectionsHelper.getFieldss(eq(UpdateRequestDTO.class))).thenReturn(entityFields);
+		when(reflectionsHelper.findField(eq(User.class), anyString())).thenReturn(entityForUpdateField);
 		
 	    UserDTO userResult = service.updateDetails(ID, updateRequest);
 
@@ -427,7 +413,7 @@ public class UserServiceTest {
 	@Mock
 	private UserDataService dataService;
 	@Mock
-	private ReflectionHelper rh;
+	private ReflectionsHelper reflectionsHelper;
 	@InjectMocks
 	private UserService service;
 }

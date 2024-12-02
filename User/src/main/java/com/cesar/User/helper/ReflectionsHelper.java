@@ -1,12 +1,11 @@
 package com.cesar.User.helper;
 
 import java.lang.reflect.Field;
-
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
-@Service
-public class ReflectionHelper {
+@Component
+public class ReflectionsHelper {
 	
 	public Field[] getFieldss(Class<?> targetType){
 		return targetType.getDeclaredFields();

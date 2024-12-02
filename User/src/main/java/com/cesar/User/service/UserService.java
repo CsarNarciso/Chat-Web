@@ -13,7 +13,7 @@ import com.cesar.User.dto.CreateRequestDTO;
 import com.cesar.User.dto.UpdateRequestDTO;
 import com.cesar.User.dto.UserDTO;
 import com.cesar.User.entity.User;
-import com.cesar.User.helper.ReflectionHelper;
+import com.cesar.User.helper.ReflectionsHelper;
 
 @Service
 public class UserService {
@@ -49,7 +49,7 @@ public class UserService {
     		User entityForUpdate = mapper.map(user, User.class);
     		
     		//For each allowed update request field
-			for (Field updateRequestField : rh.getFieldss(UpdateRequestDTO.class)) {
+			for (Field updateRequestField : reflectionsHelper.getFieldss(UpdateRequestDTO.class)) {
 				
 				//Make private request DTO field accessible
 				updateRequestField.setAccessible(true);
@@ -64,7 +64,7 @@ public class UserService {
 				if(updateRequestFieldValue.isPresent()) {
 					
 					//Get field (map) from DTO to Entity
-					Field entityField = rh.findField(User.class, updateRequestField.getName());
+					Field entityField = reflectionsHelper.findField(User.class, updateRequestField.getName());
 								
 					//And set (update) on entity
 					try {
@@ -142,17 +142,17 @@ public class UserService {
 
     
 
-    public UserService(ReflectionHelper rh, UserDataService dataService, KafkaTemplate<String, Object> kafkaTemplate, MediaService mediaService, ModelMapper mapper) {
+    public UserService(UserDataService dataService, KafkaTemplate<String, Object> kafkaTemplate, MediaService mediaService, ModelMapper mapper, ReflectionsHelper reflectionsHelper) {
         this.dataService = dataService;
         this.kafkaTemplate = kafkaTemplate;
         this.mediaService = mediaService;
         this.mapper = mapper;
-        this.rh = rh;
+        this.reflectionsHelper = reflectionsHelper;
     }
 
     private final UserDataService dataService;
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final MediaService mediaService;
     private final ModelMapper mapper;
-    private final ReflectionHelper rh;
+    private final ReflectionsHelper reflectionsHelper;
 }
