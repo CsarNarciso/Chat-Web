@@ -145,8 +145,8 @@ public class UserServiceTest {
 				
 		when(dataService.save( any(User.class) )).thenReturn(new UserDTO(ID, updatedUsername, EMAIL, IMAGE_URL));
 		
-	    Field[] fields = UpdateRequestDTO.class.getDeclaredFields();
-	    when(rh.getFieldss(UpdateRequestDTO.class)).thenReturn(fields);
+	    Field[] updateRequestFields = UpdateRequestDTO.class.getDeclaredFields();
+	    when(rh.getFieldss(UpdateRequestDTO.class)).thenReturn(updateRequestFields);
 		
 		UserDTO userResult = service.updateDetails(ID, updateRequest);
 		
@@ -224,8 +224,8 @@ public class UserServiceTest {
 		when(mapper.map( any(UserDTO.class), eq(User.class)))
 			.thenReturn(new User(ID, USERNAME, EMAIL, PASSWORD, IMAGE_URL));
 		
-	    Field[] fields = UpdateRequestDTO.class.getDeclaredFields();
-	    when(rh.getFieldss(UpdateRequestDTO.class)).thenReturn(fields);
+	    Field[] updateRequestFields = UpdateRequestDTO.class.getDeclaredFields();
+	    when(rh.getFieldss(UpdateRequestDTO.class)).thenReturn(updateRequestFields);
 				
 		UserDTO userResult = service.updateDetails(ID, updateRequest);
 		
@@ -251,31 +251,43 @@ public class UserServiceTest {
 	}
 	
 	@Test
-	public void testUpdateDetails_IllegalArgumentException() throws Exception {
-	    // Setup
-	    Long userId = 1L;
+	public void givenIllegalArgumentOrAccessFieldFromUpdateRequest_whenUpdateDetails_thenReturnsSameUserDTO() throws Exception {
+	    
+		//Given
 	    UpdateRequestDTO updateRequest = new UpdateRequestDTO();
-	    UserDTO existingUser = new UserDTO();
+	    Field updateRequestField = mock(Field.class);
+	    Field[] updateRequestFields = {updateRequestField};
 
-	    // Mock dataService and mapper behavior
-	    when(dataService.getById(userId)).thenReturn(existingUser);
-	    when(mapper.map(any(UserDTO.class), eq(User.class))).thenReturn(new User());
+	    //When
+	    when(dataService.getById(any(Long.class)).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
+	    
+		when(mapper.map(any(UserDTO.class), eq(User.class))).thenReturn(new User(ID, USERNAME, EMAIL, null, IMAGE_URL));
+	    
+		doThrow(new IllegalArgumentException()).when(updateRequestField).get(any());
 
-	    // Mock ReflectionHelper behavior to return non-null fields
-	    Field mockField = mock(Field.class); // Create a mock field
+	    when(rh.getFieldss(eq(UpdateRequestDTO.class))).thenReturn(updateRequestFields);
 
-	    Field[] fields = {mockField}; // Mock a fields array
-	    when(rh.getFieldss(UpdateRequestDTO.class)).thenReturn(fields); // Return mocked fields
+	    UserDTO result = service.updateDetails(ID, updateRequest);
 
-	    // Simulate exception when accessing the field's value
-	    doThrow(new IllegalArgumentException("Test exception")).when(mockField).get(any());
-
-	    // Execute the service method
-	    UserDTO result = service.updateDetails(userId, updateRequest);
-
-	    // Validate the result
-	    assertNotNull(result); // Ensure existing user is returned
-	    verify(dataService, never()).save(any(User.class)); // Ensure no save occurs
+	    //Then
+		
+	    //Verify Data Service interaction
+		verify(dataService, times(1)).getById(any(Long.class));
+		
+		verify(dataService, never()).save(any());
+		
+		//Verify ModelMapper interaction
+		verify(mapper, times(1)).map(any(UserDTO.class), eq(User.class));
+		
+		//Verify NO KafkaTemplate interaction
+		verify(kafkaTemplate, never()).send(any(), any());
+		
+		//Asserts on result
+		assertNotNull(userResult);
+		assertEquals(ID, userResult.getId());
+		assertEquals(USERNAME, userResult.getUsername());
+		assertEquals(EMAIL, userResult.getEmail());
+		assertEquals(IMAGE_URL, userResult.getProfileImageUrl());
 	}
 
 	
