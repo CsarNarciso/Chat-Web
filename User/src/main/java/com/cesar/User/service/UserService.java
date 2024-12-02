@@ -7,7 +7,6 @@ import java.util.Optional;
 import org.modelmapper.ModelMapper;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ReflectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cesar.User.dto.CreateRequestDTO;
@@ -65,7 +64,7 @@ public class UserService {
 				if(updateRequestFieldValue.isPresent()) {
 					
 					//Get field (map) from DTO to Entity
-					Field entityField = ReflectionUtils.findField(User.class, updateRequestField.getName());
+					Field entityField = rh.findField(User.class, updateRequestField.getName());
 								
 					//And set (update) on entity
 					try {

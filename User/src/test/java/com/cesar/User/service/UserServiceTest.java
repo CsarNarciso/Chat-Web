@@ -1,12 +1,24 @@
 package com.cesar.User.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -16,6 +28,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.multipart.MultipartFile;
+
 import com.cesar.User.dto.CreateRequestDTO;
 import com.cesar.User.dto.UpdateRequestDTO;
 import com.cesar.User.dto.UserDTO;
@@ -129,57 +142,56 @@ public class UserServiceTest {
 	}
 	
 	@Test
-	public void givenUserIdAndUpdateRequest_whenUpdateDetails_thenPublishKafkaTopicAndReturnsUpdatedUserDTO() {
-		
-		//Given
-		String updatedUsername = "UpdatedUsername";
-		UpdateRequestDTO updateRequest = new UpdateRequestDTO(
-												Optional.of(updatedUsername), 
-												Optional.empty());
-		
-		//When
-		when(dataService.getById( any(Long.class) )).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
-		
-		when(mapper.map( any(UserDTO.class), eq(User.class)))
-			.thenReturn(new User(ID, USERNAME, EMAIL, PASSWORD, IMAGE_URL));
-				
-		when(dataService.save( any(User.class) )).thenReturn(new UserDTO(ID, updatedUsername, EMAIL, IMAGE_URL));
-		
-	    Field[] updateRequestFields = UpdateRequestDTO.class.getDeclaredFields();
-	    when(rh.getFieldss(UpdateRequestDTO.class)).thenReturn(updateRequestFields);
-		
-		UserDTO userResult = service.updateDetails(ID, updateRequest);
-		
-		//Then
-		
-		//Verify Data Service interactions and capture entity before save
-		verify(dataService, times(1)).getById(any(Long.class));
-		
-		ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-		verify(dataService, times(1)).save(userCaptor.capture());
-		User entityBeforeSave = userCaptor.getValue();
-		
-		//Verify ModelMapper interaction
-		verify(mapper, times(1)).map(any(UserDTO.class), eq(User.class));
-		
-		//Verify KafkaTemplate interaction
-		verify(kafkaTemplate, times(1)).send(eq("UserUpdated"), any(UserDTO.class));
-		
-		//Asserts on entity before save
-		assertNotNull(entityBeforeSave);
-		assertEquals(ID, entityBeforeSave.getId());
-		assertEquals(updatedUsername, entityBeforeSave.getUsername());
-		assertEquals(EMAIL, entityBeforeSave.getEmail());
-		assertEquals(PASSWORD, entityBeforeSave.getPassword());
-		assertEquals(IMAGE_URL, entityBeforeSave.getProfileImageUrl());
-		
-		//Asserts on result
-		assertNotNull(userResult);
-		assertEquals(ID, userResult.getId());
-		assertEquals(updatedUsername, userResult.getUsername());
-		assertEquals(EMAIL, userResult.getEmail());
-		assertEquals(IMAGE_URL, userResult.getProfileImageUrl());
+	public void givenUserIdAndUpdateRequest_whenUpdateDetails_thenPublishKafkaTopicAndReturnsUpdatedUserDTO() throws Exception {
+	    
+		// Given
+	    String updatedUsername = "UpdatedUsername";
+	    UpdateRequestDTO updateRequest = new UpdateRequestDTO(Optional.of(updatedUsername), Optional.empty());
+
+	    when(dataService.getById(any(Long.class))).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
+	    
+	    when(mapper.map(any(UserDTO.class), eq(User.class)))
+	        .thenReturn(new User(ID, USERNAME, EMAIL, null, IMAGE_URL));
+	    
+	    when(dataService.save(any(User.class)))
+	        .thenReturn(new UserDTO(ID, updatedUsername, EMAIL, IMAGE_URL));
+
+	    when(rh.getFieldss(UpdateRequestDTO.class)).thenReturn(UpdateRequestDTO.class.getDeclaredFields());
+	    when(rh.findField(eq(User.class), eq("username"))).thenReturn(User.class.getDeclaredField("username"));
+
+	    //Then-When
+	    UserDTO userResult = service.updateDetails(ID, updateRequest);
+
+	    //Then
+	    
+	    //Verify Data Service interactions and capture entity before save
+	    verify(dataService, times(1)).getById(any(Long.class));
+	    
+	    ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+	    verify(dataService, times(1)).save(userCaptor.capture());
+	    User entityBeforeSave = userCaptor.getValue();
+
+	    //Verify ModelMapper interactions
+	    verify(mapper, times(1)).map(any(UserDTO.class), eq(User.class));
+	    
+	    //Verify KafkaTemplate interactions
+	    verify(kafkaTemplate, times(1)).send(eq("UserUpdated"), any(UserDTO.class));
+
+	    assertNotNull(entityBeforeSave);
+	    assertEquals(ID, entityBeforeSave.getId());
+	    assertEquals(updatedUsername, entityBeforeSave.getUsername());
+	    assertEquals(EMAIL, entityBeforeSave.getEmail());
+	    assertEquals(null, entityBeforeSave.getPassword());
+	    assertEquals(IMAGE_URL, entityBeforeSave.getProfileImageUrl());
+
+	    assertNotNull(userResult);
+	    assertEquals(ID, userResult.getId());
+	    assertEquals(updatedUsername, userResult.getUsername());
+	    assertEquals(EMAIL, userResult.getEmail());
+	    assertEquals(IMAGE_URL, userResult.getProfileImageUrl());
 	}
+
+
 	
 	@Test
 	public void givenInexistentUserId_whenUpdateDetails_thenReturnsNull() {
@@ -224,8 +236,7 @@ public class UserServiceTest {
 		when(mapper.map( any(UserDTO.class), eq(User.class)))
 			.thenReturn(new User(ID, USERNAME, EMAIL, PASSWORD, IMAGE_URL));
 		
-	    Field[] updateRequestFields = UpdateRequestDTO.class.getDeclaredFields();
-	    when(rh.getFieldss(UpdateRequestDTO.class)).thenReturn(updateRequestFields);
+	    when(rh.getFieldss(UpdateRequestDTO.class)).thenReturn( UpdateRequestDTO.class.getDeclaredFields() );
 				
 		UserDTO userResult = service.updateDetails(ID, updateRequest);
 		
@@ -259,7 +270,7 @@ public class UserServiceTest {
 	    Field[] updateRequestFields = {updateRequestField};
 
 	    //When
-	    when(dataService.getById(any(Long.class)).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
+	    when(dataService.getById(any(Long.class))).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
 	    
 		when(mapper.map(any(UserDTO.class), eq(User.class))).thenReturn(new User(ID, USERNAME, EMAIL, null, IMAGE_URL));
 	    
@@ -267,12 +278,56 @@ public class UserServiceTest {
 
 	    when(rh.getFieldss(eq(UpdateRequestDTO.class))).thenReturn(updateRequestFields);
 
-	    UserDTO result = service.updateDetails(ID, updateRequest);
+	    UserDTO userResult = service.updateDetails(ID, updateRequest);
 
 	    //Then
 		
 	    //Verify Data Service interaction
 		verify(dataService, times(1)).getById(any(Long.class));
+		
+		verify(dataService, never()).save(any());
+		
+		//Verify ModelMapper interaction
+		verify(mapper, times(1)).map(any(UserDTO.class), eq(User.class));
+		
+		//Verify NO KafkaTemplate interaction
+		verify(kafkaTemplate, never()).send(any(), any());
+		
+		//Asserts on result
+		assertNotNull(userResult);
+		assertEquals(ID, userResult.getId());
+		assertEquals(USERNAME, userResult.getUsername());
+		assertEquals(EMAIL, userResult.getEmail());
+		assertEquals(IMAGE_URL, userResult.getProfileImageUrl());
+	}
+	
+	@Test
+	public void givenIllegalArgumentOrAccessFieldFromEntity_whenUpdateDetails_thenReturnsSameUserDTO() throws Exception {
+	    
+		//Given
+	    UpdateRequestDTO updateRequest = new UpdateRequestDTO();
+	    Field entityForUpdateField = mock(Field.class);
+	    Field[] entityFields = {entityForUpdateField};
+
+	    //When
+	    when(dataService.getById(any(Long.class))).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
+	    
+		when(mapper.map(any(UserDTO.class), eq(User.class))).thenReturn(new User(ID, USERNAME, EMAIL, null, IMAGE_URL));
+	    
+		when(entityForUpdateField.get(any(UpdateRequestDTO.class))).thenReturn(Optional.of(""));
+		when(entityForUpdateField.getName()).thenReturn("");
+		
+		doThrow(new IllegalAccessException()).when(entityForUpdateField).set(any(User.class), any());
+		
+		when(rh.getFieldss(eq(UpdateRequestDTO.class))).thenReturn(entityFields);
+		when(rh.findField(eq(User.class), anyString())).thenReturn(entityForUpdateField);
+		
+	    UserDTO userResult = service.updateDetails(ID, updateRequest);
+
+	    //Then
+		
+	    //Verify Data Service interaction
+		verify(dataService, times(1)).getById(anyLong());
 		
 		verify(dataService, never()).save(any());
 		
