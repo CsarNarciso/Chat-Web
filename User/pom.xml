@@ -179,6 +179,7 @@
                                 <exclude>com/cesar/User/config/*.class</exclude>
                                 <exclude>com/cesar/User/entity/*.class</exclude>
                                 <exclude>com/cesar/User/dto/*.class</exclude>
+                                <exclude>com/cesar/User/helper/*.class</exclude>
                             </excludes>
                         </configuration>
                     </execution>
