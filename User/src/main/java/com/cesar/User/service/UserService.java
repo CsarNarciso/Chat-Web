@@ -95,6 +95,7 @@ public class UserService {
     public String updateProfileImage(Long id, MultipartFile imageMetadata) {
 
     	UserDTO user = dataService.getById(id);
+
     	if(user!=null) {
     		
     		//If either new image is not empty (no bad arguments request),

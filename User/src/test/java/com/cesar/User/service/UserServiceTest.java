@@ -330,6 +330,51 @@ public class UserServiceTest {
 		assertEquals(EMAIL, userResult.getEmail());
 		assertEquals(IMAGE_URL, userResult.getProfileImageUrl());
 	}
+	
+	@Test
+	public void givenUserIdAndImageFile_whenUpdateProfileImage_thenReturnsNewImageUrl() {
+	    
+		//Given
+		MultipartFile imageFile = mock(MultipartFile.class);
+		String newImageUrl = "newImageUrl";
+
+	    when(dataService.getById(any(Long.class))).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
+	    
+	    when(dataService.save(any(User.class))).thenReturn(new UserDTO(ID, USERNAME, EMAIL, newImageUrl));
+	    
+		when(mapper.map(any(UserDTO.class), eq(User.class))).thenReturn(new User(ID, USERNAME, EMAIL, null, newImageUrl));
+	    
+		when(mediaService.upload(any(MultipartFile.class), eq(IMAGE_URL))).thenReturn(newImageUrl);
+		
+		//When
+		String result = service.updateProfileImage(ID, imageFile);
+		
+		//Then
+		
+	    //Verify Data Service interaction
+		verify(dataService, times(1)).getById(anyLong());
+		
+		verify(dataService, times(1)).save(any(User.class));
+		
+		//Verify ModelMapper interaction
+		ArgumentCaptor<UserDTO> userCaptor = ArgumentCaptor.forClass(UserDTO.class);
+		verify(mapper, times(1)).map(userCaptor.capture(), eq(User.class));
+		UserDTO userBeforeMapToEntity = userCaptor.getValue();
+		
+		//Verify KafkaTemplate interaction
+		verify(kafkaTemplate, times(1)).send(eq("UserUpdated"), any(UserDTO.class));
+		
+		//Asserts on entity before save
+		assertNotNull(userBeforeMapToEntity);
+		assertEquals(ID, userBeforeMapToEntity.getId());
+		assertEquals(USERNAME, userBeforeMapToEntity.getUsername());
+		assertEquals(EMAIL, userBeforeMapToEntity.getEmail());
+		assertEquals(newImageUrl, userBeforeMapToEntity.getProfileImageUrl());
+		
+		//Asserts on result
+		assertNotNull(result);
+		assertEquals(newImageUrl, result);
+	}
 
 	
 	@Test
@@ -398,8 +443,8 @@ public class UserServiceTest {
 	
 	
 	private final Long ID = 1l;
-	private final String USERNAME = "Username";
-	private final String EMAIL = "Email";
+	private final String USERNAME = "USERNAME";
+	private final String EMAIL = "EMAIL";
 	private final String PASSWORD = "PASSWORD";
 	private final String IMAGE_URL = "IMAGE_URL";
 	private final MultipartFile IMAGE_FILE = mock(MultipartFile.class);
