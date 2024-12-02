@@ -356,6 +356,9 @@ public class UserServiceTest {
 		
 		verify(dataService, times(1)).save(any(User.class));
 		
+		//Verify Media Service interaction
+		verify(mediaService, times(1)).upload(any(MultipartFile.class), anyString());
+		
 		//Verify ModelMapper interaction
 		ArgumentCaptor<UserDTO> userCaptor = ArgumentCaptor.forClass(UserDTO.class);
 		verify(mapper, times(1)).map(userCaptor.capture(), eq(User.class));
@@ -376,6 +379,37 @@ public class UserServiceTest {
 		assertEquals(newImageUrl, result);
 	}
 
+	
+	@Test
+	public void givenInexistentUserId_whenUpdateProfileImage_thenReturnsNull() {
+	    
+		//Given
+		Long id = 2l;
+
+	    when(dataService.getById(any(Long.class))).thenReturn(null);
+	    
+		//When
+		String result = service.updateProfileImage(id, null);
+		
+		//Then
+		
+	    //Verify Data Service interaction
+		verify(dataService, times(1)).getById(anyLong());
+		
+		verify(dataService, never()).save(any());
+		
+		//Verify NO Media Service interaction
+		verify(mediaService, never()).upload(any(), any());
+		
+		//Verify NO ModelMapper interaction
+		verify(mapper, never()).map(any(), any());
+		
+		//Verify NO KafkaTemplate interaction
+		verify(kafkaTemplate, never()).send(any(), any());
+		
+		//Asserts on result
+		assertNull(result);
+	}
 	
 	@Test
 	public void givenUserId_whenDelete_thenCallsMediaServiceDeletePublishKafkaTopicAndReturnsUserDTO() {
