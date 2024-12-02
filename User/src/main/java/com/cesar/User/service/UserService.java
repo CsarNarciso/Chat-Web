@@ -14,6 +14,7 @@ import com.cesar.User.dto.CreateRequestDTO;
 import com.cesar.User.dto.UpdateRequestDTO;
 import com.cesar.User.dto.UserDTO;
 import com.cesar.User.entity.User;
+import com.cesar.User.helper.ReflectionHelper;
 
 @Service
 public class UserService {
@@ -49,7 +50,7 @@ public class UserService {
     		User entityForUpdate = mapper.map(user, User.class);
     		
     		//For each allowed update request field
-			for (Field updateRequestField : UpdateRequestDTO.class.getDeclaredFields()) {
+			for (Field updateRequestField : rh.getFieldss(UpdateRequestDTO.class)) {
 				
 				//Make private request DTO field accessible
 				updateRequestField.setAccessible(true);
@@ -89,6 +90,7 @@ public class UserService {
     	}
     	return null;
     }
+    
     
 
     public String updateProfileImage(Long id, MultipartFile imageMetadata) {
@@ -141,15 +143,17 @@ public class UserService {
 
     
 
-    public UserService(UserDataService dataService, KafkaTemplate<String, Object> kafkaTemplate, MediaService mediaService, ModelMapper mapper) {
+    public UserService(ReflectionHelper rh, UserDataService dataService, KafkaTemplate<String, Object> kafkaTemplate, MediaService mediaService, ModelMapper mapper) {
         this.dataService = dataService;
         this.kafkaTemplate = kafkaTemplate;
         this.mediaService = mediaService;
         this.mapper = mapper;
+        this.rh = rh;
     }
 
     private final UserDataService dataService;
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final MediaService mediaService;
     private final ModelMapper mapper;
+    private final ReflectionHelper rh;
 }

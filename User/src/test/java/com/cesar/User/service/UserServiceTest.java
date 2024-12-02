@@ -3,6 +3,8 @@ package com.cesar.User.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -18,10 +20,11 @@ import com.cesar.User.dto.CreateRequestDTO;
 import com.cesar.User.dto.UpdateRequestDTO;
 import com.cesar.User.dto.UserDTO;
 import com.cesar.User.entity.User;
+import com.cesar.User.helper.ReflectionHelper;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
-
+	
 	@Test
 	public void givenFullCreateRequest_whenCreate_thenReturnsUserDTOWithCustomImageUrl() {
 		
@@ -142,6 +145,9 @@ public class UserServiceTest {
 				
 		when(dataService.save( any(User.class) )).thenReturn(new UserDTO(ID, updatedUsername, EMAIL, IMAGE_URL));
 		
+	    Field[] fields = UpdateRequestDTO.class.getDeclaredFields();
+	    when(rh.getFieldss(UpdateRequestDTO.class)).thenReturn(fields);
+		
 		UserDTO userResult = service.updateDetails(ID, updateRequest);
 		
 		//Then
@@ -217,6 +223,9 @@ public class UserServiceTest {
 		
 		when(mapper.map( any(UserDTO.class), eq(User.class)))
 			.thenReturn(new User(ID, USERNAME, EMAIL, PASSWORD, IMAGE_URL));
+		
+	    Field[] fields = UpdateRequestDTO.class.getDeclaredFields();
+	    when(rh.getFieldss(UpdateRequestDTO.class)).thenReturn(fields);
 				
 		UserDTO userResult = service.updateDetails(ID, updateRequest);
 		
@@ -240,6 +249,35 @@ public class UserServiceTest {
 		assertEquals(EMAIL, userResult.getEmail());
 		assertEquals(IMAGE_URL, userResult.getProfileImageUrl());
 	}
+	
+	@Test
+	public void testUpdateDetails_IllegalArgumentException() throws Exception {
+	    // Setup
+	    Long userId = 1L;
+	    UpdateRequestDTO updateRequest = new UpdateRequestDTO();
+	    UserDTO existingUser = new UserDTO();
+
+	    // Mock dataService and mapper behavior
+	    when(dataService.getById(userId)).thenReturn(existingUser);
+	    when(mapper.map(any(UserDTO.class), eq(User.class))).thenReturn(new User());
+
+	    // Mock ReflectionHelper behavior to return non-null fields
+	    Field mockField = mock(Field.class); // Create a mock field
+
+	    Field[] fields = {mockField}; // Mock a fields array
+	    when(rh.getFieldss(UpdateRequestDTO.class)).thenReturn(fields); // Return mocked fields
+
+	    // Simulate exception when accessing the field's value
+	    doThrow(new IllegalArgumentException("Test exception")).when(mockField).get(any());
+
+	    // Execute the service method
+	    UserDTO result = service.updateDetails(userId, updateRequest);
+
+	    // Validate the result
+	    assertNotNull(result); // Ensure existing user is returned
+	    verify(dataService, never()).save(any(User.class)); // Ensure no save occurs
+	}
+
 	
 	@Test
 	public void givenUserId_whenDelete_thenCallsMediaServiceDeletePublishKafkaTopicAndReturnsUserDTO() {
@@ -321,6 +359,8 @@ public class UserServiceTest {
 	private KafkaTemplate<String, Object> kafkaTemplate;
 	@Mock
 	private UserDataService dataService;
+	@Mock
+	private ReflectionHelper rh;
 	@InjectMocks
 	private UserService service;
 }
