@@ -335,7 +335,6 @@ public class UserServiceTest {
 	public void givenUserIdAndImageFile_whenUpdateProfileImage_thenReturnsNewImageUrl() {
 	    
 		//Given
-		MultipartFile imageFile = mock(MultipartFile.class);
 		String newImageUrl = "newImageUrl";
 
 	    when(dataService.getById(any(Long.class))).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
@@ -347,7 +346,7 @@ public class UserServiceTest {
 		when(mediaService.upload(any(MultipartFile.class), eq(IMAGE_URL))).thenReturn(newImageUrl);
 		
 		//When
-		String result = service.updateProfileImage(ID, imageFile);
+		String result = service.updateProfileImage(ID, IMAGE_FILE);
 		
 		//Then
 		
@@ -389,7 +388,7 @@ public class UserServiceTest {
 	    when(dataService.getById(any(Long.class))).thenReturn(null);
 	    
 		//When
-		String result = service.updateProfileImage(id, null);
+		String result = service.updateProfileImage(id, IMAGE_FILE);
 		
 		//Then
 		
@@ -409,6 +408,70 @@ public class UserServiceTest {
 		
 		//Asserts on result
 		assertNull(result);
+	}
+	
+	@Test
+	public void givenNewImageUrlIsNull_whenUpdateProfileImage_thenReturnsEmptyString() {
+	    
+		//Given
+	    when(dataService.getById(any(Long.class))).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
+	    
+	    when(mediaService.upload(any(MultipartFile.class), eq(IMAGE_URL))).thenReturn(null);
+	    
+		//When
+		String result = service.updateProfileImage(ID, IMAGE_FILE);
+		
+		//Then
+		
+	    //Verify Data Service interaction
+		verify(dataService, times(1)).getById(anyLong());
+		
+		verify(dataService, never()).save(any());
+		
+		//Verify NO Media Service interaction
+		verify(mediaService, times(1)).upload(any(MultipartFile.class), anyString());
+		
+		//Verify NO ModelMapper interaction
+		verify(mapper, never()).map(any(), any());
+		
+		//Verify NO KafkaTemplate interaction
+		verify(kafkaTemplate, never()).send(any(), any());
+		
+		//Asserts on result
+		assertNotNull(result);
+		assertEquals("", result);
+	}
+	
+	@Test
+	public void givenNewImageUrlEqualsOldOne_whenUpdateProfileImage_thenReturnsEmptyString() {
+	    
+		//Given
+	    when(dataService.getById(any(Long.class))).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
+	    
+	    when(mediaService.upload(any(MultipartFile.class), eq(IMAGE_URL))).thenReturn(IMAGE_URL);
+	    
+		//When
+		String result = service.updateProfileImage(ID, IMAGE_FILE);
+		
+		//Then
+		
+	    //Verify Data Service interaction
+		verify(dataService, times(1)).getById(anyLong());
+		
+		verify(dataService, never()).save(any());
+		
+		//Verify NO Media Service interaction
+		verify(mediaService, times(1)).upload(any(MultipartFile.class), anyString());
+		
+		//Verify NO ModelMapper interaction
+		verify(mapper, never()).map(any(), any());
+		
+		//Verify NO KafkaTemplate interaction
+		verify(kafkaTemplate, never()).send(any(), any());
+		
+		//Asserts on result
+		assertNotNull(result);
+		assertEquals("", result);
 	}
 	
 	@Test
