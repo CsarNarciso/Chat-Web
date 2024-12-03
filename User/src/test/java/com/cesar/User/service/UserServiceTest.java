@@ -328,8 +328,7 @@ public class UserServiceTest {
 		//Given
 		String newImageUrl = "NewImageUrl";
 		
-		UserDTO updatedUserDTO = userDTO;
-		updatedUserDTO.setProfileImageUrl(newImageUrl);
+		UserDTO updatedUserDTO = new UserDTO(ID, USERNAME, EMAIL, newImageUrl);;
 		
 		User updatedUserEntity = userEntityWithoutPassword;
 		updatedUserEntity.setProfileImageUrl(newImageUrl);
