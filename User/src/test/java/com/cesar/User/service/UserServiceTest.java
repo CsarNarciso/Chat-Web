@@ -288,7 +288,7 @@ public class UserServiceTest {
 
 	    when(dataService.getById(anyLong())).thenReturn(userDTO);
 	    
-		when(mapper.map(any(UserDTO.class), eq(User.class))).thenReturn(userEntityWithoutPassword));
+		when(mapper.map(any(UserDTO.class), eq(User.class))).thenReturn(userEntityWithoutPassword);
 	    
 		when(entityForUpdateField.get(any(UpdateRequestDTO.class))).thenReturn(Optional.of(""));
 		when(entityForUpdateField.getName()).thenReturn("");
@@ -536,7 +536,7 @@ public class UserServiceTest {
 	private final String IMAGE_URL = "IMAGE_URL";
 	private final MultipartFile IMAGE_FILE = mock(MultipartFile.class);
 	
-	private final UserDTO userDTO new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL);
+	private final UserDTO userDTO = new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL);
 	private final User userEntityWithoutPassword = new User(ID, USERNAME, EMAIL, null, IMAGE_URL);
 	
 	private final Long inexistentUserId = 3l;
