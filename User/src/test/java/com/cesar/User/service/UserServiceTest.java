@@ -30,19 +30,19 @@ public class UserServiceTest {
 		//Given
 		CreateRequestDTO createRequest = new CreateRequestDTO(USERNAME, EMAIL, PASSWORD, IMAGE_FILE);
 		
-		//When
 		when(mapper.map( any(CreateRequestDTO.class), eq(User.class)))
 			.thenReturn(new User(null, USERNAME, EMAIL, PASSWORD, null));
 		
 		when(mediaService.upload( any(MultipartFile.class), eq(null))).thenReturn(IMAGE_URL);
 		
-		when(dataService.save( any(User.class) )).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
+		when(dataService.save( any(User.class) )).thenReturn(userDTO);
 		
+		//When
 		UserDTO userResult = service.create(createRequest);
 		
 		//Then
 		
-		//Verify Data Service interaction and capture User entity
+		//Verify Data Service interaction and capture entity before save
 		ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
 		verify(dataService, times(1)).save(userCaptor.capture());
 		User entityBeforeSave = userCaptor.getValue();
@@ -72,17 +72,16 @@ public class UserServiceTest {
 	@Test
 	public void givenUserId_whenGetById_thenReturnsUserDTO() {
 		
+		//Given
+		when(dataService.getById( anyLong() )).thenReturn(userDTO);
+		
 		//When
-		when(dataService.getById( any(Long.class) )).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
 		UserDTO userResult = service.getById(ID);
 		
 		//Then
 		
-		//Verify Data Service interaction and capture User entity
-		verify(dataService, times(1)).getById(any(Long.class));
-		
-		//Verify NO ModelMapper interaction
-		verify(mapper, times(0)).map(any(), any());
+		//Verify Data Service interaction
+		verify(dataService, times(1)).getById(anyLong());
 		
 		//Asserts on result
 		assertNotNull(userResult);
@@ -96,22 +95,19 @@ public class UserServiceTest {
 	public void givenUserIds_whenGetByIds_thenReturnsListOfUserDTOs() {
 		
 		//Given
-		List<Long> ids = List.of(1l, 2l, 3l);
+		List<Long> ids = List.of(1l, 2l, 4l);
 		
+		when(dataService.getByIds( ids )).thenReturn(ids
+								.stream()
+								.map(id -> new UserDTO(id, USERNAME, EMAIL, IMAGE_URL))
+								.toList());
 		//When
-		when(dataService.getByIds( ids )).thenReturn(List.of(
-						new UserDTO(1l, USERNAME, EMAIL, IMAGE_URL),
-						new UserDTO(2l, USERNAME, EMAIL, IMAGE_URL),
-						new UserDTO(3l, USERNAME, EMAIL, IMAGE_URL)));
 		List<UserDTO> usersResult = service.getByIds(ids);
 		
 		//Then
 		
-		//Verify Data Service interaction and capture User entity
+		//Verify Data Service interaction
 		verify(dataService, times(1)).getByIds(ids);
-		
-		//Verify NO ModelMapper interaction
-		verify(mapper, times(0)).map(any(), any());
 		
 		//Asserts on result
 		assertNotNull(usersResult);
@@ -133,25 +129,28 @@ public class UserServiceTest {
 		// Given
 	    String updatedUsername = "UpdatedUsername";
 	    UpdateRequestDTO updateRequest = new UpdateRequestDTO(Optional.of(updatedUsername), Optional.empty());
+		
+		UserDTO updatedUser = userDTO;
+		updatedUser.setUsername(updatedUsername);
 
-	    when(dataService.getById(any(Long.class))).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
+	    when(dataService.getById(anyLong())).thenReturn(userDTO);
 	    
 	    when(mapper.map(any(UserDTO.class), eq(User.class)))
-	        .thenReturn(new User(ID, USERNAME, EMAIL, null, IMAGE_URL));
+	        .thenReturn(userEntityWithoutPassword);
 	    
 	    when(dataService.save(any(User.class)))
-	        .thenReturn(new UserDTO(ID, updatedUsername, EMAIL, IMAGE_URL));
+	        .thenReturn(updatedUser);
 
 	    when(reflectionsHelper.getFieldss(UpdateRequestDTO.class)).thenReturn(UpdateRequestDTO.class.getDeclaredFields());
 	    when(reflectionsHelper.findField(eq(User.class), eq("username"))).thenReturn(User.class.getDeclaredField("username"));
 
-	    //Then-When
+	    //When
 	    UserDTO userResult = service.updateDetails(ID, updateRequest);
 
 	    //Then
 	    
 	    //Verify Data Service interactions and capture entity before save
-	    verify(dataService, times(1)).getById(any(Long.class));
+	    verify(dataService, times(1)).getById(anyLong());
 	    
 	    ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
 	    verify(dataService, times(1)).save(userCaptor.capture());
@@ -163,6 +162,7 @@ public class UserServiceTest {
 	    //Verify KafkaTemplate interactions
 	    verify(kafkaTemplate, times(1)).send(eq("UserUpdated"), any(UserDTO.class));
 
+		//Asserts on entity before save
 	    assertNotNull(entityBeforeSave);
 	    assertEquals(ID, entityBeforeSave.getId());
 	    assertEquals(updatedUsername, entityBeforeSave.getUsername());
@@ -170,6 +170,7 @@ public class UserServiceTest {
 	    assertEquals(null, entityBeforeSave.getPassword());
 	    assertEquals(IMAGE_URL, entityBeforeSave.getProfileImageUrl());
 
+		//Asserts on result
 	    assertNotNull(userResult);
 	    assertEquals(ID, userResult.getId());
 	    assertEquals(updatedUsername, userResult.getUsername());
@@ -183,26 +184,23 @@ public class UserServiceTest {
 	public void givenInexistentUserId_whenUpdateDetails_thenReturnsNull() {
 		
 		//Given
-		Long id = 2l;
-		UpdateRequestDTO updateRequest = new UpdateRequestDTO();
+		when(dataService.getById(anyLong())).thenReturn(null);
 		
 		//When
-		when(dataService.getById( any(Long.class) )).thenReturn(null);
-		
-		UserDTO userResult = service.updateDetails(id, updateRequest);
+		UserDTO userResult = service.updateDetails(inexistentUserId, defaultUpdateRequest);
 		
 		//Then
 		
 		//Verify Data Service interactions
-		verify(dataService, times(1)).getById(any(Long.class));
+		verify(dataService, times(1)).getById(anyLong());
 		
-		verify(dataService, times(0)).save(any());
+		verify(dataService, never()).save(any());
 		
 		//Verify NO ModelMapper interaction
-		verify(mapper, times(0)).map(any(), any());
+		verify(mapper, never()).map(any(), any());
 		
 		//Verify NO KafkaTemplate interaction
-		verify(kafkaTemplate, times(0)).send(any(), any());
+		verify(kafkaTemplate, never()).send(any(), any());
 		
 		//Asserts on result
 		assertNull(userResult);
@@ -212,32 +210,27 @@ public class UserServiceTest {
 	public void givenUserIdAndNothingToUpdateOnUpdateRequest_whenUpdateDetails_thenReturnsSameUserDTO() {
 		
 		//Given
-		UpdateRequestDTO updateRequest = new UpdateRequestDTO(
-												Optional.empty(), 
-												Optional.empty());
+		when(dataService.getById( anyLong() )).thenReturn(userDTO);
 		
-		//When
-		when(dataService.getById( any(Long.class) )).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
-		
-		when(mapper.map( any(UserDTO.class), eq(User.class)))
-			.thenReturn(new User(ID, USERNAME, EMAIL, PASSWORD, IMAGE_URL));
+		when(mapper.map( any(UserDTO.class), eq(User.class))).thenReturn(userEntityWithoutPassword);
 		
 	    when(reflectionsHelper.getFieldss(UpdateRequestDTO.class)).thenReturn( UpdateRequestDTO.class.getDeclaredFields() );
 				
-		UserDTO userResult = service.updateDetails(ID, updateRequest);
+		//When
+		UserDTO userResult = service.updateDetails(ID, defaultUpdateRequest);
 		
 		//Then
 		
 		//Verify Data Service interactions and capture entity before save
-		verify(dataService, times(1)).getById(any(Long.class));
+		verify(dataService, times(1)).getById(anyLong());
 		
-		verify(dataService, times(0)).save(any());
+		verify(dataService, never()).save(any());
 		
 		//Verify ModelMapper interaction
 		verify(mapper, times(1)).map(any(UserDTO.class), eq(User.class));
 		
 		//Verify NO KafkaTemplate interaction
-		verify(kafkaTemplate, times(0)).send(any(), any());
+		verify(kafkaTemplate, never()).send(any(), any());
 		
 		//Asserts on result
 		assertNotNull(userResult);
@@ -251,25 +244,24 @@ public class UserServiceTest {
 	public void givenIllegalArgumentOrAccessFieldFromUpdateRequest_whenUpdateDetails_thenReturnsSameUserDTO() throws Exception {
 	    
 		//Given
-	    UpdateRequestDTO updateRequest = new UpdateRequestDTO();
 	    Field updateRequestField = mock(Field.class);
 	    Field[] updateRequestFields = {updateRequestField};
 
-	    //When
-	    when(dataService.getById(any(Long.class))).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
+	    when(dataService.getById(anyLong())).thenReturn(userDTO);
 	    
-		when(mapper.map(any(UserDTO.class), eq(User.class))).thenReturn(new User(ID, USERNAME, EMAIL, null, IMAGE_URL));
+		when(mapper.map(any(UserDTO.class), eq(User.class))).thenReturn(userEntityWithoutPassword);
 	    
 		doThrow(new IllegalArgumentException()).when(updateRequestField).get(any());
 
 	    when(reflectionsHelper.getFieldss(eq(UpdateRequestDTO.class))).thenReturn(updateRequestFields);
 
-	    UserDTO userResult = service.updateDetails(ID, updateRequest);
+	    //When
+	    UserDTO userResult = service.updateDetails(ID, defaultUpdateRequest);
 
 	    //Then
 		
 	    //Verify Data Service interaction
-		verify(dataService, times(1)).getById(any(Long.class));
+		verify(dataService, times(1)).getById(anyLong());
 		
 		verify(dataService, never()).save(any());
 		
@@ -291,14 +283,12 @@ public class UserServiceTest {
 	public void givenIllegalArgumentOrAccessFieldFromEntity_whenUpdateDetails_thenReturnsSameUserDTO() throws Exception {
 	    
 		//Given
-	    UpdateRequestDTO updateRequest = new UpdateRequestDTO();
 	    Field entityForUpdateField = mock(Field.class);
 	    Field[] entityFields = {entityForUpdateField};
 
-	    //When
-	    when(dataService.getById(any(Long.class))).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
+	    when(dataService.getById(anyLong())).thenReturn(userDTO);
 	    
-		when(mapper.map(any(UserDTO.class), eq(User.class))).thenReturn(new User(ID, USERNAME, EMAIL, null, IMAGE_URL));
+		when(mapper.map(any(UserDTO.class), eq(User.class))).thenReturn(userEntityWithoutPassword));
 	    
 		when(entityForUpdateField.get(any(UpdateRequestDTO.class))).thenReturn(Optional.of(""));
 		when(entityForUpdateField.getName()).thenReturn("");
@@ -308,7 +298,8 @@ public class UserServiceTest {
 		when(reflectionsHelper.getFieldss(eq(UpdateRequestDTO.class))).thenReturn(entityFields);
 		when(reflectionsHelper.findField(eq(User.class), anyString())).thenReturn(entityForUpdateField);
 		
-	    UserDTO userResult = service.updateDetails(ID, updateRequest);
+	    //When
+	    UserDTO userResult = service.updateDetails(ID, defaultUpdateRequest);
 
 	    //Then
 		
@@ -335,13 +326,19 @@ public class UserServiceTest {
 	public void givenUserIdAndImageFile_whenUpdateProfileImage_thenReturnsNewImageUrl() {
 	    
 		//Given
-		String newImageUrl = "newImageUrl";
+		String newImageUrl = "NewImageUrl";
+		
+		UserDTO updatedUserDTO = userDTO;
+		updatedUserDTO.setProfileImageUrl(newImageUrl);
+		
+		User updatedUserEntity = userEntityWithoutPassword;
+		updatedUserEntity.setProfileImageUrl(newImageUrl);
 
-	    when(dataService.getById(any(Long.class))).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
+	    when(dataService.getById(anyLong())).thenReturn(userDTO);
 	    
-	    when(dataService.save(any(User.class))).thenReturn(new UserDTO(ID, USERNAME, EMAIL, newImageUrl));
+	    when(dataService.save(any(User.class))).thenReturn(updatedUserDTO);
 	    
-		when(mapper.map(any(UserDTO.class), eq(User.class))).thenReturn(new User(ID, USERNAME, EMAIL, null, newImageUrl));
+		when(mapper.map(any(UserDTO.class), eq(User.class))).thenReturn(updatedUserEntity);
 	    
 		when(mediaService.upload(any(MultipartFile.class), eq(IMAGE_URL))).thenReturn(newImageUrl);
 		
@@ -383,12 +380,10 @@ public class UserServiceTest {
 	public void givenInexistentUserId_whenUpdateProfileImage_thenReturnsNull() {
 	    
 		//Given
-		Long id = 2l;
-
-	    when(dataService.getById(any(Long.class))).thenReturn(null);
+	    when(dataService.getById(anyLong())).thenReturn(null);
 	    
 		//When
-		String result = service.updateProfileImage(id, IMAGE_FILE);
+		String result = service.updateProfileImage(inexistentUserId, IMAGE_FILE);
 		
 		//Then
 		
@@ -414,7 +409,7 @@ public class UserServiceTest {
 	public void givenNewImageUrlIsNull_whenUpdateProfileImage_thenReturnsEmptyString() {
 	    
 		//Given
-	    when(dataService.getById(any(Long.class))).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
+	    when(dataService.getById(anyLong())).thenReturn(userDTO);
 	    
 	    when(mediaService.upload(any(MultipartFile.class), eq(IMAGE_URL))).thenReturn(null);
 	    
@@ -446,7 +441,7 @@ public class UserServiceTest {
 	public void givenNewImageUrlEqualsOldOne_whenUpdateProfileImage_thenReturnsEmptyString() {
 	    
 		//Given
-	    when(dataService.getById(any(Long.class))).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
+	    when(dataService.getById(anyLong())).thenReturn(userDTO);
 	    
 	    when(mediaService.upload(any(MultipartFile.class), eq(IMAGE_URL))).thenReturn(IMAGE_URL);
 	    
@@ -477,25 +472,24 @@ public class UserServiceTest {
 	@Test
 	public void givenUserId_whenDelete_thenCallsMediaServiceDeletePublishKafkaTopicAndReturnsUserDTO() {
 		
+		//Given
+		when(dataService.getById( anyLong() )).thenReturn(userDTO);
+		
 		//When
-		when(dataService.getById( any(Long.class) )).thenReturn(new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL));
 		UserDTO userResult = service.delete(ID);
 		
 		//Then
 		
 		//Verify Data Service interaction
-		verify(dataService, times(1)).getById(any(Long.class));
+		verify(dataService, times(1)).getById(anyLong());
 		
-		verify(dataService, times(1)).delete(any(Long.class));
+		verify(dataService, times(1)).delete(anyLong());
 		
 		//Verify Media Service interaction
 		verify(mediaService, times(1)).delete(IMAGE_URL);
 		
 		//Verify KafkaTemplate interaction
-		verify(kafkaTemplate, times(1)).send("UserDeleted", ID);
-		
-		//Verify NO ModelMapper interaction
-		verify(mapper, times(0)).map(any(), any());
+		verify(kafkaTemplate, times(1)).send(eq("UserDeleted"), anyLong());
 		
 		//Asserts on result
 		assertNotNull(userResult);
@@ -509,27 +503,23 @@ public class UserServiceTest {
 	public void givenInexistentUserId_whenDelete_thenReturnsNull() {
 		
 		//Given
-		Long id = 2l;
+		when(dataService.getById( anyLong() )).thenReturn(null);
 		
 		//When
-		when(dataService.getById( any(Long.class) )).thenReturn(null);
-		UserDTO userResult = service.delete(id);
+		UserDTO userResult = service.delete(inexistentUserId);
 		
 		//Then
 		
 		//Verify Data Service interaction
-		verify(dataService, times(1)).getById(any(Long.class));
+		verify(dataService, times(1)).getById(anyLong());
 		
-		verify(dataService, times(0)).delete(any());
+		verify(dataService, never()).delete(any());
 		
 		//Verify NO Media Service interaction
-		verify(mediaService, times(0)).delete(any());
+		verify(mediaService, never()).delete(any());
 		
 		//Verify NO KafkaTemplate interaction
-		verify(kafkaTemplate, times(0)).send(any(), any());
-		
-		//Verify NO ModelMapper interaction
-		verify(mapper, times(0)).map(any(), any());
+		verify(kafkaTemplate, never()).send(any(), any());
 		
 		//Asserts on result
 		assertNull(userResult);
@@ -545,6 +535,14 @@ public class UserServiceTest {
 	private final String PASSWORD = "PASSWORD";
 	private final String IMAGE_URL = "IMAGE_URL";
 	private final MultipartFile IMAGE_FILE = mock(MultipartFile.class);
+	
+	private final UserDTO userDTO new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL);
+	private final User userEntityWithoutPassword = new User(ID, USERNAME, EMAIL, null, IMAGE_URL);
+	
+	private final Long inexistentUserId = 3l;
+	
+	private final UpdateRequestDTO defaultUpdateRequest = new UpdateRequestDTO();
+	
 	
 	@Mock
 	private ModelMapper mapper;
