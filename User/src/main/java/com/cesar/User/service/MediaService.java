@@ -32,7 +32,7 @@ public class MediaService {
             //And user has no profile image yet
             newImageUrl = (oldPath==null)
                     ? DEFAULT_IMAGE_URL //First time default image upload
-                    : null; //Update bad request error. No old path provided
+                    : null; //Update bad request error. No image file provided
         }
         return newImageUrl;
     }
