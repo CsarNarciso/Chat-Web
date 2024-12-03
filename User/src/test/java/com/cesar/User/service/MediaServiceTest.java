@@ -157,6 +157,18 @@ public class MediaServiceTest {
 		verify(feign, times(1)).delete(eq(OLD_PATH));
 	}
 	
+	@Test
+	public void givenDefaultImagePath_whenDelete_thenDontCallFeignDelete() {
+		
+		//When
+		service.delete(DEFAULT_IMAGE_URL);
+		
+		//Then
+		
+		//Verify feign interaction
+		verify(feign, never()).delete(any());
+	}
+	
 	
 	
 	
