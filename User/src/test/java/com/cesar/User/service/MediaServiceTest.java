@@ -108,6 +108,24 @@ public class MediaServiceTest {
 		assertNull(result);
 	}
 	
+	@Test
+	public void givenOldPathButEmptyImageFile_whenUpload_thenReturnsNull() {
+		
+		//Given
+		when(IMAGE_FILE.isEmpty()).thenReturn(true);
+		
+		//When
+		String result = service.upload(IMAGE_FILE, OLD_PATH);
+		
+		//Then
+		
+		//Verify NO feign interaction
+		verify(feign, never()).upload(any(), any());
+		
+		//Asserts on result
+		assertNull(result);
+	}
+	
 	
 	
 	
