@@ -1,8 +1,18 @@
 package com.cesar.User.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -10,10 +20,19 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
+
 import com.cesar.User.feign.MediaFeign;
 
 @ExtendWith(MockitoExtension.class)
 public class MediaServiceTest {
+	
+	
+	@BeforeEach
+	public void init() {
+		//Inject default image URL value on Service class field
+		ReflectionTestUtils.setField(service, "DEFAULT_IMAGE_URL", DEFAULT_IMAGE_URL);
+	}
+	
 	
 	@Test
 	public void givenNoArguments_whenUpload_thenReturnsDefaultImageUrl() {
@@ -124,6 +143,18 @@ public class MediaServiceTest {
 		
 		//Asserts on result
 		assertNull(result);
+	}
+	
+	@Test
+	public void givenCustomImagePath_whenDelete_thenCallsFeignDelete() {
+		
+		//When
+		service.delete(OLD_PATH);
+		
+		//Then
+		
+		//Verify feign interaction
+		verify(feign, times(1)).delete(eq(OLD_PATH));
 	}
 	
 	
