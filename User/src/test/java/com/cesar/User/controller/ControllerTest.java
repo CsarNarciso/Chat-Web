@@ -251,6 +251,43 @@ public class ControllerTest {
 		assertEquals("Media service down or unreachable", result.getBody());
 	}
 
+	@Test
+	public void givenUserId_whenDelete_thenReturns() {
+	    
+		//Given
+		when(service.delete( anyLong() )).thenReturn(userDTO);
+		
+		//When
+		ResponseEntity<?> result = controller.delete(ID);
+		
+		//Then
+		
+	    //Verify Data Service interaction
+		verify(dataService, times(1)).delete( anyLong() );
+		
+		//Asserts on result
+		assertNotNull(result);
+		assertNull(result.getBody());
+	}
+
+	@Test
+	public void givenInexistentUserId_whenDelete_thenReturns() {
+	    
+		//Given
+		when(service.delete( anyLong() )).thenReturn(null);
+		
+		//When
+		ResponseEntity<?> result = controller.delete(ID);
+		
+		//Then
+		
+	    //Verify Data Service interaction
+		verify(dataService, times(1)).delete( anyLong() );
+		
+		//Asserts on result
+		assertNotNull(result);
+		assertNull(result.getBody());
+	}
 
 	
 	
