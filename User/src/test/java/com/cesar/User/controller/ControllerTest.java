@@ -192,6 +192,66 @@ public class ControllerTest {
 		assertNull(result.getBody());
 	}
 
+	@Test
+	public void givenUserIdAndImageFile_whenUpdateProfileImage_thenReturnsNewImageUrl() {
+	    
+		//Given
+		String newImageUrl = "NewImageUrl";
+		
+		when(service.updateProfileImage(anyLong(), any(MultipartFile.class))).thenReturn(newImageUrl);
+		
+		//When
+		ResponseEntity<?> result = controller.updateProfileImage(ID, IMAGE_FILE);
+		
+		//Then
+		
+	    //Verify Data Service interaction
+		verify(dataService, times(1)).updateProfileImage(anyLong(), any(MultipartFile.class));
+		
+		//Asserts on result
+		assertNotNull(result);
+		assertEquals(newImageUrl, result.getBody());
+	}
+	
+	@Test
+	public void givenInexistentUserId_whenUpdateProfileImage_thenReturnsNull() {
+	    
+		//Given
+		when(service.updateProfileImage(anyLong(), any(MultipartFile.class))).thenReturn(null);
+		
+		//When
+		ResponseEntity<?> result = controller.updateProfileImage(inexistentUserId, IMAGE_FILE);
+		
+		//Then
+		
+	    //Verify Data Service interaction
+		verify(dataService, times(1)).updateProfileImage(anyLong(), any(MultipartFile.class));
+		
+		//Asserts on result
+		assertNotNull(result);
+		assertNull(result.getBody());
+	}
+	
+	@Test
+	public void givenNewImageUrlIsEmpty_whenUpdateProfileImage_thenReturnsUnavailableServiceMessage() {
+	    
+		//Given
+		when(service.updateProfileImage(anyLong(), any(MultipartFile.class))).thenReturn("");
+		
+		//When
+		ResponseEntity<?> result = controller.updateProfileImage(ID, IMAGE_FILE);
+		
+		//Then
+		
+	    //Verify Data Service interaction
+		verify(dataService, times(1)).updateProfileImage(anyLong(), any(MultipartFile.class));
+		
+		//Asserts on result
+		assertNotNull(result);
+		assertEquals("Media service down or unreachable", result.getBody());
+	}
+
+
 	
 	
 	private final Long ID = 1l;
