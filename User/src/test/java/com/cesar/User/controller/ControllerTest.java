@@ -144,6 +144,55 @@ public class ControllerTest {
 		assertNull(result.getBody());
 	}
 	
+	@Test
+	public void givenUserIdAndUpdateRequest_whenUpdateDetails_thenReturnsUpdatedUserDTO() {
+	    
+		// Given
+	    String updatedUsername = "UpdatedUsername";
+	    UpdateRequestDTO updateRequest = new UpdateRequestDTO(Optional.of(updatedUsername), Optional.empty());
+		
+		UserDTO updatedUser = new UserDTO(ID, updatedUsername, EMAIL, IMAGE_URL);
+
+	    when(service.updateDetails( anyLong(), any(UpdateRequestDTO.class) )).thenReturn(updatedUser);
+	    
+	    //When
+	    ResponseEntity<UserDTO> result = controller.updateDetails(ID, updateRequest);
+
+	    //Then
+	    
+	    //Verify Service interactions
+	    verify(service, times(1)).updateDetails( anyLong(), any(UpdateRequestDTO.class) );
+	    
+		//Asserts on result
+	    assertNotNull(result);
+		
+		UserDTO userResult = result.getBody();
+	    assertEquals(ID, userResult.getId());
+	    assertEquals(updatedUsername, userResult.getUsername());
+	    assertEquals(EMAIL, userResult.getEmail());
+	    assertEquals(IMAGE_URL, userResult.getProfileImageUrl());
+	}
+	
+	@Test
+	public void givenInexistentUserId_whenUpdateDetails_thenReturnsNull() {
+	    
+		// Given
+	    when(service.updateDetails( anyLong(), any(UpdateRequestDTO.class) )).thenReturn(null);
+	    
+	    //When
+	    ResponseEntity<UserDTO> result = controller.updateDetails(inexistentUserId, defaultUpdateRequest);
+
+	    //Then
+	    
+	    //Verify Service interactions
+	    verify(service, times(1)).updateDetails( anyLong(), any(UpdateRequestDTO.class) );
+	    
+		//Asserts on result
+	    assertNotNull(result);
+		assertNull(result.getBody());
+	}
+
+	
 	
 	private final Long ID = 1l;
 	private final String USERNAME = "USERNAME";
