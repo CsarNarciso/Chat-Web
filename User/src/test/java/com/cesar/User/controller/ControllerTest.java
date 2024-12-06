@@ -180,7 +180,7 @@ public class ControllerTest {
 	    when(service.updateDetails( anyLong(), any(UpdateRequestDTO.class) )).thenReturn(null);
 	    
 	    //When
-	    ResponseEntity<UserDTO> result = controller.updateDetails(inexistentUserId, defaultUpdateRequest);
+	    ResponseEntity<UserDTO> result = controller.updateDetails(inexistentUserId, new UpdateRequestDTO());
 
 	    //Then
 	    
@@ -292,24 +292,16 @@ public class ControllerTest {
 	
 	
 	private final Long ID = 1l;
+	private final Long inexistentUserId = 99l;
 	private final String USERNAME = "USERNAME";
 	private final String EMAIL = "EMAIL";
 	private final String PASSWORD = "PASSWORD";
 	private final String IMAGE_URL = "IMAGE_URL";
 	private final MultipartFile IMAGE_FILE = mock(MultipartFile.class);
-	
 	private final UserDTO userDTO = new UserDTO(ID, USERNAME, EMAIL, IMAGE_URL);
-	private final User userEntityWithoutPassword = new User(ID, USERNAME, EMAIL, null, IMAGE_URL);
-	
-	private final Long inexistentUserId = 99l;
-	
-	private final CreateRequestDTO createRequest = new CreateRequestDTO();
-	private final UpdateRequestDTO defaultUpdateRequest = new UpdateRequestDTO();
-	
 	
 	@Mock
 	private UserService service;
-	
 	@InjectMocks
 	private Controller controller;
 }
