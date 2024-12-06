@@ -3,6 +3,7 @@ package com.cesar.User.controller;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -10,11 +11,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 import com.cesar.User.dto.CreateRequestDTO;
 import com.cesar.User.dto.UpdateRequestDTO;
 import com.cesar.User.dto.UserDTO;
-import org.springframework.http.ResponseEntity;
 import com.cesar.User.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,7 +39,7 @@ public class ControllerTest {
 		
 		//Asserts on result
 		assertNotNull(result);
-		assertThat(result.getBody() is(instanceof UserDTO.class));
+		assertTrue(result.getBody() instanceof UserDTO);
 		assertEquals(userDTO, result.getBody());
 	}
 	
@@ -58,7 +59,7 @@ public class ControllerTest {
 		
 		//Asserts on result
 		assertNotNull(result);
-		assertThat(result.getBody() is(instanceof UserDTO.class));
+		assertTrue(result.getBody() instanceof UserDTO);
 		assertEquals(userDTO, result.getBody());
 	}
 	
@@ -97,22 +98,26 @@ public class ControllerTest {
 		//Then
 		
 		//Verify Service interaction
-		verify(dataService, times(1)).getByIds(ids);
+		verify(service, times(1)).getByIds(ids);
 		
 		//Asserts on result
 		assertNotNull(result);
-		
-		List<UserDTO> usersResult = result.getBody();
+		System.out.println(result);
+		Object usersResult = result.getBody();
+		System.out.println(usersResult);
 		assertNotNull(usersResult);
-		assertFalse(usersResult.isEmpty());
-		assertEquals(usersResult.size(), usersResult.size());
+		assertTrue(usersResult instanceof List);
+		List<UserDTO> usersResultList = castList(usersResult, UserDTO.class);
+		System.out.println(usersResultList);
+		assertFalse(usersResultList.isEmpty());
+		assertEquals(usersResultList.size(), usersResultList.size());
 		
-		for(int i=0; i<usersResult.size(); i++) {
+		for(int i=0; i<usersResultList.size(); i++) {
 			
-			assertEquals(ids.get(i), usersResult.get(i).getId());
-			assertEquals(USERNAME, usersResult.get(i).getUsername());
-			assertEquals(EMAIL, usersResult.get(i).getEmail());
-			assertEquals(IMAGE_URL, usersResult.get(i).getProfileImageUrl());
+			assertEquals(ids.get(i), usersResultList.get(i).getId());
+			assertEquals(USERNAME, usersResultList.get(i).getUsername());
+			assertEquals(EMAIL, usersResultList.get(i).getEmail());
+			assertEquals(IMAGE_URL, usersResultList.get(i).getProfileImageUrl());
 		}
 	}
 	
@@ -130,7 +135,7 @@ public class ControllerTest {
 		//Then
 		
 		//Verify Service interaction
-		verify(dataService, times(1)).getByIds(ids);
+		verify(service, times(1)).getByIds(ids);
 		
 		//Asserts on result
 		assertNotNull(result);
@@ -149,7 +154,7 @@ public class ControllerTest {
 	    when(service.updateDetails( anyLong(), any(UpdateRequestDTO.class) )).thenReturn(updatedUser);
 	    
 	    //When
-	    ResponseEntity<UserDTO> result = controller.updateDetails(ID, updateRequest);
+	    ResponseEntity<?> result = controller.updateDetails(ID, updateRequest);
 
 	    //Then
 	    
@@ -159,7 +164,7 @@ public class ControllerTest {
 		//Asserts on result
 	    assertNotNull(result);
 		
-		UserDTO userResult = result.getBody();
+		UserDTO userResult = (UserDTO) result.getBody();
 	    assertEquals(ID, userResult.getId());
 	    assertEquals(updatedUsername, userResult.getUsername());
 	    assertEquals(EMAIL, userResult.getEmail());
@@ -173,7 +178,7 @@ public class ControllerTest {
 	    when(service.updateDetails( anyLong(), any(UpdateRequestDTO.class) )).thenReturn(null);
 	    
 	    //When
-	    ResponseEntity<UserDTO> result = controller.updateDetails(inexistentUserId, new UpdateRequestDTO());
+	    ResponseEntity<?> result = controller.updateDetails(inexistentUserId, new UpdateRequestDTO());
 
 	    //Then
 	    
@@ -199,7 +204,7 @@ public class ControllerTest {
 		//Then
 		
 	    //Verify Data Service interaction
-		verify(dataService, times(1)).updateProfileImage(anyLong(), any(MultipartFile.class));
+		verify(service, times(1)).updateProfileImage(anyLong(), any(MultipartFile.class));
 		
 		//Asserts on result
 		assertNotNull(result);
@@ -218,7 +223,7 @@ public class ControllerTest {
 		//Then
 		
 	    //Verify Data Service interaction
-		verify(dataService, times(1)).updateProfileImage(anyLong(), any(MultipartFile.class));
+		verify(service, times(1)).updateProfileImage(anyLong(), any(MultipartFile.class));
 		
 		//Asserts on result
 		assertNotNull(result);
@@ -237,7 +242,7 @@ public class ControllerTest {
 		//Then
 		
 	    //Verify Data Service interaction
-		verify(dataService, times(1)).updateProfileImage(anyLong(), any(MultipartFile.class));
+		verify(service, times(1)).updateProfileImage(anyLong(), any(MultipartFile.class));
 		
 		//Asserts on result
 		assertNotNull(result);
@@ -256,7 +261,7 @@ public class ControllerTest {
 		//Then
 		
 	    //Verify Data Service interaction
-		verify(dataService, times(1)).delete( anyLong() );
+		verify(service, times(1)).delete( anyLong() );
 		
 		//Asserts on result
 		assertNotNull(result);
@@ -275,7 +280,7 @@ public class ControllerTest {
 		//Then
 		
 	    //Verify Data Service interaction
-		verify(dataService, times(1)).delete( anyLong() );
+		verify(service, times(1)).delete( anyLong() );
 		
 		//Asserts on result
 		assertNotNull(result);
@@ -283,6 +288,22 @@ public class ControllerTest {
 	}
 
 	
+	
+	
+	
+	private static <T> List<T> castList(Object obj, Class<T> clazz)
+	{
+	    List<T> result = new ArrayList<T>();
+	    if(obj instanceof List<?>)
+	    {
+	        for (Object o : (List<?>) obj)
+	        {
+	            result.add(clazz.cast(o));
+	        }
+	        return result;
+	    }
+	    return null;
+	}
 	
 	private final Long ID = 1l;
 	private final Long inexistentUserId = 99l;
