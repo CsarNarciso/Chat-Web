@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 import com.cesar.User.dto.CreateRequestDTO;
@@ -41,6 +42,7 @@ public class ControllerTest {
 		assertNotNull(result);
 		assertTrue(result.getBody() instanceof UserDTO);
 		assertEquals(userDTO, result.getBody());
+		assertEquals(HttpStatus.CREATED, result.getStatusCode());
 	}
 	
 	@Test
@@ -61,6 +63,7 @@ public class ControllerTest {
 		assertNotNull(result);
 		assertTrue(result.getBody() instanceof UserDTO);
 		assertEquals(userDTO, result.getBody());
+		assertEquals(HttpStatus.OK, result.getStatusCode());
 	}
 	
 	@Test
@@ -80,6 +83,7 @@ public class ControllerTest {
 		//Asserts on result
 		assertNotNull(result);
 		assertEquals(null, result.getBody());
+		assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
 	}
 	
 	@Test
@@ -102,13 +106,9 @@ public class ControllerTest {
 		
 		//Asserts on result
 		assertNotNull(result);
-		System.out.println(result);
-		Object usersResult = result.getBody();
-		System.out.println(usersResult);
-		assertNotNull(usersResult);
-		assertTrue(usersResult instanceof List);
-		List<UserDTO> usersResultList = castList(usersResult, UserDTO.class);
-		System.out.println(usersResultList);
+		assertEquals(HttpStatus.OK, result.getStatusCode());
+		
+		List<UserDTO> usersResultList = castList(result.getBody(), UserDTO.class);
 		assertFalse(usersResultList.isEmpty());
 		assertEquals(usersResultList.size(), usersResultList.size());
 		
@@ -140,6 +140,7 @@ public class ControllerTest {
 		//Asserts on result
 		assertNotNull(result);
 		assertNull(result.getBody());
+		assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
 	}
 	
 	@Test
@@ -163,6 +164,7 @@ public class ControllerTest {
 	    
 		//Asserts on result
 	    assertNotNull(result);
+	    assertEquals(HttpStatus.OK, result.getStatusCode());
 		
 		UserDTO userResult = (UserDTO) result.getBody();
 	    assertEquals(ID, userResult.getId());
@@ -188,6 +190,7 @@ public class ControllerTest {
 		//Asserts on result
 	    assertNotNull(result);
 		assertNull(result.getBody());
+		assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
 	}
 
 	@Test
@@ -209,6 +212,7 @@ public class ControllerTest {
 		//Asserts on result
 		assertNotNull(result);
 		assertEquals(newImageUrl, result.getBody());
+		assertEquals(HttpStatus.OK, result.getStatusCode());
 	}
 	
 	@Test
@@ -228,6 +232,7 @@ public class ControllerTest {
 		//Asserts on result
 		assertNotNull(result);
 		assertNull(result.getBody());
+		assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
 	}
 	
 	@Test
@@ -247,10 +252,11 @@ public class ControllerTest {
 		//Asserts on result
 		assertNotNull(result);
 		assertEquals("Media service down or unreachable", result.getBody());
+		assertEquals(HttpStatus.SERVICE_UNAVAILABLE, result.getStatusCode());
 	}
 
 	@Test
-	public void givenUserId_whenDelete_thenReturns() {
+	public void givenUserId_whenDelete_thenReturnsNO_CONTENT() {
 	    
 		//Given
 		when(service.delete( anyLong() )).thenReturn(userDTO);
@@ -266,10 +272,11 @@ public class ControllerTest {
 		//Asserts on result
 		assertNotNull(result);
 		assertNull(result.getBody());
+		assertEquals(HttpStatus.NO_CONTENT, result.getStatusCode());
 	}
 
 	@Test
-	public void givenInexistentUserId_whenDelete_thenReturns() {
+	public void givenInexistentUserId_whenDelete_thenReturnsNOT_FOUND() {
 	    
 		//Given
 		when(service.delete( anyLong() )).thenReturn(null);
@@ -285,6 +292,7 @@ public class ControllerTest {
 		//Asserts on result
 		assertNotNull(result);
 		assertNull(result.getBody());
+		assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
 	}
 
 	
