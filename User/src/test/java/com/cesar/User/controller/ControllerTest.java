@@ -36,7 +36,7 @@ public class ControllerTest {
 		when(service.create( any(CreateRequestDTO.class) )).thenReturn(userDTO);
 		
 		//When
-		ResponseEntity<UserDTO> result = controller.create(createRequest);
+		ResponseEntity<?> result = controller.create(createRequest);
 		
 		//Then
 		
@@ -45,6 +45,27 @@ public class ControllerTest {
 		
 		//Asserts on result
 		assertNotNull(result);
+		assertThat(result.getBody() is(instanceof UserDTO.class));
+		assertEquals(userDTO, result.getBody());
+	}
+	
+	@Test
+	public void givenUserId_whenGetById_thenReturnsUserDTO() {
+		
+		//Given
+		when(service.getById( anyLong() )).thenReturn(userDTO);
+		
+		//When
+		ResponseEntity<?> result = controller.getById(ID);
+		
+		//Then
+		
+		//Verify Service interaction
+		verify(service, times(1)).getById(anyLong());
+		
+		//Asserts on result
+		assertNotNull(result);
+		assertThat(result.getBody() is(instanceof UserDTO.class));
 		assertEquals(userDTO, result.getBody());
 	}
 	
