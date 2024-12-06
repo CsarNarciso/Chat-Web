@@ -88,6 +88,62 @@ public class ControllerTest {
 		assertEquals(null, result.getBody());
 	}
 	
+	@Test
+	public void givenUserIds_whenGetByIds_thenReturnsListOfUserDTOs() {
+		
+		//Given
+		List<Long> ids = List.of(1l, 2l, 4l);
+		
+		when(service.getByIds( ids )).thenReturn(ids
+								.stream()
+								.map(id -> new UserDTO(id, USERNAME, EMAIL, IMAGE_URL))
+								.toList());
+		//When
+		ResponseEntity<?> result = controller.getByIds(ids);
+		
+		//Then
+		
+		//Verify Service interaction
+		verify(dataService, times(1)).getByIds(ids);
+		
+		//Asserts on result
+		assertNotNull(result);
+		
+		List<UserDTO> usersResult = result.getBody();
+		assertNotNull(usersResult);
+		assertFalse(usersResult.isEmpty());
+		assertEquals(usersResult.size(), usersResult.size());
+		
+		for(int i=0; i<usersResult.size(); i++) {
+			
+			assertEquals(ids.get(i), usersResult.get(i).getId());
+			assertEquals(USERNAME, usersResult.get(i).getUsername());
+			assertEquals(EMAIL, usersResult.get(i).getEmail());
+			assertEquals(IMAGE_URL, usersResult.get(i).getProfileImageUrl());
+		}
+	}
+	
+	@Test
+	public void givenInexistentUserIds_whenGetByIds_thenReturnsNull() {
+		
+		//Given
+		List<Long> ids = List.of(1l, 2l, 4l);
+		
+		when(service.getByIds( ids )).thenReturn(null);
+		
+		//When
+		ResponseEntity<?> result = controller.getByIds(ids);
+		
+		//Then
+		
+		//Verify Service interaction
+		verify(dataService, times(1)).getByIds(ids);
+		
+		//Asserts on result
+		assertNotNull(result);
+		assertNull(result.getBody());
+	}
+	
 	
 	private final Long ID = 1l;
 	private final String USERNAME = "USERNAME";
