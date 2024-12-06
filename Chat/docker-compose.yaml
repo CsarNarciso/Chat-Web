@@ -1,6 +1,6 @@
 services:
   chat:
-    build: .
+    build: ./Chat/.
     ports:
       - "8002:8002"
     environment:
@@ -16,6 +16,12 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.01'
+          memory: 50M
     networks:
       - chat-web-net
     healthcheck:

@@ -1,6 +1,6 @@
 services:
   configuration:
-    build: Configuration/.
+    build: .
     ports:
       - "8888:8888"
     environment:
@@ -8,6 +8,12 @@ services:
     depends_on:
       discovery:
         condition: service_healthy
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 100M
     networks:
       - chat-web-net
     healthcheck:

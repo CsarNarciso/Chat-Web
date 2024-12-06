@@ -1,0 +1,2 @@
+include:
+  - Discovery/docker-compose.yaml

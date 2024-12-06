@@ -1,6 +1,8 @@
 services:
   user:
-    build: User/.
+    build:
+      context: ./User/.
+      dockerfile: Dockerfile
     ports:
       - "8001:8001"
     environment:
@@ -16,6 +18,12 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.01'
+          memory: 50M
     networks:
       - chat-web-net
     healthcheck:

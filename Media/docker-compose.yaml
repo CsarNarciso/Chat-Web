@@ -1,6 +1,6 @@
 services:
   media:
-    build: Media/.
+    build: ./Media/.
     ports:
       - "8005:8005"
     environment:
@@ -10,6 +10,12 @@ services:
         condition: service_healthy
       configuration:
         condition: service_healthy
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.01'
+          memory: 50M
     networks:
       - chat-web-net
     healthcheck:

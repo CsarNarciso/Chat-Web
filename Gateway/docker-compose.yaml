@@ -1,20 +1,24 @@
 services:
   gateway:
-    build: Gateway/.
+    build: ./Gateway/.
     ports:
       - "8000:8000"
     environment:
       SPRING_PROFILES_ACTIVE: prod
     depends_on:
-      discovery:
-        condition: service_healthy
       configuration:
         condition: service_healthy
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.01'
+          memory: 50M
     networks:
       - chat-web-net
     healthcheck:
       test: ["CMD", "curl", "--fail", "--silent", "localhost:8000/actuator/health"]
-      start_period: 20s
-      interval: 10s
+      start_period: 120s
+      interval: 60s
       timeout: 5s
       retries: 5
