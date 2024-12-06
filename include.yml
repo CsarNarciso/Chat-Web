@@ -1,4 +1,0 @@
-include:
-  - local-compose.yaml
-  - Discovery/docker-compose.yaml
-  - Configuration/docker-compose.yaml

@@ -1,14 +1,14 @@
 services:
 
-  # Kafka
+  #Kafka
   kafka:
     image: bitnami/kafka
     ports:
       - "9092:9092"
     environment:
       KAFKA_NODE_ID: 1
-      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT'
       KAFKA_LISTENERS: 'INTERNAL://kafka:29092,CONTROLLER://kafka:29093,EXTERNAL://0.0.0.0:9092'
       KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka:29092,EXTERNAL://localhost:9092'
@@ -20,17 +20,23 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
       CLUSTER_ID: 'ciWo7IWazngRchmPES6q5A=='
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.01'
+          memory: 50M
     networks:
       - chat-web-net
-    restart: always
     healthcheck:
       test: kafka-topics.sh --list --bootstrap-server localhost:9092 || exit 1
-      start_period: 60s
-      interval: 20s
+      start_period: 80s
+      interval: 30s
       timeout: 10s
       retries: 5
-
-  # Postgres
+    
+  
+  #Postgres
   postgres:
     image: postgres
     ports:
@@ -39,14 +45,19 @@ services:
       POSTGRES_DB: chat-web-db
       POSTGRES_USERNAME: postgres
       POSTGRES_PASSWORD: letmein
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 50M
     networks:
       - chat-web-net
-    restart: always
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready", "-d", "db" ]
-      start_period: 20s
-      interval: 10s
-      timeout: 5s
+      start_period: 120s
+      interval: 60s
+      timeout: 20s
       retries: 5
 
   #Redis
@@ -54,16 +65,28 @@ services:
     image: redis
     ports:
       - "6379"
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.01'
+          memory: 30M
     networks:
       - chat-web-net
-    restart: always
     healthcheck:
       test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
-      start_period: 20s
+      start_period: 30s
       interval: 10s
       timeout: 5s
       retries: 5
-
-
+      
+include:
+  - Discovery/docker-compose.yaml
+  - Configuration/docker-compose.yaml
+  - Gateway/docker-compose.yaml
+  - Media/docker-compose.yaml
+  - User/docker-compose.yaml
+  - Chat/docker-compose.yaml
+  
 networks:
   chat-web-net:
