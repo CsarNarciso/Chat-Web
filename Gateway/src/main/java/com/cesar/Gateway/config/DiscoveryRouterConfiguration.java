@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 @Configuration
-@Profile("docker")
+@Profile("prod")
 public class DiscoveryRouterConfiguration {
 
     @Bean
