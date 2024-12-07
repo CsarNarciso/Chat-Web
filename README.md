@@ -1,4 +1,4 @@
-# Microservices Based Real Time Messaging Application using Spring Boot and WebSockets.
+# Microservices Based Real Time Messaging Application.
 
 ![Final Architecture Design](https://github.com/CsarNarciso/Assets/blob/main/Final%20Chat%20Web%20System%20Design.svg)
 
