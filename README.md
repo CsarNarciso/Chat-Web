@@ -1,6 +1,6 @@
 # Microservices Based Real Time Messaging Application.
 
-![Final Architecture Design](https://github.com/CsarNarciso/Assets/blob/main/Final%20Chat%20Web%20System%20Design.svg)
+![Chat System Design](https://github.com/CsarNarciso/Assets/blob/main/Chat%20System%20Design.svg)
 
 ## Application features
 - User registration and login.
