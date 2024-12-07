@@ -1,6 +1,6 @@
 # Microservices Based Real Time Messaging Application using Spring Boot and WebSockets.
 
-![Final Architecture Design](https://github.com/CsarNarciso/Assets/blob/main/Final%20Chat%20Web%20System%20Design.png)
+![Final Architecture Design](https://github.com/CsarNarciso/Assets/blob/main/Final%20Chat%20Web%20System%20Design.svg)
 
 ## Application features
 - User registration and login.
