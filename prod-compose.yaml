@@ -68,8 +68,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.01'
-          memory: 30M
+          cpus: '0.3'
+          memory: 50M
     networks:
       - chat-web-net
     healthcheck:
