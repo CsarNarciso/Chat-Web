@@ -49,7 +49,7 @@ services:
   redis:
     image: redis
     ports:
-      - "6379"
+      - "6379:6379"
     restart: always
     deploy:
       resources:
