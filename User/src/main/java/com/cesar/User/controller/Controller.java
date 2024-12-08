@@ -141,7 +141,7 @@ public class Controller {
 
     @Operation(
 		summary = "Update User details",
-		description = "Update specific User details attributes and return the updated one.",
+		description = "Update specific User details attributes and return the updated one",
 		requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
 			description = "User details to update",
 			required = true,
@@ -151,8 +151,8 @@ public class Controller {
 				examples = @ExampleObject(
 						value = """
 							{ 
-								"username": "Username", 
-								"email": "email@gmail.com" 
+								"username": "UpdatedUsername", 
+								"email": "updatedEmail@gmail.com" 
 							}
 							""")
 			)
