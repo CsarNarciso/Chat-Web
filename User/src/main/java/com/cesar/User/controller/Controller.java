@@ -202,7 +202,7 @@ public class Controller {
 				responseCode = "200",
 				description = "Profile image updated",
 				content = @Content(
-					mediaType = "application/json",
+					mediaType = "text/plain",
 					schema = @Schema(example = "http://mediaService:port/media/random-image-name.extension")
 				)
 			),
@@ -210,8 +210,8 @@ public class Controller {
 				responseCode = "503",
 				description = "Media Service unavailable. No updates made",
 				content = @Content(
-					mediaType = "application/json",
-					schema = @Schema(type = "string", example = "Media service down or unreachable")
+					mediaType = "text/plain",
+					schema = @Schema(example = "Media service down or unreachable")
 				)
 			),
 			@ApiResponse(
@@ -236,9 +236,11 @@ public class Controller {
     			 ? newProfileImageUrl.isEmpty() 
     				? ResponseEntity
     						.status(HttpStatus.SERVICE_UNAVAILABLE)
+    						.contentType(MediaType.TEXT_PLAIN)
     						.body("Media service down or unreachable")
     				: ResponseEntity
     					.status(HttpStatus.OK)
+    					.contentType(MediaType.TEXT_PLAIN)
     					.body(newProfileImageUrl)
     			
     			: ResponseEntity.notFound().build();
