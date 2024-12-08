@@ -56,6 +56,10 @@ public class Controller {
 					mediaType = "application/json",
 					schema = @Schema(implementation = UserDTO.class)
 				)
+			),
+			@ApiResponse(
+				responseCode = "400",
+				description = "Bad request arguments",
 			)
 		}
     )
@@ -67,26 +71,29 @@ public class Controller {
     }
 
     
-    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(
-            summary = "Get User by ID",
-            description = "Fetch a user by provided ID.",
-            tags = {"User fetching"},
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "Successful user retrieve.",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = UserDTO.class)
-                            )
-                    ),
-                    @ApiResponse(
-                            responseCode = "404",
-                            description = "No existent user."
-                    )
-            }
+	@Operation(
+		summary = "Get User by ID",
+		description = "Search and get a User using its ID",
+		responses = {
+			@ApiResponse(
+				responseCode = "200",
+				description = "User retrieved",
+				content = @Content(
+					mediaType = "application/json",
+					schema = @Schema(implementation = UserDTO.class)
+				)
+			),
+			@ApiResponse(
+				responseCode = "404",
+				description = "User not found",
+			),
+			@ApiResponse(
+				responseCode = "400",
+				description = "Bad request arguments",
+			),
+		}
     )
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getById(@PathVariable Long id){
     	
         UserDTO user = service.getById(id);
