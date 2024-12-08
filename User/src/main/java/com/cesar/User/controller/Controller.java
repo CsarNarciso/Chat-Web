@@ -34,7 +34,7 @@ public class Controller {
 	
     @Operation(
 		summary = "Create User",
-		description = "Create new user and return the created one's details.",
+		description = "Create new user and return the created one.",
 		requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
 			description = "Details to create User",
 			required = true,
@@ -143,7 +143,37 @@ public class Controller {
                 : ResponseEntity.notFound().build();
     }
 
-    
+    @Operation(
+		summary = "Update User details",
+		description = "Update specific User details attributes and return the updated one.",
+		requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+			description = "User details to update",
+			required = true,
+			content = @Content(
+				mediaType = "application/json",
+				schema = @Schema(implementation = UpdateRequestDTO.class),
+				examples = @ExampleObject(value = "{ \"username\": \"Username\", \"email\": \"email@gmail.com\")
+			)
+		),
+		responses = {
+			@ApiResponse(
+				responseCode = "200",
+				description = "User updated",
+				content = @Content(
+					mediaType = "application/json",
+					schema = @Schema(implementation = UserDTO.class)
+				)
+			),
+			@ApiResponse(
+				responseCode = "404",
+				description = "No Users found",
+			),
+			@ApiResponse(
+				responseCode = "400",
+				description = "Bad request arguments",
+			)
+		}
+    )
     @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateDetails(@PathVariable Long id, @RequestBody UpdateRequestDTO updateRequestFields){
         
