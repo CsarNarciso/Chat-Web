@@ -24,6 +24,7 @@ import com.cesar.User.dto.UserDTO;
 import com.cesar.User.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -102,13 +103,16 @@ public class Controller {
 	@Operation(
 		summary = "Get Users by IDs",
 		description = "Search and get a list of Users using its IDs",
+		parameters = {
+				@Parameter(name = "ids", description = "List of User IDs", example = "{1, 3, 4}")
+		},
 		responses = {
 			@ApiResponse(
 				responseCode = "200",
 				description = "At least one User retrieved",
 				content = @Content(
 					mediaType = "application/json",
-					schema = @Schema(implementation = List.class)
+					schema = @Schema(example = "List of UserDTO objects")
 				)
 			),
 			@ApiResponse(
