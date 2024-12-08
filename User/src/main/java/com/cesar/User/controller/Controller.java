@@ -38,20 +38,7 @@ public class Controller {
 		description = "Create new user and return the created one.",
 		requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
 			description = "Details to create User",
-			required = true,
-			content = @Content(
-				mediaType = "multipart/form-data",
-				schema = @Schema(implementation = CreateRequestDTO.class),
-				examples = @ExampleObject(
-						value = """
-							{ 
-								"username": "Username", 
-								"email": "email@gmail.com", 
-								"password": "Password",
-								"imageMetadata": "Image file (.png or .jpg)"
-							}
-								""")
-			)
+			required = true
 		),
 		responses = {
 			@ApiResponse(
@@ -203,12 +190,8 @@ public class Controller {
 		summary = "Update User profile image",
 		description = "Upload new image file and return User's updated profile image URL",
 		requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-			description = "New image file",
-			required = true,
-			content = @Content(
-				mediaType = "multipart/form-data",
-				schema = @Schema(implementation = MultipartFile.class)
-			)
+			description = ".jpg or .png image file",
+			required = true
 		),
 		responses = {
 			@ApiResponse(
@@ -224,7 +207,7 @@ public class Controller {
 				description = "Media Service unavailable. No updates made",
 				content = @Content(
 					mediaType = "application/json",
-					schema = @Schema(implementation = String.class)
+					schema = @Schema(type = "string", example = "Media service down or unreachable")
 				)
 			),
 			@ApiResponse(

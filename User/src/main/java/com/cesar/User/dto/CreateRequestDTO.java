@@ -9,7 +9,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class CreateRequestDTO {
     private String username;
-    private String email;
+	private String email;
     private String password;
     private MultipartFile imageMetadata;
 }
