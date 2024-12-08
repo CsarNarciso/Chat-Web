@@ -166,7 +166,7 @@ public class Controller {
 			),
 			@ApiResponse(
 				responseCode = "404",
-				description = "No Users found",
+				description = "User not found",
 			),
 			@ApiResponse(
 				responseCode = "400",
@@ -188,7 +188,44 @@ public class Controller {
     			: ResponseEntity.notFound().build();
     }
     
-
+	@Operation(
+		summary = "Update User profile image",
+		description = "Upload new image file and return User's updated profile image URL",
+		requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+			description = "New image file",
+			required = true,
+			content = @Content(
+				mediaType = "multipart/form-data",
+				schema = @Schema(implementation = MultipartFile.class)
+			)
+		),
+		responses = {
+			@ApiResponse(
+				responseCode = "200",
+				description = "Profile image updated",
+				content = @Content(
+					mediaType = "application/json",
+					schema = @Schema(implementation = String.class)
+				)
+			),
+			@ApiResponse(
+				responseCode = "503",
+				description = "Media Service unavailable. No updates made",
+				content = @Content(
+					mediaType = "application/json",
+					schema = @Schema(implementation = String.class)
+				)
+			),
+			@ApiResponse(
+				responseCode = "404",
+				description = "User not found",
+			),
+			@ApiResponse(
+				responseCode = "400",
+				description = "Bad request arguments",
+			)
+		}
+    )
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateProfileImage(
             @PathVariable Long id,
