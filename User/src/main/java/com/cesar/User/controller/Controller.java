@@ -107,26 +107,29 @@ public class Controller {
     }
     
     
-    @GetMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(
-            summary = "Get Users by IDs",
-            description = "Fetch users by provided IDs.",
-            tags = {"User fetching"},
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "Successful users retrieve.",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = List.class)
-                            )
-                    ),
-                    @ApiResponse(
-                            responseCode = "404",
-                            description = "No existent users."
-                    )
-            }
+	@Operation(
+		summary = "Get Users by IDs",
+		description = "Search and get a list of Users using its IDs",
+		responses = {
+			@ApiResponse(
+				responseCode = "200",
+				description = "At least one User retrieved",
+				content = @Content(
+					mediaType = "application/json",
+					schema = @Schema(implementation = List.class)
+				)
+			),
+			@ApiResponse(
+				responseCode = "404",
+				description = "No Users found",
+			),
+			@ApiResponse(
+				responseCode = "400",
+				description = "Bad request arguments",
+			),
+		}
     )
+    @GetMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getByIds(@RequestParam List<Long> ids){
         
     	List<UserDTO> users = service.getByIds(ids);
