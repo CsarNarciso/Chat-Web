@@ -41,12 +41,12 @@ public class UserService {
     public UserDTO updateDetails(Long id, UpdateRequestDTO updateRequest) {
     	
     	//If user exists...
-    	UserDTO user = dataService.getById(id); 
+    	User entity = dataService.getEntityById(id); 
     	
-    	if(user!=null) {
+    	if(entity!=null) {
     		
     		boolean updatePerformed = false;
-    		User entityForUpdate = mapper.map(user, User.class);
+    		UserDTO updatedUser = mapper.map(entity, UserDTO.class);
     		
     		//For each allowed update request field
 			for (Field updateRequestField : reflectionsHelper.getFieldss(UpdateRequestDTO.class)) {
@@ -70,7 +70,7 @@ public class UserService {
 					try {
 						
 						entityField.setAccessible(true);
-						entityField.set(entityForUpdate, updateRequestFieldValue.get());
+						entityField.set(entity, updateRequestFieldValue.get());
 						updatePerformed = true;
 						
 					} catch (IllegalArgumentException | IllegalAccessException e) {e.printStackTrace();}
@@ -80,12 +80,12 @@ public class UserService {
 			if(updatePerformed) {
 				
 				//Update
-				user = dataService.save(entityForUpdate);
+				updatedUser = dataService.save(entity);
 
 		        //Event Publisher - User updated
-		        kafkaTemplate.send("UserUpdated", user);
+		        kafkaTemplate.send("UserUpdated", entity);
 			}
-			return user;
+			return updatedUser;
     	}
     	return null;
     }

@@ -24,10 +24,14 @@ public class UserDataService {
     
     @Cacheable(key = "#id", unless = "#result == null")
     public UserDTO getById(Long id){
-		User entity = repo.findById(id).orElse(null);
+		User entity = getEntityById(id);
 		return entity!=null 
 				? mapToDTO(entity) 
 				: null; 
+    }
+    
+    public User getEntityById(Long id){
+		return repo.findById(id).orElse(null);
     }
 
     public List<UserDTO> getByIds(List<Long> ids){
