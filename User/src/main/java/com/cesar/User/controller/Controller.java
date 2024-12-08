@@ -63,7 +63,7 @@ public class Controller {
 			)
 		}
     )
-	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> create(@ModelAttribute CreateRequestDTO createRequest){
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -93,7 +93,7 @@ public class Controller {
 			),
 		}
     )
-    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable Long id){
     	
         UserDTO user = service.getById(id);
@@ -129,7 +129,7 @@ public class Controller {
 			),
 		}
     )
-    @GetMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping
     public ResponseEntity<?> getByIds(@RequestParam List<Long> ids){
         
     	List<UserDTO> users = service.getByIds(ids);
@@ -174,7 +174,7 @@ public class Controller {
 			)
 		}
     )
-    @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping("/{id}")
     public ResponseEntity<?> updateDetails(@PathVariable Long id, @RequestBody UpdateRequestDTO updateRequestFields){
         
     	UserDTO user = service.updateDetails(id, updateRequestFields);
@@ -205,7 +205,7 @@ public class Controller {
 				description = "Profile image updated",
 				content = @Content(
 					mediaType = "application/json",
-					schema = @Schema(implementation = String.class)
+					schema = @Schema(example = "http://mediaService:port/media/random-image-name.extension")
 				)
 			),
 			@ApiResponse(
@@ -226,7 +226,7 @@ public class Controller {
 			)
 		}
     )
-    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateProfileImage(
             @PathVariable Long id,
             @RequestParam MultipartFile imageMetadata){
@@ -264,7 +264,7 @@ public class Controller {
 			)
 		}
     )
-    @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id){
     	
     	return service.delete(id) != null 
