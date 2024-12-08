@@ -246,7 +246,24 @@ public class Controller {
     			: ResponseEntity.notFound().build();
     }
     
-    
+    @Operation(
+		summary = "Delete User by ID",
+		description = "Search and delete a User using its ID",
+		responses = {
+			@ApiResponse(
+				responseCode = "204",
+				description = "User deleted",
+			),
+			@ApiResponse(
+				responseCode = "404",
+				description = "User not found",
+			),
+			@ApiResponse(
+				responseCode = "400",
+				description = "Bad request arguments",
+			)
+		}
+    )
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> delete(@PathVariable Long id){
     	
