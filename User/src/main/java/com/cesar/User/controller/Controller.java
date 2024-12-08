@@ -164,10 +164,7 @@ public class Controller {
 					schema = @Schema(implementation = UserDTO.class)
 				)
 			),
-			@ApiResponse(
-				responseCode = "404",
-				description = "No Users found",
-			),
+			
 			@ApiResponse(
 				responseCode = "400",
 				description = "Bad request arguments",
