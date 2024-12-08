@@ -25,6 +25,7 @@ import com.cesar.User.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
@@ -41,11 +42,15 @@ public class Controller {
 			content = @Content(
 				mediaType = "multipart/form-data",
 				schema = @Schema(implementation = CreateRequestDTO.class),
-				examples = @ExampleObject(value = "{ 
-						\"username\": \"Username\", 
-						\"email\": \"email@gmail.com\", 
-						\"password\": \"Password\",
-						\"imageMetadata\": \"Image file (.png or .jpg)\"}")
+				examples = @ExampleObject(
+						value = """
+							{ 
+								"username": "Username", 
+								"email": "email@gmail.com", 
+								"password": "Password",
+								"imageMetadata": "Image file (.png or .jpg)"
+							}
+								""")
 			)
 		),
 		responses = {
@@ -59,7 +64,7 @@ public class Controller {
 			),
 			@ApiResponse(
 				responseCode = "400",
-				description = "Bad request arguments",
+				description = "Bad request arguments"
 			)
 		}
     )
@@ -85,12 +90,12 @@ public class Controller {
 			),
 			@ApiResponse(
 				responseCode = "404",
-				description = "User not found",
+				description = "User not found"
 			),
 			@ApiResponse(
 				responseCode = "400",
-				description = "Bad request arguments",
-			),
+				description = "Bad request arguments"
+			)
 		}
     )
     @GetMapping("/{id}")
@@ -121,12 +126,12 @@ public class Controller {
 			),
 			@ApiResponse(
 				responseCode = "404",
-				description = "No Users found",
+				description = "No Users found"
 			),
 			@ApiResponse(
 				responseCode = "400",
-				description = "Bad request arguments",
-			),
+				description = "Bad request arguments"
+			)
 		}
     )
     @GetMapping
@@ -152,7 +157,13 @@ public class Controller {
 			content = @Content(
 				mediaType = "application/json",
 				schema = @Schema(implementation = UpdateRequestDTO.class),
-				examples = @ExampleObject(value = "{ \"username\": \"Username\", \"email\": \"email@gmail.com\")
+				examples = @ExampleObject(
+						value = """
+							{ 
+								"username": "Username", 
+								"email": "email@gmail.com" 
+							}
+							""")
 			)
 		),
 		responses = {
@@ -166,11 +177,11 @@ public class Controller {
 			),
 			@ApiResponse(
 				responseCode = "404",
-				description = "User not found",
+				description = "User not found"
 			),
 			@ApiResponse(
 				responseCode = "400",
-				description = "Bad request arguments",
+				description = "Bad request arguments"
 			)
 		}
     )
@@ -218,11 +229,11 @@ public class Controller {
 			),
 			@ApiResponse(
 				responseCode = "404",
-				description = "User not found",
+				description = "User not found"
 			),
 			@ApiResponse(
 				responseCode = "400",
-				description = "Bad request arguments",
+				description = "Bad request arguments"
 			)
 		}
     )
@@ -252,15 +263,15 @@ public class Controller {
 		responses = {
 			@ApiResponse(
 				responseCode = "204",
-				description = "User deleted",
+				description = "User deleted"
 			),
 			@ApiResponse(
 				responseCode = "404",
-				description = "User not found",
+				description = "User not found"
 			),
 			@ApiResponse(
 				responseCode = "400",
-				description = "Bad request arguments",
+				description = "Bad request arguments"
 			)
 		}
     )
