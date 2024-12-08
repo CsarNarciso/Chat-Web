@@ -31,32 +31,35 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 @RestController
 @RequestMapping("/users")
 public class Controller {
-
 	
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
-            summary = "Create User",
-            description = "Create new user and return the new one's details.",
-            tags = {"User handling"},
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "User registration details",
-                    required = true,
-                    content = @Content(
-                            mediaType = "multipart/form-data",
-                            schema = @Schema(implementation = CreateRequestDTO.class)
-                    )
-            ),
-            responses = {
-                    @ApiResponse(
-                            responseCode = "201",
-                            description = "Successful user creation.",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = UserDTO.class)
-                            )
-                    )
-            }
+		summary = "Create User",
+		description = "Create new user and return the created one's details.",
+		requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+			description = "Details to create User",
+			required = true,
+			content = @Content(
+				mediaType = "multipart/form-data",
+				schema = @Schema(implementation = CreateRequestDTO.class),
+				examples = @ExampleObject(value = "{ 
+						\"username\": \"Username\", 
+						\"email\": \"email@gmail.com\", 
+						\"password\": \"Password\",
+						\"imageMetadata\": \"Image file (.png or .jpg)\"}")
+			)
+		),
+		responses = {
+			@ApiResponse(
+				responseCode = "201",
+				description = "User created",
+				content = @Content(
+					mediaType = "application/json",
+					schema = @Schema(implementation = UserDTO.class)
+				)
+			)
+		}
     )
+	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> create(@ModelAttribute CreateRequestDTO createRequest){
         return ResponseEntity
                 .status(HttpStatus.CREATED)
