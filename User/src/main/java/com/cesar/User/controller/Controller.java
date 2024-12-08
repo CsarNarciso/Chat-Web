@@ -25,6 +25,7 @@ import com.cesar.User.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -36,7 +37,7 @@ public class Controller {
 	
     @Operation(
 		summary = "Create User",
-		description = "Create new user and return the created one.",
+		description = "Create new user and return the created one",
 		requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
 			description = "Details to create User",
 			required = true
@@ -104,7 +105,10 @@ public class Controller {
 		summary = "Get Users by IDs",
 		description = "Search and get a list of Users using its IDs",
 		parameters = {
-				@Parameter(name = "ids", description = "List of User IDs", example = "{1, 3, 4}")
+			@Parameter(
+				name = "ids", 
+				description = "List of User IDs"
+			)
 		},
 		responses = {
 			@ApiResponse(
@@ -112,7 +116,7 @@ public class Controller {
 				description = "At least one User retrieved",
 				content = @Content(
 					mediaType = "application/json",
-					schema = @Schema(example = "List of UserDTO objects")
+					array = @ArraySchema(schema = @Schema(description = "List of Users", implementation=UserDTO.class))
 				)
 			),
 			@ApiResponse(
