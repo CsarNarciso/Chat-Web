@@ -194,8 +194,7 @@ public class Controller {
 		summary = "Update User profile image",
 		description = "Upload new image file and return User's updated profile image URL",
 		requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-			description = ".jpg or .png image file",
-			required = true
+			description = "Image file with extension jpg or png"
 		),
 		responses = {
 			@ApiResponse(
