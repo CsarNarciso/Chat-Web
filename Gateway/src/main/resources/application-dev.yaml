@@ -16,3 +16,13 @@ spring:
 eureka:
   client:
     enabled: false
+
+#Swagger OpenApi
+springdoc:
+  swagger-ui:
+    path: /docs
+    urls:
+      - name: gateway-service
+        url: /v3/api-docs
+      - name: user-service
+        url: /users/v3/api-docs
