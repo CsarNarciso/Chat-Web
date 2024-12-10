@@ -10,17 +10,28 @@ import org.springframework.context.annotation.Profile;
 @Profile("dev")
 public class DirectRouterConfiguration {
 
+   
     @Bean
-    RouteLocator routeLocator(RouteLocatorBuilder builder){
-
+    public RouteLocator routeLocator(RouteLocatorBuilder builder) {
         return builder.routes()
-
-                .route( r -> r
+                // Forward API requests for the user service
+                .route(r -> r
                         .path("/users/**")
                         .uri("http://localhost:8001"))
-                .route( r -> r
-                        .path("/conversations/**","/messages/**")
+                .route(r -> r
+                        .path("/conversations/**", "/messages/**")
                         .uri("http://localhost:8002"))
+                // Route API docs for the user service
+                .route("user-service-docs", r -> r
+                        .path("/user-service/docs/**")
+                        .filters(f -> f.rewritePath("/user-service/docs/(?<segment>.*)", "/docs/${segment}"))
+                        .uri("http://localhost:8001"))
+                // Route Swagger UI for the user service
+                .route("user-service-swagger-ui", r -> r
+                        .path("/swagger-ui.html")
+                        .and()
+                        .query("configUrl", "/user-service/docs/swagger-config")
+                        .uri("http://localhost:8001"))
                 .build();
     }
 }
