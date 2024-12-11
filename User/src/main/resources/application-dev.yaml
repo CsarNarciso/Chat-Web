@@ -68,4 +68,5 @@ services:
 
 #Media
 defaultImage:
-  url: http://localhost:${server.port}/DefaultProfileImage.png
+  name: DefaultProfileImage.png
+  url: http://localhost:${server.port}/${defaultImage.name}

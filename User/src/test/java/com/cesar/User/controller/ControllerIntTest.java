@@ -1,38 +1,43 @@
 package com.cesar.User.controller;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import static org.hamcrest.text.MatchesPattern.matchesPattern;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureMockMvc
 public class ControllerIntTest {
 
 	@Test
-    public void givenValidCreateRequest_whenCreate_thenReturnsUserDTOWithCustomImageUrl() throws Exception {
+    public void givenFullCreateRequestButMediaServiceDown_whenCreate_thenCreatesUserWithDefaultImage() throws Exception {
         
-		// Arrange
+		//Arrange
         MockMultipartFile imageFile = 
 					new MockMultipartFile("imageMetadata", "customImage.jpg", "image/jpeg", "image".getBytes());
-        
-        MockMultipartFile username = new MockMultipartFile("username", "", MediaType.TEXT_PLAIN, USERNAME.getBytes());
-        MockMultipartFile email = new MockMultipartFile("email", "", MediaType.TEXT_PLAIN, EMAIL.getBytes());
-        MockMultipartFile password = new MockMultipartFile("password", "", MediaType.TEXT_PLAIN, PASSWORD.getBytes());
 
-        // Act-Assert
+        //Act-Assert
         mvc.perform(multipart("/users")
-                .file(imageFile)
-                .file(username)
-                .file(email)
-                .file(password)
+        		.file(imageFile)
+                .param("username", USERNAME)
+                .param("email", EMAIL)
+                .param("password", PASSWORD)
                 .contentType(MediaType.MULTIPART_FORM_DATA))
             .andExpect(status().isCreated())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.id").value(ID))
+            .andExpect(jsonPath("$.id").value(1l))
             .andExpect(jsonPath("$.username").value(USERNAME))
             .andExpect(jsonPath("$.email").value(EMAIL))
-            .andExpect(jsonPath("$.profileImageUrl").value(customProfileImageBaseUrl + UUID.getRandom() + ".jpg"));
+            .andExpect(jsonPath("$.profileImageUrl").value( matchesPattern(DEFAULT_IMAGE_URL) ));
     }
 
 	@Test
@@ -82,20 +87,17 @@ public class ControllerIntTest {
             .andExpect(status().isNotFound())
     }
 	
+	@Autowired
+	private MockMvc mvc;
+	
+	@LocalServerPort
+	private int port;
+	
 	private final String USERNAME = "USERNAME";
 	private final String EMAIL = "EMAIL";
 	private final String PASSWORD = "PASSWORD";
-
-	@Value("defaultImage.url")
-	private final String defaultProfileImageUrl;
 	
-	@Value("services.media.url")
-	private final String mediaServiceUrl;
-	private final String customProfileImageBaseUrl = mediaServiceUrl + "/media";
-	
-	@Autowired
-    private ObjectMapper objectMapper;
-	
-	@Autowired
-	private MockMvc mvc;
+	@Value("defaultImage.name")
+	private String defaultProfileImageName;
+	private final String DEFAULT_IMAGE_URL = String.format("htpp://localhost:%s/%s", port, defaultProfileImageName);
 }
