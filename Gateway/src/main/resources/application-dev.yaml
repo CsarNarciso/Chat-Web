@@ -11,18 +11,27 @@ spring:
   cloud:
     config:
       enabled: false  
+    gateway:
+      routes:
+        - id: product_service_route
+          predicates:
+            - Path=/user/**
+          uri: http://localhost:8001
       
 #Eureka client
 eureka:
   client:
     enabled: false
 
-#Swagger OpenApi
 springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
   swagger-ui:
-    path: /docs
+    enabled: true
+    config-url: /v3/api-docs/swagger-config
     urls:
-      - name: gateway-service
-        url: /v3/api-docs
-      - name: user-service
-        url: /users/v3/api-docs
+      -   name: gateway-service
+          url: /v3/api-docs
+      -   name: user-service
+          url: /user/v3/api-docs

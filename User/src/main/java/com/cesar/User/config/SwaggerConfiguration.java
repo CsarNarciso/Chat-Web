@@ -1,5 +1,10 @@
 package com.cesar.User.config;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
@@ -22,4 +27,18 @@ import io.swagger.v3.oas.annotations.servers.Server;
                 )
         }
 )
-public class SwaggerConfiguration {}
+@Configuration
+public class SwaggerConfiguration {
+	 @Bean
+    WebMvcConfigurer corsConfigurer() {
+	    return new WebMvcConfigurer() {
+	        @Override
+	        public void addCorsMappings(CorsRegistry registry) {
+	            registry.addMapping("/**")
+	                    .allowedOrigins("http://localhost:8000") // Gateway URL
+	                    .allowedMethods("*")
+	                    .allowedHeaders("*");
+	        }
+	    };
+    }
+}

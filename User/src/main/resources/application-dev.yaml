@@ -52,8 +52,12 @@ eureka:
 
 #Swagger OpenApi
 springdoc:
+  api-docs:
+    enabled: true 
+    path: /user/v3/api-docs
   swagger-ui:
-    path: /docs
+    enabled: true
+    path: /user/swagger-ui.html
 
 #Feign Services
 services:
