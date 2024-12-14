@@ -1,24 +1,22 @@
 package com.cesar.User.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
-import static org.hamcrest.text.MatchesPattern.matchesPattern;
+import org.hamcrest.text.MatchesPattern;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.maciejwalkowiak.wiremock.spring.EnableWireMock;
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@EnableWireMock
+@AutoConfigureMockMvc
 public class ControllerIntTest {
 
 	@Test
@@ -40,28 +38,27 @@ public class ControllerIntTest {
             .andExpect(jsonPath("$.id").value(1l))
             .andExpect(jsonPath("$.username").value(USERNAME))
             .andExpect(jsonPath("$.email").value(EMAIL))
-            .andExpect(jsonPath("$.profileImageUrl").value( matchesPattern(DEFAULT_IMAGE_URL) ));
+            .andExpect(jsonPath("$.profileImageUrl").value( MatchesPattern.matchesPattern(DEFAULT_IMAGE_URL) ));
     }
 
 	@Test
     public void givenUserId_whenGetById_thenReturnUserDTO() throws Exception {
         
         // Act-Assert
-        mvc.perform(get("/users/{id}", 1l)
-            .andExpect(status().isOK())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        mvc.perform(get("/users/{id}", 1l))
+            .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(1l))
             .andExpect(jsonPath("$.username").value(USERNAME))
             .andExpect(jsonPath("$.email").value(EMAIL))
-            .andExpect(jsonPath("$.profileImageUrl").value("http://localhost:8001/DefaultProfileImage.png"));
+            .andExpect(jsonPath("$.profileImageUrl").value(DEFAULT_IMAGE_URL));
     }
 	
 	@Test
     public void givenInexistentUserId_whenGetById_thenReturnNull() throws Exception {
         
         // Act-Assert
-        mvc.perform(get("/users/{id}", 2l)
-            .andExpect(status().isNotFound())
+        mvc.perform(get("/users/{id}", 2l))
+            .andExpect(status().isNotFound());
     }
 	
 	@Test
@@ -69,26 +66,34 @@ public class ControllerIntTest {
         
         // Act-Assert
         mvc.perform(get("/users")
-				.param("ids", 2l, 1l)
-            .andExpect(status().isOK())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$[0].id").value(2l))
-            .andExpect(jsonPath("$[0].username").value(USERNAME))
-            .andExpect(jsonPath("$[0].email").value(EMAIL))
-            .andExpect(jsonPath("$[0].profileImageUrl").value("http://localhost:8001/DefaultProfileImage.png"))
+				.param("ids", "2", "1"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$.length()").value(1))
+            .andExpect(jsonPath("$[0]").doesNotExist())
 			.andExpect(jsonPath("$[1].id").value(1l))
             .andExpect(jsonPath("$[1].username").value(USERNAME))
             .andExpect(jsonPath("$[1].email").value(EMAIL))
-            .andExpect(jsonPath("$[1].profileImageUrl").value("http://localhost:8001/DefaultProfileImage.png"));
+            .andExpect(jsonPath("$[1].profileImageUrl").value(DEFAULT_IMAGE_URL));
     }
 	
 	@Test
     public void givenInexistentUserIds_whenGetById_thenReturnNull() throws Exception {
         
         // Act-Assert
-        mvc.perform(get("/users", 3l, 4l)
-            .andExpect(status().isNotFound())
+        mvc.perform(get("/users")
+        		.param("ids", "3", "2"))
+            .andExpect(status().isNotFound());
     }
+	
+	
+	
+	
+	@BeforeEach
+	public void init() {
+		DEFAULT_IMAGE_URL = String.format("http://localhost:%s/%s", port, defaultProfileImageName);
+	}
+	
 	
 	@Autowired
 	private MockMvc mvc;
@@ -100,7 +105,7 @@ public class ControllerIntTest {
 	private final String EMAIL = "EMAIL";
 	private final String PASSWORD = "PASSWORD";
 	
-	@Value("defaultImage.name")
+	@Value("${defaultImage.name}")
 	private String defaultProfileImageName;
-	private final String DEFAULT_IMAGE_URL = String.format("htpp://localhost:%s/%s", port, defaultProfileImageName);
+	private String DEFAULT_IMAGE_URL;
 }
