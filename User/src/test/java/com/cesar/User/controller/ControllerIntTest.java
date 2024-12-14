@@ -4,7 +4,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 import org.hamcrest.text.MatchesPattern;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,7 +37,7 @@ public class ControllerIntTest {
             .andExpect(jsonPath("$.id").value(1l))
             .andExpect(jsonPath("$.username").value(USERNAME))
             .andExpect(jsonPath("$.email").value(EMAIL))
-            .andExpect(jsonPath("$.profileImageUrl").value( MatchesPattern.matchesPattern(DEFAULT_IMAGE_URL) ));
+            .andExpect(jsonPath("$.profileImageUrl").value( MatchesPattern.matchesPattern(getDefaultImageUrl()) ));
     }
 
 	@Test
@@ -50,7 +49,7 @@ public class ControllerIntTest {
             .andExpect(jsonPath("$.id").value(1l))
             .andExpect(jsonPath("$.username").value(USERNAME))
             .andExpect(jsonPath("$.email").value(EMAIL))
-            .andExpect(jsonPath("$.profileImageUrl").value(DEFAULT_IMAGE_URL));
+            .andExpect(jsonPath("$.profileImageUrl").value(getDefaultImageUrl()));
     }
 	
 	@Test
@@ -74,7 +73,7 @@ public class ControllerIntTest {
 			.andExpect(jsonPath("$[1].id").value(1l))
             .andExpect(jsonPath("$[1].username").value(USERNAME))
             .andExpect(jsonPath("$[1].email").value(EMAIL))
-            .andExpect(jsonPath("$[1].profileImageUrl").value(DEFAULT_IMAGE_URL));
+            .andExpect(jsonPath("$[1].profileImageUrl").value(getDefaultImageUrl()));
     }
 	
 	@Test
@@ -87,11 +86,8 @@ public class ControllerIntTest {
     }
 	
 	
-	
-	
-	@BeforeEach
-	public void init() {
-		DEFAULT_IMAGE_URL = String.format("http://localhost:%s/%s", port, defaultProfileImageName);
+	public String getDefaultImageUrl() {
+	    return String.format("http://localhost:%s/%s", port, defaultProfileImageName);
 	}
 	
 	
@@ -107,5 +103,4 @@ public class ControllerIntTest {
 	
 	@Value("${defaultImage.name}")
 	private String defaultProfileImageName;
-	private String DEFAULT_IMAGE_URL;
 }
