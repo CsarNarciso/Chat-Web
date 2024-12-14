@@ -34,6 +34,27 @@ public class ControllerIntTest {
             .andExpect(jsonPath("$.email").value(EMAIL))
             .andExpect(jsonPath("$.profileImageUrl").value(customProfileImageBaseUrl + UUID.getRandom() + ".jpg"));
     }
+
+	@Test
+    public void givenUserId_whenGetById_thenReturnUserDTO() throws Exception {
+        
+        // Act-Assert
+        mvc.perform(get("/users/{id}", 1l)
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.id").value(1l))
+            .andExpect(jsonPath("$.username").value(USERNAME))
+            .andExpect(jsonPath("$.email").value(EMAIL))
+            .andExpect(jsonPath("$.profileImageUrl").value("http://localhost:8001/DefaultProfileImage.png"));
+    }
+	
+	@Test
+    public void givenInexistentUserId_whenGetById_thenReturnNull() throws Exception {
+        
+        // Act-Assert
+        mvc.perform(get("/users/{id}", 2l)
+            .andExpect(status().isNotFound())
+    }
 	
 	private final String USERNAME = "USERNAME";
 	private final String EMAIL = "EMAIL";
