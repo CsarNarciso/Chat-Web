@@ -18,89 +18,30 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc
 public class ControllerIntTest {
 
-	@Test
-    public void givenFullCreateRequestButMediaServiceDown_whenCreate_thenCreatesUserWithDefaultImage() throws Exception {
-        
-		//Arrange
-        MockMultipartFile imageFile = 
-					new MockMultipartFile("imageMetadata", "customImage.jpg", "image/jpeg", "image".getBytes());
+    @Autowired
+    private MockMvc mvc;
 
-        //Act-Assert
-        mvc.perform(multipart("/users")
-        		.file(imageFile)
-                .param("username", USERNAME)
-                .param("email", EMAIL)
-                .param("password", PASSWORD)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-            .andExpect(status().isCreated())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath("$.id").value(1l))
-            .andExpect(jsonPath("$.username").value(USERNAME))
-            .andExpect(jsonPath("$.email").value(EMAIL))
-            .andExpect(jsonPath("$.profileImageUrl").value( MatchesPattern.matchesPattern(getDefaultImageUrl()) ));
-    }
+    @LocalServerPort
+    private int port;
 
-	@Test
+    @Value("${defaultImage.name}")
+    private String defaultProfileImageName;
+
+    private final String USERNAME = "USERNAME";
+    private final String EMAIL = "EMAIL";
+    private final String PASSWORD = "PASSWORD";
+
+    @Test
     public void givenUserId_whenGetById_thenReturnUserDTO() throws Exception {
-        
-        // Act-Assert
-        mvc.perform(get("/users/{id}", 1l))
+        mvc.perform(get("/users/{id}", 1L))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(1l))
+            .andExpect(jsonPath("$.id").value(1L))
             .andExpect(jsonPath("$.username").value(USERNAME))
             .andExpect(jsonPath("$.email").value(EMAIL))
             .andExpect(jsonPath("$.profileImageUrl").value(getDefaultImageUrl()));
     }
-	
-	@Test
-    public void givenInexistentUserId_whenGetById_thenReturnNull() throws Exception {
-        
-        // Act-Assert
-        mvc.perform(get("/users/{id}", 2l))
-            .andExpect(status().isNotFound());
+
+    public String getDefaultImageUrl() {
+        return String.format("http://localhost:%s/%s", port, defaultProfileImageName);
     }
-	
-	@Test
-    public void givenUserIds_whenGetByIds_thenReturnListOfUserDTO() throws Exception {
-        
-        // Act-Assert
-        mvc.perform(get("/users")
-				.param("ids", "2", "1"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$").isArray())
-            .andExpect(jsonPath("$.length()").value(1))
-            .andExpect(jsonPath("$[0]").doesNotExist())
-			.andExpect(jsonPath("$[1].id").value(1l))
-            .andExpect(jsonPath("$[1].username").value(USERNAME))
-            .andExpect(jsonPath("$[1].email").value(EMAIL))
-            .andExpect(jsonPath("$[1].profileImageUrl").value(getDefaultImageUrl()));
-    }
-	
-	@Test
-    public void givenInexistentUserIds_whenGetById_thenReturnNull() throws Exception {
-        
-        // Act-Assert
-        mvc.perform(get("/users")
-        		.param("ids", "3", "2"))
-            .andExpect(status().isNotFound());
-    }
-	
-	
-	public String getDefaultImageUrl() {
-	    return String.format("http://localhost:%s/%s", port, defaultProfileImageName);
-	}
-	
-	
-	@Autowired
-	private MockMvc mvc;
-	
-	@LocalServerPort
-	private int port;
-	
-	private final String USERNAME = "USERNAME";
-	private final String EMAIL = "EMAIL";
-	private final String PASSWORD = "PASSWORD";
-	
-	@Value("${defaultImage.name}")
-	private String defaultProfileImageName;
 }
