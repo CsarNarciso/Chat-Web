@@ -69,18 +69,13 @@ This application right now can work with the following Spring Profiles:
    + No Eureka (Discovery service) requirment
    + No Config Server (configuration service) requirment
    + H2 Database in memory instead PostgreSQL
-3. Dev-2
-   + No Docker deployment
-   + Eureka and Config Server requirment
-   + PostgreSQL integration
-5. Prod (Production)
+
+2. Prod (Production)
    + Whole project deployment using docker compose
    + Eureka and Config Server requirment
    + PostgreSQL integration
 
 Choose 'dev' profile for fast and light internal services testing environment. Dev profile will disable Discovery and Configuration services dependencies, so you don't have to run them to work.
-
-Choose 'dev-2' profile for fast and light internal as external services testing environment. Chosse this if you need to work with a production like environment without depend on docker compose for the full application setup (wich will lead on slow down your machine performance).
 
 Choose 'prod' profile for full project production environment setup. This will lead in a total of 11 docker containers running on your machine. 
 
