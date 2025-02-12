@@ -2,8 +2,9 @@
 
 ![Chat System Design](https://github.com/CsarNarciso/Assets/blob/main/Chat%20System%20Design.svg)
 
-## Application features
-- User registration and login.
+## What this project is intended to do, the propouse of build this, and the final vision.
+
+## User-level application features
 - Custom profile image upload and update, or default one if none is provided.
 - User details updating.
 - Search for a specific user.
@@ -12,30 +13,60 @@
 - Conversations storing.
 - Delete a conversation locally (it remails for the other participant).
 - Conversation recreation on new message after a delete.
-- Users presence status tracking.
-- User data and presence updates in real time for user relationships (based on conversations)
-- User delete (along with their conversations and messages)
+- User deletion
+- Conversation messages remove when all participants has delete it or they have been deleted
+
+## Technical-level features
+- Development and Production Spring Profiles.
+- Whole project deployment Docker integration using a separate compose file for each service and profile.
+- Configuration management by Spring Cloud Config Server.
+- Single point of access through Spring Cloud Gateway.
+- Services APIs exposure with Open API Swagger for easier client integration, exposing docs access through Gateway.
+- A Kafka broker for event asyncronous communication (decoupling some services).
+- User service: handle user details data and integrates with Media service to access profile images. 
+- Media service: works as a media storing server, handling profile images access. 
+- Chat service: handle Conversations and Messages REST resources, using websockets connections by Spring Stopm WebSockets and SockJs for client side.
+- PostgreSQL Relational Database.
+- Redis Caching instance.
+
+## What's comming next?
+- Security (JWT, OAuth2.0)
+- Cloud (AWS S3 Bucket for Media service, Gateway, RDS, and EC2 instances).
+- Three different DBs (NoSQL Cassandra for Chat, Relational MySQL for User service, and PostgreSQL for Social).
+- A Redis Cache instance for each services that requires it (this is most for optimization handling learning propouses, because, even if the real architecture is intended to work in this way, there is no need of all these instances for a local project, how can we have 3 reddis instances, and 3 different DBs running at the same time in our machine, without get overheating?).
+- Client SPA (Frontend Angular)
+- Jenkins Deployment Pipeline
 
 ## Technologies
 
 1. Java 21
+   + Core
+   + Functional Programming (Java 8 Streams API)
 2. Docker Compose
-3. PostgreSQL, MySQL, CassandraDB
+3. PostgreSQL
 4. Redis (Jedis extension)
 5. Kafka (Kraft mode)
-6. Spring:
-   + REST
+6. Open API Swagger
+7. Spring:
+   + Profiles
+   + Test (Unit and Integration)
+     + JUnit5
+	 + Mockito
+	 + JaCoCo (Coverage)
+   + Web (Rest)
    + Actuator
    + WebSockets
    + Data JPA
    + Hibernate
+   + Model Mapper
 8. Spring Cloud:
    + Eureka Server
    + Config Server
+   + Gateway
    + FeignClient
    + Resilience4j Circuit Braker
-10. SockJS
-11. Maven 3.0+
+9. SockJS
+10. Maven 3.0+
 
 | Spring Framework | Tools & Other Languages | Architectures | 
 |-|-|-|
@@ -52,8 +83,8 @@
   + Configuration
   + Discovery
 * Dependencies:
-  + Global PostgreSQL DB
-  + Global Redis Instance
+  + Global PostgreSQL Database
+  + Global Redis instance
   + Apache Kafka Server
 
 ![Actual Architecture Design](https://github.com/CsarNarciso/Assets/blob/main/Actual%20Chat%20Web%20System%20Design.png)
@@ -85,13 +116,13 @@ In case your are going to use 'prod' profile, then you will need Docker Compose 
 
 If you don't, either install locally the following:
 
-1. A Kafka Server
-2. A Redis Server
-3. (Only for 'dev-1' profile) A PostgreSQL DB
+1. Apache Kafka.
+2. Redis.
+3. PostgreSQL.
 
 Or use docker compose to execute the compose file for non production profiles located in the project root directory (wich will create Kafka, Postgres and Redis containers for you):
 ```bash 
-   docker compose -f local-compose.yaml up -d 
+   docker compose -f dev-compose.yaml up -d 
 ```
 
 Note: either using a docker environment or a local one, the application is configured to use default redis (6379), postgres (5432) and kafka (9492) ports. In case you are using the provided compose file, the default ports are already configured, in case not, you need to make sure the three technologies are using the specified ports.
