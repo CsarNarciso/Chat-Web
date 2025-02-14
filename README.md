@@ -193,4 +193,3 @@ http://localhost:8002/messages
 | send | none | POST | UUID conversationId, Long senderId, String content, boolean recreateForSomeone | application-json | none | none |
 | loadMessages | /conversationId | GET | none | application-json | none | UUID conversationId |
 | markAsRead | /conversationId/readerId | PUT | none | application-json | none | UUID conversationId, Long readerId |
-

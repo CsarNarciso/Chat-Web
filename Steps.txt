@@ -1,0 +1,3 @@
+
+Change architecture to reduce services (gaining performance and easier/faster set up)
+Remove discovery and configuration services (they are no so critical here, however, we can show the implementation of them in other project).
