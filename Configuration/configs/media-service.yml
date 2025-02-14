@@ -1,6 +1,0 @@
-#Server
-server:
-  port: 8005
-spring:
-  application:
-    name: media-service
