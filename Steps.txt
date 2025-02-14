@@ -3,3 +3,4 @@ Change architecture to reduce services (gaining performance and easier/faster se
 Remove discovery and configuration services (they are no so critical here, however, we can show the implementation of them in other project).
 Remove postgresql docker container, we will use h2 in memory db (it's lighter)
 Remove Social and Presence services, we will add them together Media service to User service (it breaks the original architecture, but it's still keeps the segregation responsability: all those services responsabilities belong to user managment, it's not the best for scalability, but it's just for learning propouses)
+Remove eureka, config, and feign (with discovery), along with eureka, config and psotgresql dependencies from services.
