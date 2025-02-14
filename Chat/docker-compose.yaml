@@ -9,15 +9,9 @@ services:
       - chat-web-net
     restart: always
     depends_on:
-      discovery:
-        condition: service_healthy
-      configuration:
-        condition: service_healthy
       gateway:
         condition: service_healthy
       kafka:
-        condition: service_healthy
-      postgres:
         condition: service_healthy
     deploy:
       resources:
