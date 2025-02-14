@@ -1,28 +1,12 @@
-#Docker, Eureka, Config Server
-
 #Application
+server:
+  port: 8003
 spring:
   application:
     name: media-service
-    
-  #Config client
-  cloud:
-    config:
-      uri: configuration-service
-      discovery:
-        enabled: true
-        serviceId: configuration-service
-  config:
-    import: optional:configserver:lb://configuration-service
     
 #Media
 media:
   dirName: media
   path: ${user.dir}/${media.dirName}
   url: http://localhost:${server.port}/${media.dirName}
-
-#Eureka client
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://discovery:8761/eureka

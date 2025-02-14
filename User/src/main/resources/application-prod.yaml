@@ -1,40 +1,24 @@
-#Docker, Eureka, Config Server
-
 #Application
 spring:
   application:
     name: user-service
   
-  #PostgreSQL Datasource
+  #H2 Datasource
+  h2:
+    console.enabled: true
   datasource:
-    url: jdbc:postgresql://postgres:5432/db
-    username: postgres
-    password: letmein
-    driver-class-name: org.postgresql.Driver
-  #Hibernate JPA
+    url: jdbc:h2:mem:db
+    username: me
+    password:
+    driver-class-name: org.h2.Driver
   jpa:
-    hibernate:
-      ddl-auto: create-drop
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: 
+    database-platform: org.hibernate.dialect.H2Dialect
   
   #Circuit Breaker
   cloud:
     openfeign:
       circuitbreaker:
         enabled: true
-  
-  #Config client
-    config:
-      uri: configuration-service
-      discovery:
-        enabled: true
-        serviceId: configuration-service
-  config:
-    import: optional:configserver:lb://configuration-service
   
   #Kafka Config
   kafka:
@@ -53,20 +37,16 @@ redis:
   hostname: redis
   port: 6379
 
-#Eureka client
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://discovery:8761/eureka
-
-#Services
+#Feign Services
 services:
   media:
     name: media-service
+    url: http://localhost:8003
     path: /media
     
 #Server
 server:
+  port: 8001
   url: http://localhost:${server.port}
 project:
   path: ${user.dir}/Chat-Web/User
