@@ -26,7 +26,10 @@
 		<tag/>
 		<url/>
 	</scm>
+<<<<<<< HEAD
 
+=======
+>>>>>>> 16899bd9f55a85fc41cc6666dab906193a369342
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -52,7 +55,10 @@
 	      	<scope>runtime</scope>
       		<optional>true</optional>
     	</dependency>
+<<<<<<< HEAD
 	</dependencies>
+=======
+>>>>>>> 16899bd9f55a85fc41cc6666dab906193a369342
 
 	<build>
 		<plugins>
