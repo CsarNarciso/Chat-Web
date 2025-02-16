@@ -1,5 +1,3 @@
-#Dev environment external dependencies setup
-
 services:
 
   #Kafka
