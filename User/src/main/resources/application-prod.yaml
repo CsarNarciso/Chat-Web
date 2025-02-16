@@ -37,6 +37,17 @@ redis:
   hostname: redis
   port: 6379
 
+
+#Swagger OpenApi
+springdoc:
+  api-docs:
+    enabled: true 
+    path: /user/v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /user/swagger-ui.html
+
+
 #Feign Services
 services:
   media:
