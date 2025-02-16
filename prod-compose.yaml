@@ -24,8 +24,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 400M
+          cpus: '2.0'
+          memory: 800M
     networks:
       - chat-web-net
     healthcheck:
@@ -44,8 +44,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.3'
-          memory: 50M
+          cpus: '0.5'
+          memory: 70M
     networks:
       - chat-web-net
     healthcheck:

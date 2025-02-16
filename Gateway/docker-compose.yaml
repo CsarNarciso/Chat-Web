@@ -11,8 +11,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
-          memory: 250M
+          cpus: '1.0'
+          memory: 500M
     healthcheck:
       test: ["CMD", "curl", "--fail", "--silent", "localhost:8000/actuator/health"]
       start_period: 120s
