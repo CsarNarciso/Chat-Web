@@ -24,7 +24,7 @@ spring:
     
   #Kafka Config
   kafka:
-    bootstrap-servers: kafka:9092
+    bootstrap-servers: kafka:29092
     producer:
       properties:
         spring:
@@ -58,3 +58,9 @@ services:
     name: presence-service
     url: localhost:8003
     path: /presences
+
+#Deleted user default details
+deletedUser:
+  default:
+    username: "[deleted]"
+    profileImageUrl: http://${services.user.url}/DefaultProfileImage.png
