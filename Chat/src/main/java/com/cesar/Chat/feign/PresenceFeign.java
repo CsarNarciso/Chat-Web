@@ -6,7 +6,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import com.cesar.Chat.dto.UserPresenceDTO;
+import com.cesar.Chat.dto.PresenceDTO;
 
 @FeignClient(
         name="${services.presence.name}",
@@ -16,14 +16,14 @@ import com.cesar.Chat.dto.UserPresenceDTO;
 public interface PresenceFeign {
 
     @GetMapping
-    List<UserPresenceDTO> getByUserIds(@RequestBody List<Long> userIds);
+    List<PresenceDTO> getByUserIds(@RequestBody List<Long> userIds);
 
 
     @Component
     class Fallback implements PresenceFeign {
 
         @Override
-        public List<UserPresenceDTO> getByUserIds(List<Long> userIds) {
+        public List<PresenceDTO> getByUserIds(List<Long> userIds) {
             return Collections.emptyList();
         }
     }

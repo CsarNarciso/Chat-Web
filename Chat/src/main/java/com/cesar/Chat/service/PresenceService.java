@@ -1,7 +1,7 @@
 package com.cesar.Chat.service;
 
 import com.cesar.Chat.dto.ConversationViewDTO;
-import com.cesar.Chat.dto.UserPresenceDTO;
+import com.cesar.Chat.dto.PresenceDTO;
 import com.cesar.Chat.feign.PresenceFeign;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -19,10 +19,10 @@ public class PresenceService {
         //Fetch presence statuses
 		if(!participantsIds.isEmpty()){
 			
-			Map<Long, UserPresenceDTO> statuses =
+			Map<Long, PresenceDTO> statuses =
 					feign.getByUserIds(participantsIds)
 							.stream()
-							.collect(Collectors.toMap(UserPresenceDTO::getId, Function.identity()));
+							.collect(Collectors.toMap(PresenceDTO::getId, Function.identity()));
 
 			//If data was fetched
 			if(!statuses.isEmpty()) {
@@ -31,7 +31,7 @@ public class PresenceService {
 				conversations
 						.forEach(c -> {
 							
-							UserPresenceDTO recipientStatus = statuses.get(c.getRecipient().getUserId());
+							PresenceDTO recipientStatus = statuses.get(c.getRecipient().getUserId());
 							
 							if(recipientStatus!=null) {
 								mapper.map(c.getRecipient(), recipientStatus);
