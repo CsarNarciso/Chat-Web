@@ -1,6 +1,0 @@
-#Server
-server:
-  port: 8003
-spring:
-  application:
-    name: presence-service

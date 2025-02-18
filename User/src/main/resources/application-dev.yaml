@@ -1,5 +1,3 @@
-#No Docker, Eureka, Config Server, Postgres
-
 #Application
 server:
   port: 8001
@@ -24,10 +22,6 @@ spring:
       circuitbreaker:
         enabled: true
 
-    #Config client
-    config:
-      enabled: false
-
   #Kafka
   kafka:
     bootstrap-servers: localhost:9092
@@ -44,11 +38,6 @@ spring:
 redis:
   hostname: localhost
   port: 6379
-
-#Eureka client
-eureka:
-  client:
-    enabled: false
 
 #Swagger OpenApi
 springdoc:

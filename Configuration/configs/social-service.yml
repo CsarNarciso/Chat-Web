@@ -1,6 +1,0 @@
-#Server
-server:
-  port: 8004
-spring:
-  application:
-    name: social-service

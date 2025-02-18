@@ -1,5 +1,3 @@
-#Dev environment external dependencies setup
-
 services:
 
   #Kafka
@@ -28,22 +26,6 @@ services:
         limits:
           cpus: '1.0'
           memory: 400M
-  
-#  #Postgres
-#  postgres:
-#    image: postgres
-#    ports:
-#      - "5432:5432"
-#    environment:
-#      POSTGRES_DB: chat-web-db
-#      POSTGRES_USERNAME: postgres
-#      POSTGRES_PASSWORD: letmein
-#    restart: always
-#    deploy:
-#      resources:
-#        limits:
-#          cpus: '0.3'
-#          memory: 50M
 
   #Redis
   redis:

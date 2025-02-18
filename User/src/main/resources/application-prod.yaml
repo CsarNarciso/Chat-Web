@@ -1,25 +1,18 @@
-#Docker, Eureka, Config Server
-
 #Application
 spring:
   application:
     name: user-service
   
-  #PostgreSQL Datasource
+  #H2 Datasource
+  h2:
+    console.enabled: true
   datasource:
-    url: jdbc:postgresql://postgres:5432/db
-    username: postgres
-    password: letmein
-    driver-class-name: org.postgresql.Driver
-  #Hibernate JPA
+    url: jdbc:h2:mem:db
+    username: me
+    password:
+    driver-class-name: org.h2.Driver
   jpa:
-    hibernate:
-      ddl-auto: create-drop
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: 
+    database-platform: org.hibernate.dialect.H2Dialect
   
   #Circuit Breaker
   cloud:
@@ -27,18 +20,9 @@ spring:
       circuitbreaker:
         enabled: true
   
-  #Config client
-    config:
-      uri: configuration-service
-      discovery:
-        enabled: true
-        serviceId: configuration-service
-  config:
-    import: optional:configserver:lb://configuration-service
-  
   #Kafka Config
   kafka:
-    bootstrap-servers: kafka:9092
+    bootstrap-servers: kafka:29092
     producer:
       properties:
         spring:
@@ -53,25 +37,32 @@ redis:
   hostname: redis
   port: 6379
 
-#Eureka client
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://discovery:8761/eureka
 
-#Services
+#Swagger OpenApi
+springdoc:
+  api-docs:
+    enabled: true 
+    path: /user/v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /user/swagger-ui.html
+
+
+#Feign Services
 services:
   media:
     name: media-service
+    url: http://localhost:8003
     path: /media
     
 #Server
 server:
+  port: 8001
   url: http://localhost:${server.port}
 project:
   path: ${user.dir}/Chat-Web/User
+
 #Media
-media:
-  defaultImage:
-    name: DefaultProfileImage.png
-    path: src/main/resources/static/${media.defaultImage.name}
+defaultImage:
+  name: DefaultProfileImage.png
+  url: http://localhost:${server.port}/${defaultImage.name}

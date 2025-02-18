@@ -24,8 +24,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 400M
+          cpus: '2.0'
+          memory: 800M
     networks:
       - chat-web-net
     healthcheck:
@@ -33,30 +33,6 @@ services:
       start_period: 80s
       interval: 30s
       timeout: 10s
-      retries: 5
-    
-  #Postgres
-  postgres:
-    image: postgres
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: chat-web-db
-      POSTGRES_USERNAME: postgres
-      POSTGRES_PASSWORD: letmein
-    restart: always
-    deploy:
-      resources:
-        limits:
-          cpus: '0.3'
-          memory: 50M
-    networks:
-      - chat-web-net
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready", "-d", "db" ]
-      start_period: 120s
-      interval: 60s
-      timeout: 20s
       retries: 5
 
   #Redis
@@ -68,8 +44,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.3'
-          memory: 50M
+          cpus: '0.5'
+          memory: 70M
     networks:
       - chat-web-net
     healthcheck:
@@ -80,8 +56,6 @@ services:
       retries: 5
       
 include:
-  - Discovery/docker-compose.yaml
-  - Configuration/docker-compose.yaml
   - Gateway/docker-compose.yaml
   - Media/docker-compose.yaml
   - User/docker-compose.yaml
