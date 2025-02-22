@@ -80,11 +80,8 @@
 * External:
   + Media
   + Gateway
-  + Configuration
-  + Discovery
 * Dependencies:
-  + Global PostgreSQL Database
-  + Global Redis instance
+  + Redis instance
   + Apache Kafka Server
 
 ![Current Chat Web System Design](https://github.com/CsarNarciso/Assets/blob/main/Current%20Chat%20Web%20System%20Design.png)
