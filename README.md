@@ -1,6 +1,6 @@
 # Microservices Based Real Time Messaging Application.
 
-![Chat System Design](https://github.com/CsarNarciso/Assets/blob/main/Chat%20System%20Design.svg)
+![Old Final Chat Web System Design](https://github.com/CsarNarciso/Assets/blob/main/OLD%20Final%20Chat%20Web%20System%20Design.png)
 
 ## What this project is intended to do, the propouse of build this, and the final vision.
 
@@ -87,7 +87,7 @@
   + Global Redis instance
   + Apache Kafka Server
 
-![Actual Architecture Design](https://github.com/CsarNarciso/Assets/blob/main/Actual%20Chat%20Web%20System%20Design.png)
+![Current Chat Web System Design](https://github.com/CsarNarciso/Assets/blob/main/Current%20Chat%20Web%20System%20Design.png)
 
 ## Running The Application
 
