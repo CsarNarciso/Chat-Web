@@ -14,8 +14,6 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
-      gateway:
-        condition: service_healthy
     deploy:
       resources:
         limits:
