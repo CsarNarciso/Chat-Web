@@ -4,7 +4,10 @@ services:
     ports:
       - "8001:8001"
     environment:
-      SPRING_PROFILES_ACTIVE: prod
+      KAFKA_HOST: kafka
+      KAFKA_PORT: 29092
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     networks:
       - chat-web-net
     restart: always

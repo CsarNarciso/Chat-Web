@@ -1,3 +1,20 @@
+#Application
+server:
+  port: 8000
 spring:
-  profiles:
-    active: prod
+  application:
+    name: gateway-service
+
+#OpenAPI Swagger
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    config-url: /v3/api-docs/swagger-config
+    urls:
+      -   name: gateway-service
+          url: /v3/api-docs
+      -   name: user-service
+          url: /user/v3/api-docs

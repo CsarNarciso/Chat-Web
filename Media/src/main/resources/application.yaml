@@ -1,3 +1,12 @@
+#Application
+server:
+  port: 8003
 spring:
-  profiles:
-    active: prod
+  application:
+    name: media-service
+    
+#Media
+media:
+  dirName: media
+  path: ${user.dir}/${media.dirName}
+  url: http://localhost:${server.port}/${media.dirName}

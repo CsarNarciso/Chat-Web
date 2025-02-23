@@ -3,8 +3,6 @@ services:
     build: .
     ports:
       - "8003:8003"
-    environment:
-      SPRING_PROFILES_ACTIVE: prod
     networks:
       - chat-web-net
     restart: always
