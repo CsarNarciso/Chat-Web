@@ -156,10 +156,10 @@ Then, follow the steps below:
 
 ## Using The Application
 
-The following URLs allow you to access the Services APIs docs so that you can try out everything is avaliable. 
+The following URLs allow you to access the Services API docs so that you can try out everything is avaliable there. 
 
-Note: even Gateway is not necesary for internal microservices to work, if you want to use it, then access it through:
-Base url: http://localhost:8000/v3/swagger-ui.html
+Note: even Gateway is not necesary for internal microservices to work, if you want to use it, then access it through: 
+http://localhost:8000/v3/swagger-ui.html
 
 #### User Service
 http://localhost:8001/v3/swagger-ui.html
