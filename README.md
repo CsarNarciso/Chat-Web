@@ -156,37 +156,17 @@ Then, follow the steps below:
 
 ## Using The Application
 
-Note: even Gateway is not necesary for internal microservices to work, if you want to use it, then replace specific service port for 8000 (default Gateway port) in endpoints urls.
+The following URLs allow you to access the Services APIs docs so that you can try out everything is avaliable. 
+
+Note: even Gateway is not necesary for internal microservices to work, if you want to use it, then access it through:
+Base url: http://localhost:8000/v3/swagger-ui.html
 
 #### User Service
-
-Base url: http://localhost:8001/users
-
-| Name | Path | Method | Body | Media Type | Parameters | Path variables
-|-|-|-|-|-|-|-|
-| create | none | POST | String username, String email, String password, MultipartFile imageMetadata | form-data | none | none |
-| getById | /id | GET | none | application-json | none | Long id |
-| getByIds | none | GET | List< Long > ids | application-json | none | none |
-| updateDetails | /id | PATCH | String username, String email | application-json | none | Long id |
-| updateProfileImage | /id | PUT | MultipartFile imageMetadata | form-data | none | Long id |
-| delete | /id | DELETE | none | application-json | none | Long id |
+http://localhost:8001/v3/swagger-ui.html
 
 #### Chat Service
+http://localhost:8002/v3/swagger-ui.html
 
-Base urls: 
+### Project Postman Collection
+https://www.postman.com/csarnarciso/chat-web/overview
 
-http://localhost:8002/conversations
-   
-| Name | Path | Method | Body | Media Type | Parameters | Path variables
-|-|-|-|-|-|-|-|
-| createOnFirstInteractionMessage | none | POST | Long senderId, Long recipientId, String content | application-json | none | none |
-| loadUserConversations | /userId | GET | none | application-json | none | Long userId |
-| delete | /conversationId/userId | DELETE | none | application-json | none | UUID conversationId, Long userId |
-   
-http://localhost:8002/messages
-
-| Name | Path | Method | Body | Media Type | Parameters | Path variables
-|-|-|-|-|-|-|-|
-| send | none | POST | UUID conversationId, Long senderId, String content, boolean recreateForSomeone | application-json | none | none |
-| loadMessages | /conversationId | GET | none | application-json | none | UUID conversationId |
-| markAsRead | /conversationId/readerId | PUT | none | application-json | none | UUID conversationId, Long readerId |
