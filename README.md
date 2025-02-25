@@ -167,6 +167,6 @@ http://localhost:8001/v3/swagger-ui.html
 #### Chat Service
 http://localhost:8002/v3/swagger-ui.html
 
-### Project Postman Collection
+#### Or use Postman instead thourhg this whole project composed collection
 https://www.postman.com/csarnarciso/chat-web/overview
 
