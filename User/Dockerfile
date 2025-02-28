@@ -1,7 +1,15 @@
-FROM ubuntu:latest
-RUN apt-get install -y curl
+#Build jar
+FROM maven:3.8.6-openjdk-22 AS build
+WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
+
 FROM openjdk:22
 WORKDIR /app
-ARG JAR_FILE=./target/*.jar
-COPY ${JAR_FILE} user.jar
-ENTRYPOINT ["java", "-jar", "user.jar"]
+
+#Install curl
+RUN apt-get update && apt-get install -y curl
+
+#Run the application
+COPY --from=build /app/target/*.jar program.jar
+ENTRYPOINT ["java", "-jar", "program.jar"]
