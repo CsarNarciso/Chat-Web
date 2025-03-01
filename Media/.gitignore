@@ -5,8 +5,8 @@ target/
 !**/src/test/**/target/
 
 ### Media ###
-*.png
-*.jpg
+media/*
+!media/.gitkeep
 
 ### STS ###
 .apt_generated
