@@ -1,8 +1,10 @@
-#Build jar
-FROM maven:3.8.6-openjdk-22 AS build
+FROM openjdk:22 AS build
 WORKDIR /app
+
+#Build jar
 COPY . .
-RUN mvn clean package -DskipTests
+RUN ./mvnw clean package -DskipTests
+
 
 FROM openjdk:22
 WORKDIR /app

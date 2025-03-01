@@ -1,8 +1,0 @@
-.project
-
-#Maven Wrapper
-*/mvnw
-*/mvnw.cmd
-
-#Build files
-*/target
