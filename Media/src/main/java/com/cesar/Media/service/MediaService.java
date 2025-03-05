@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class MediaService {
 
-    public String upload(MultipartFile imageMetadata, String oldPath) throws Exception {
+    public String upload(MultipartFile imageMetadata) throws Exception {
         
     	if(!imageMetadata.isEmpty()){
         	
@@ -29,10 +29,6 @@ public class MediaService {
                 String finalName = UUID.randomUUID() + extension;
                 File file = new File(mediaPath + "\\" + finalName);
                 try {
-                	
-                    if(oldPath!=null && !oldPath.isEmpty()){
-                    	delete(oldPath);
-                    }
                     imageMetadata.transferTo(file);
                     
                 } catch (IOException e) {
