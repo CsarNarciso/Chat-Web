@@ -1,9 +1,10 @@
 package com.cesar.User.service;
 
-import com.cesar.User.feign.MediaFeign;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.cesar.User.feign.MediaFeign;
 
 @Service
 public class MediaService {
@@ -20,7 +21,8 @@ public class MediaService {
         	String uploadedImageUrl = feign.upload(imageMetadata, oldPath);
         	
         	//And if user has already an image
-        	newImageUrl = (oldPath!=null) 
+        	
+        	newImageUrl = (oldPath!=null && !oldPath.isEmpty()) 
         			? uploadedImageUrl //Update
         			//Or, if server response is successful
         			: (uploadedImageUrl != oldPath) 
