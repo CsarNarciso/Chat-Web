@@ -12,23 +12,23 @@ import org.springframework.web.multipart.MultipartFile;
 public class Controller {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> upload(@RequestPart MultipartFile imageMetadata, @RequestParam(required = false) String oldPath){
+    public ResponseEntity<?> upload(@RequestPart MultipartFile imageMetadata, @RequestParam(required = false) String oldPath) throws Exception{
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(profileService.upload(imageMetadata, oldPath));
+                .body(service.upload(imageMetadata, oldPath));
     }
 
     @DeleteMapping
     public void delete(@RequestParam String path) {
-        profileService.delete(path);
+        service.delete(path);
     }
 
 
 
 
     public Controller(MediaService profileService){
-    	this.profileService = profileService;
+    	this.service = profileService;
     }
 
-    private final MediaService profileService;
+    private final MediaService service;
 }

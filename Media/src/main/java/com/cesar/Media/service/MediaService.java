@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class MediaService {
 
-    public String upload(MultipartFile imageMetadata, String oldPath) {
+    public String upload(MultipartFile imageMetadata, String oldPath) throws Exception {
         
     	if(!imageMetadata.isEmpty()){
         	
@@ -35,19 +36,24 @@ public class MediaService {
                     imageMetadata.transferTo(file);
                     
                 } catch (IOException e) {
-                	throw new RuntimeException(e);
+                	throw new RuntimeException("Error saving new file: " + e);
                 }
                 return String.format("%s/%s", mediaBaseUrl, finalName);
             }
+            throw new BadRequestException("File extension not suported.");
         }
-        return null;
+        throw new BadRequestException("Image file not provided.");
     }
 
     public void delete(String path) {
         try {
-        	Files.deleteIfExists(Path.of( mediaPath + "\\" + path.substring(path.lastIndexOf("/")+1)));
+        	boolean deleted = Files.deleteIfExists(Path.of( mediaPath + "\\" + path.substring(path.lastIndexOf("/")+1)));
+        	
+        	if(!deleted) {
+        		throw new RuntimeException("File not found");
+        	}
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error deleting file: " + e);
         }
     }
 
