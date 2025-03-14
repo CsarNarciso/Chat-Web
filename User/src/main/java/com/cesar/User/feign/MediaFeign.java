@@ -17,7 +17,7 @@ import com.cesar.User.config.FeignMultipartConfiguration;
 public interface MediaFeign {
     
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    String upload(@RequestPart MultipartFile imageMetadata, @RequestParam String oldPath);
+    String upload(@RequestPart MultipartFile imageMetadata);
     
 	@DeleteMapping
     void delete(@RequestParam String path);

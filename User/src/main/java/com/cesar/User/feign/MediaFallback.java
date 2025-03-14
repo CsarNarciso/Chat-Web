@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 public class MediaFallback implements MediaFeign {
 
     @Override
-    public String upload(MultipartFile imageMetadata, String oldPath){
-        return oldPath;
+    public String upload(MultipartFile imageMetadata){
+        return null;
     }
 
     @Override

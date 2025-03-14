@@ -1,42 +1,41 @@
 package com.cesar.User.service;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.cesar.User.dto.UploadImageResponseDTO;
 import com.cesar.User.feign.MediaFeign;
 
 @Service
 public class MediaService {
 
 
-    public String upload(MultipartFile imageMetadata, String oldPath) {
+    public UploadImageResponseDTO upload(MultipartFile imageMetadata, String oldPath) {
 
-        String newImageUrl;
+        String uploadedImageUrl = (oldPath!=null) ? oldPath : DEFAULT_IMAGE_URL;
         
-        //If image provided,
-        if(imageMetadata != null && !imageMetadata.isEmpty()){
-        	
-        	//Try to upload
-        	String uploadedImageUrl = feign.upload(imageMetadata, oldPath);
-        	
-        	//And if user has already an image
-        	
-        	newImageUrl = (oldPath!=null && !oldPath.isEmpty()) 
-        			? uploadedImageUrl //Update
-        			//Or, if server response is successful
-        			: (uploadedImageUrl != oldPath) 
-        					? uploadedImageUrl //First time custom image upload
-        					: DEFAULT_IMAGE_URL; //Default image
-        }
-        //If not,
-        else{
-            //And user has no profile image yet
-            newImageUrl = (oldPath==null)
-                    ? DEFAULT_IMAGE_URL //First time default image upload
-                    : null; //Update bad request error. No image file provided
-        }
-        return newImageUrl;
+    	//Either update image, or first time custom image upload
+    	try{
+    		
+    		uploadedImageUrl = feign.upload(imageMetadata);
+    		return UploadImageResponseDTO
+    				.builder()
+    				.httpStatusCode(HttpStatus.CREATED)
+    				.message("Image successfully uploaded")
+    				.imageUrl(uploadedImageUrl)
+    				.build();
+    		
+    	}catch(Exception ex) {
+    		return UploadImageResponseDTO
+    				.builder()
+    				.httpStatusCode(ex.)
+    				.message(ex.getMessage())
+    				.imageUrl(uploadedImageUrl)
+    				.build();
+    	}
     }
     
     public void delete(String path){
