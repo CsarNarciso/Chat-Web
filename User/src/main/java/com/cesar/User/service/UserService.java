@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 
+import com.cesar.User.dto.UploadImageResponseDTO;
 import org.modelmapper.ModelMapper;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -23,8 +24,8 @@ public class UserService {
     	
         //Upload profile image
     	User entity = mapper.map(createRequest, User.class);
-        String profileImageURL = mediaService.upload(createRequest.getImageMetadata(), null);
-        entity.setProfileImageUrl(profileImageURL);
+        UploadImageResponseDTO uploadImageResponse = mediaService.upload(createRequest.getImageMetadata(), null);
+        entity.setProfileImageUrl(uploadImageResponse.getImageUrl());
 
         //Save
         return dataService.save(entity);
@@ -89,8 +90,6 @@ public class UserService {
     	}
     	return null;
     }
-    
-    
 
     public String updateProfileImage(Long id, MultipartFile imageMetadata) {
 
@@ -101,7 +100,8 @@ public class UserService {
     		//If either new image is not empty (no bad arguments request),
             // or media service request was performed successful (no fallback)
     		String oldPath = user.getProfileImageUrl();
-        	String newImageUrl = mediaService.upload(imageMetadata, oldPath);
+        	UploadImageResponseDTO uploadImageResponse = mediaService.upload(imageMetadata, oldPath);
+            String newImageUrl = uploadImageResponse.getImageUrl();
             
         	if(newImageUrl!=null && !newImageUrl.equals(oldPath)){
 
@@ -118,7 +118,6 @@ public class UserService {
     	}
         return null;
     }
-
 
     public UserDTO delete(Long id) {
 

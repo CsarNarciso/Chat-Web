@@ -14,7 +14,7 @@ import feign.form.spring.SpringFormEncoder;
 @Configuration
 public class FeignConfiguration {
 	
-	//Multi-part configuration to handle form data type (files)
+	//Multipart configuration to handle form data type (files)
 	@Bean
 	@Primary
 	@Scope("prototype")

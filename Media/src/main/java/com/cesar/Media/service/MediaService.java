@@ -36,7 +36,7 @@ public class MediaService {
                 }
                 return String.format("%s/%s", mediaBaseUrl, finalName);
             }
-            throw new BadRequestException("File extension not suported.");
+            throw new BadRequestException("File extension not supported.");
         }
         throw new BadRequestException("Image file not provided.");
     }

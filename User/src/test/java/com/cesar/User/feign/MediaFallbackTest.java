@@ -15,7 +15,7 @@ public class MediaFallbackTest {
 	public void givenImageFileAndOldPath_whenUpload_thenReturnsOldPath() {
 		
 		//When
-		String result = fallback.upload(IMAGE_FILE, OLD_PATH);
+		String result = fallback.upload(IMAGE_FILE);
 		
 		//Then
 		
