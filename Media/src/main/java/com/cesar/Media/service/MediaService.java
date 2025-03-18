@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 import org.apache.coyote.BadRequestException;
@@ -53,8 +54,13 @@ public class MediaService {
         }
     }
 
-    @Value("${media.path}")
-    private String mediaPath;
-    @Value("${media.url}")
-    private String mediaBaseUrl;
+
+
+    public MediaService(@Value("${media.dirName}") String mediaDirName, @Value("${media.url}") String mediaBaseUrl){
+        this.mediaBaseUrl = mediaBaseUrl;
+        mediaPath = Paths.get("").toAbsolutePath().resolve("Media/" + mediaDirName).toString();
+    }
+
+    private final String mediaPath;
+    private final String mediaBaseUrl;
 }
