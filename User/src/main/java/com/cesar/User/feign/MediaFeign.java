@@ -12,7 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 @FeignClient(name = "${services.media.name}", 
 			url = "${services.media.url}", 
 			path = "${services.media.path}",
-			fallback = MediaFallback.class,
 			configuration = FeignConfiguration.class)
 public interface MediaFeign {
     
