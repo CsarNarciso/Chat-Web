@@ -10,6 +10,7 @@ import com.cesar.User.exception.CustomInternalServerErrorException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.Response;
 import feign.codec.ErrorDecoder;
+import org.springframework.http.HttpStatusCode;
 
 public class MediaFeignErrorDecoder implements ErrorDecoder {
 
@@ -49,8 +50,8 @@ public class MediaFeignErrorDecoder implements ErrorDecoder {
         }
 
         return switch(response.status()){
-            case 400 -> new CustomBadRequestException(message);
-            case 500 -> new CustomInternalServerErrorException(message);
+            case 400 -> new CustomBadRequestException(message, HttpStatusCode.valueOf(response.status()));
+            case 500 -> new CustomInternalServerErrorException(message, HttpStatusCode.valueOf(response.status()));
             default -> defaultErrorDecoder.decode(methodKey, response);
         };
     }

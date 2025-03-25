@@ -4,15 +4,12 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 
-import com.cesar.User.dto.UploadImageResponseDTO;
+import com.cesar.User.dto.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.cesar.User.dto.CreateRequestDTO;
-import com.cesar.User.dto.UpdateRequestDTO;
-import com.cesar.User.dto.UserDTO;
 import com.cesar.User.entity.User;
 import com.cesar.User.helper.ReflectionsHelper;
 
@@ -20,7 +17,7 @@ import com.cesar.User.helper.ReflectionsHelper;
 public class UserService {
 
 
-    public UserDTO create(CreateRequestDTO createRequest) {
+    public CreateResponseDTO create(CreateRequestDTO createRequest) {
     	
         //Upload profile image
     	User entity = mapper.map(createRequest, User.class);
@@ -28,7 +25,11 @@ public class UserService {
         entity.setProfileImageUrl(uploadImageResponse.getImageUrl());
 
         //Save
-        return dataService.save(entity);
+        return CreateResponseDTO
+                .builder()
+                .userResponse(dataService.save(entity))
+                .profileImageUploadResponse(uploadImageResponse)
+                .build();
     }
     
     public UserDTO getById(Long id) {
