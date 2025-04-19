@@ -2,11 +2,13 @@ package com.cesar.Media.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
+import com.cesar.Media.MediaApplication;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -56,9 +58,16 @@ public class MediaService {
 
 
 
-    public MediaService(@Value("${media.dirName}") String mediaDirName, @Value("${media.url}") String mediaBaseUrl){
+    public MediaService(@Value("${media.dirName}") String mediaDirName, @Value("${media.url}") String mediaBaseUrl) throws URISyntaxException {
+
         this.mediaBaseUrl = mediaBaseUrl;
-        mediaPath = Paths.get("").toAbsolutePath().resolve("Media/" + mediaDirName).toString();
+        this.mediaPath = Paths.get(MediaApplication.class
+                        .getProtectionDomain()
+                        .getCodeSource()
+                        .getLocation()
+                        .toURI())
+                            .getParent().getParent().toAbsolutePath().resolve(mediaDirName)
+                            .toString();
     }
 
     private final String mediaPath;

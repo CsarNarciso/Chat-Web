@@ -1,10 +1,12 @@
 package com.cesar.Media.config;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import com.cesar.Media.MediaApplication;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -14,9 +16,12 @@ import jakarta.annotation.PreDestroy;
 public class MediaCleanUpConfiguration {
 	
 	@PreDestroy
-	public void cleanUpMediaDirectory() {
+	public void cleanUpMediaDirectory() throws URISyntaxException {
 		
-		Path path = Paths.get("").toAbsolutePath().resolve("Media/" + MEDIA_DIR_NAME);
+		Path path = Paths.get(MediaApplication.class.getProtectionDomain()
+						.getCodeSource().getLocation()
+						.toURI())
+				.getParent().getParent().toAbsolutePath().resolve(MEDIA_DIR_NAME);
 		
 		if(Files.exists(path)) {
 
