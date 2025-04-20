@@ -3,6 +3,7 @@
 ![Old Final Chat Web System Design](https://github.com/CsarNarciso/Assets/blob/main/ChatWeb/OLD%20Final%20System%20Design.png)
 
 ## What this project is intended to do, the propouse of build this, and the final vision.
+Focused on follow real world practices, architectures, design and requiriments (user experience, asyncronous communication avoiding tigh-coupling, performance) as an excelent way to get real/deep hands-on experience.
 
 ## User-level application features
 - Custom profile image upload and update, or default one if none is provided.
@@ -31,11 +32,13 @@
 
 ## What's comming next?
 - Security (JWT, OAuth2.0)
-- Cloud (AWS S3 Bucket for Media service, Gateway, RDS, and EC2 instances).
+- Integration with Cloud (AWS S3 Bucket for Media service, Gateway, RDS, or EC2 instances).
 - Three different DBs (NoSQL Cassandra for Chat, Relational MySQL for User service, and PostgreSQL for Social).
 - A Redis Cache instance for each services that requires it (this is most for optimization handling learning propouses, because, even if the real architecture is intended to work in this way, there is no need of all these instances for a local project, how can we have 3 reddis instances, and 3 different DBs running at the same time in our machine, without get overheating?).
-- Client SPA (Frontend Angular)
-- Jenkins Deployment Pipeline
+- Client SPA (Frontend Angular/React)
+- A Jenkins pipeline.
+- Deployment and hosting (somewhere).
+
 
 ## Technologies
 
@@ -88,53 +91,33 @@
 
 ## Running The Application
 
-#### About Profiles
-
-This application right now can work with the following Spring Profiles:
-
-1. Dev (Local development):
-   + No Docker (compose) deployment integration
-   + No Eureka (Discovery service) requirment
-   + No Config Server (configuration service) requirment
-   + H2 Database in memory instead PostgreSQL
-
-2. Prod (Production)
-   + Whole project deployment using docker compose
-   + Eureka and Config Server requirment
-   + PostgreSQL integration
-
-Choose 'dev' profile for fast and light internal services testing environment. Dev profile will disable Discovery and Configuration services dependencies, so you don't have to run them to work.
-
-Choose 'prod' profile for full project production environment setup. This will lead in a total of 11 docker containers running on your machine. 
-
 #### Prerequsistes
 
-In case your are going to use 'prod' profile, then you will need Docker Compose installed on your machine. Then, just jump directly to the [next section](#setup) to start with the setup. 
-
-If you don't, either install locally the following:
+The following have to be installed locally:
 
 1. Apache Kafka.
 2. Redis.
-3. PostgreSQL.
 
-Or use docker compose to execute the compose file for non production profiles located in the project root directory (wich will create Kafka, Postgres and Redis containers for you):
+ Or you can use Docker Compose for this:
+
+1. To setup the whole project directly:
 ```bash 
-   docker compose -f dev-compose.yaml up -d 
+   docker compose -f prod-compose.yaml up -d 
+```
+Then, just jump directly to the [next section](#using-the-application) to see how to use the application.
+
+ 
+2. Or if you just want to create a Kafka and a Redis container:
+```bash 
+   docker compose -f docker-compose.common.yaml up -d 
 ```
 
-Note: either using a docker environment or a local one, the application is configured to use default redis (6379), postgres (5432) and kafka (9492) ports. In case you are using the provided compose file, the default ports are already configured, in case not, you need to make sure the three technologies are using the specified ports.
-Both Kafka and Redis works with the default configurations.
-If you are going to use Postgres, then configure it with a new user called 'postgres' and 'letmein' as password
+Note: either using a Docker environment or a local one, the application is configured to use default redis (6379) and kafka (9492) ports. In case you are using the provided compose file, the default ports are already configured, in case not, you need to make sure these two tools are using the specified ports.
+
 
 #### Setup
 
-For 'prod' profile, simply run the following command to setup the whole project:
-```bash 
-   docker compose up -d 
-```
-Once everything is setup successfully, jump directly to the [next section](#using-the-application) to see how to use the application
-
-If you are not using 'prod' profiles, make sure to have  already completed the [previous section](#prerequisites) and have all the software required up and running.
+First, make sure to have  already completed the [previous section](#prerequisites) and have all the software required up and running.
 Then, follow the steps below:
 
 1. **Clone the repository using Git (or download directly)**
@@ -145,22 +128,26 @@ Then, follow the steps below:
    ```bash
    cd Chat-Web/
    ```
-3. **Run [avaliable](#avaliable-services-at-the-moment) and required (based on [profiles](#about-profiles)) services using Maven (project folders already have Maven Wraper integrated, so you don't need to install it)**
+3. **Build the projects using Maven (they already have Maven Wraper integrated, so you don't need to install it on your machine)**
        
    ```bash
    cd Service-Name/
    ```
    ```bash
-   ./mvnw spring-boot:run -Dspring-boot.run.profiles=profile-name
+   ./mvnw clean install -Dmaven.test.skip
+   ```
+   
+4. **Run the services**
+       
+   ```bash
+   ./mvnw spring-boot:run -Dmaven.test.skip
    ```
 
 ## Using The Application
 
-The following URLs allow you to access the Services API docs so that you can try out everything is avaliable there.
-
 Note: Gateway is not necesary for internal microservices to work.
 
-### Use Swagger (only for User service)
+### Use Swagger (only for User service at the moment)
 
 ##### With Gateway: 
 
@@ -169,9 +156,11 @@ http://localhost:8000/v3/swagger-ui.html
 ##### No Gateway:
 
 ###### User Service
-http://localhost:8001/v3/swagger-ui.html
+http://localhost:8001/user/swagger-ui.html
 
 ### Or use Postman instead
+
+Download the Postman collections in JSON format and import them in Postman Desktop.
 
 ##### No Gateway:
 
