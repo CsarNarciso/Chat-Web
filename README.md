@@ -34,11 +34,9 @@ Focused on follow real world practices, architectures, design and requiriments (
 - Security (JWT, OAuth2.0)
 - Integration with Cloud (AWS S3 Bucket for Media service, Gateway, RDS, or EC2 instances).
 - Three different DBs (NoSQL Cassandra for Chat, Relational MySQL for User service, and PostgreSQL for Social).
-- A Redis Cache instance for each services that requires it (this is most for optimization handling learning propouses, because, even if the real architecture is intended to work in this way, there is no need of all these instances for a local project, how can we have 3 reddis instances, and 3 different DBs running at the same time in our machine, without get overheating?).
+- A Redis Cache instance for each services that requires it (this is most for optimization handling learning propouses, because, even if the real architecture is intended to work in this way, there is no need of all these instances for a local project, how can we have 3 reddis instances, and 3 different DBs running at the same time in our machine, without getting overhead?).
 - Client SPA (Frontend Angular/React)
 - A Jenkins pipeline.
-- Deployment and hosting (somewhere).
-
 
 ## Technologies
 
@@ -93,6 +91,15 @@ Focused on follow real world practices, architectures, design and requiriments (
 
 #### Prerequsistes
 
+1. **Clone the repository using Git (or download directly)**
+    ```bash 
+    git clone https://github.com/CsarNarciso/Chat-Web.git 
+    ```
+2. **Navigate to the project root directory**
+   ```bash
+   cd Chat-Web/
+   ```
+
 The following have to be installed locally:
 
 1. Apache Kafka.
@@ -106,13 +113,12 @@ The following have to be installed locally:
 ```
 Then, just jump directly to the [next section](#using-the-application) to see how to use the application.
 
- 
 2. Or if you just want to create a Kafka and a Redis container:
 ```bash 
    docker compose -f docker-compose.common.yaml up -d 
 ```
 
-Note: either using a Docker environment or a local one, the application is configured to use default redis (6379) and kafka (9492) ports. In case you are using the provided compose file, the default ports are already configured, in case not, you need to make sure these two tools are using the specified ports.
+Note: either using a Docker environment or a local one, the application is configured to use default redis (6379) and kafka (9492) ports. In case you are using the provided compose files, the default ports are already configured, in case not, you need to make sure these two tools are using the specified ports.
 
 
 #### Setup
@@ -120,15 +126,7 @@ Note: either using a Docker environment or a local one, the application is confi
 First, make sure to have  already completed the [previous section](#prerequisites) and have all the software required up and running.
 Then, follow the steps below:
 
-1. **Clone the repository using Git (or download directly)**
-    ```bash 
-    git clone https://github.com/CsarNarciso/Chat-Web.git 
-    ```
-2. **Navigate to the project root directory**
-   ```bash
-   cd Chat-Web/
-   ```
-4. **Run the services using Maven (they already have Maven Wraper integrated, so you don't need to install it on your machine)**
+1. **Run the services using Maven (they already have Maven Wraper integrated, so you don't need to install it on your machine)**
 
    ```bash
    cd Service-Name/
