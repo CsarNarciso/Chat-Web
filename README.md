@@ -128,20 +128,15 @@ Then, follow the steps below:
    ```bash
    cd Chat-Web/
    ```
-3. **Build the projects using Maven (they already have Maven Wraper integrated, so you don't need to install it on your machine)**
-       
+4. **Run the services using Maven (they already have Maven Wraper integrated, so you don't need to install it on your machine)**
+
    ```bash
    cd Service-Name/
    ```
    ```bash
-   ./mvnw clean install -Dmaven.test.skip
-   ```
-   
-4. **Run the services**
-       
-   ```bash
    ./mvnw spring-boot:run -Dmaven.test.skip
    ```
+   
 
 ## Using The Application
 
