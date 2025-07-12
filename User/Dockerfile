@@ -1,12 +1,13 @@
-FROM openjdk:22 AS build
+FROM openjdk:22-jdk-slim-buster AS build
 WORKDIR /app
 
 #Build jar
 COPY . .
+RUN chmod +x mvnw
 RUN ./mvnw clean package -DskipTests
 
 
-FROM openjdk:22
+FROM openjdk:22-jdk-slim-buster
 WORKDIR /app
 
 #Install curl
